@@ -13,7 +13,8 @@ Supabase. Язык по умолчанию — английский; выбор 
 | --- | --- |
 | `index.html` | весь сайт: вёрстка, данные и логика |
 | `config.js` | URL и anon key проекта Supabase — единственное, что нужно заполнить |
-| `supabase.sql` | схема базы, политики доступа и бакет для файлов |
+| `supabase/migrations/` | схема базы, политики доступа и бакет для файлов |
+| `supabase/config.toml` | конфигурация проекта для Supabase CLI и интеграции с GitHub |
 | `.nojekyll` | отключает обработку Jekyll на GitHub Pages |
 
 ## Публикация на GitHub Pages
@@ -30,9 +31,18 @@ Supabase. Язык по умолчанию — английский; выбор 
 ## Подключение Supabase
 
 1. **Проект.** supabase.com → New project. Регион ближе к пользователям.
-2. **Схема.** SQL Editor → New query → вставить весь `supabase.sql` → Run.
-   Создаются таблицы `submissions`, `approved`, `editors`, `profiles`,
-   приватный бакет `uploads` и политики RLS. Повторный запуск безопасен.
+2. **Схема.** SQL Editor → New query → вставить весь
+   `supabase/migrations/20261111000000_init.sql` → Run. Создаются таблицы
+   `submissions`, `approved`, `editors`, `profiles`, приватный бакет
+   `uploads` и политики RLS. Повторный запуск безопасен.
+
+   Либо, вместо ручного запуска, подключить репозиторий: Project Settings →
+   Integrations → GitHub → Authorize, выбрать `timur-911/umpires`, в поле
+   пути к папке `supabase/` указать `.` и включить *Deploy to production*.
+   Тогда миграции применяются сами при пуше в `main`. Интеграция доступна на
+   бесплатном плане; отдельные базы под pull request (branching) — только на
+   Pro. Достаточно чего-то одного: если схему уже прогнали руками, интеграция
+   не нужна.
 3. **Ключи.** Settings → API → скопировать *Project URL* и *anon public* в
    `config.js`. Оба значения публичные: anon key рассчитан на то, чтобы лежать
    в коде сайта, данные закрывают политики RLS.
@@ -70,7 +80,7 @@ Supabase. Язык по умолчанию — английский; выбор 
 может автор и куратор.
 
 Страницы турниров и «Заявки» обновляются сразу через Supabase Realtime —
-для этого `supabase.sql` добавляет обе таблицы в публикацию
+для этого миграция добавляет обе таблицы в публикацию
 `supabase_realtime`.
 
 В коде вся работа с Supabase собрана в один блок (поиск по `supaDb`) и

@@ -1,0 +1,11 @@
+# Конфигурация проекта Supabase.
+# Её читает интеграция с GitHub: в поле «Relative path to the directory
+# containing your supabase/ folder» указывается "." — эта папка лежит
+# в корне репозитория.
+#
+# Файл намеренно минимальный: сайт использует только базу, авторизацию
+# и хранилище, которые настраиваются в supabase/migrations и в панели.
+# Если когда-нибудь понадобится локальная разработка через Supabase CLI,
+# команда `supabase init` развернёт полный config.toml.
+
+project_id = "umpires"
