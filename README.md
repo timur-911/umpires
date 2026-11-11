@@ -54,11 +54,12 @@ Supabase. Язык по умолчанию — английский; выбор 
    Site URL = `https://timur-911.github.io/umpires/`,
    в Redirect URLs добавить его же (и `http://localhost:*`, если проверяете
    локально). Без этого ссылка из письма не вернёт на сайт.
-5. **Куратор.** Войдите на сайте по ссылке из письма, затем в SQL Editor:
+5. **Куратор.** Войдите на сайте по ссылке из письма, затем в SQL Editor
+   (подставьте адрес, которым входили):
 
    ```sql
    insert into public.editors (uid, note)
-   select id, 'curator' from auth.users where email = 'tkhojayev@gmail.com'
+   select id, 'curator' from auth.users where email = 'you@example.com'
    on conflict (uid) do nothing;
    ```
 

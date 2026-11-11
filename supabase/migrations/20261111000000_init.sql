@@ -109,10 +109,11 @@ create policy uploads_read on storage.objects for select to authenticated
   using (bucket_id = 'uploads' and ((storage.foldername(name))[1] = auth.uid()::text or public.is_editor()));
 
 -- ---------- назначить куратора ----------
--- Войдите на сайте по ссылке из письма, затем выполните (подставьте свой email):
+-- Войдите на сайте по ссылке из письма, затем выполните,
+-- подставив адрес, которым входили:
 --
 --   insert into public.editors (uid, note)
---   select id, 'curator' from auth.users where email = 'tkhojayev@gmail.com'
+--   select id, 'curator' from auth.users where email = 'you@example.com'
 --   on conflict (uid) do nothing;
 --
 -- После этого в подвале сайта появится ссылка «Заявки».
