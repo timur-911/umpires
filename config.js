@@ -15,6 +15,6 @@
    вход, отправка заявок и «Заявки» выключены. */
 
 window.SUPABASE_CONFIG = {
-  url: "",
-  anonKey: ""
+  url: "https://seikkiiqmbpwgeyuoxge.supabase.co",
+  anonKey: "sb_publishable_B83C5BfTV2ZYQTlDFp4qGQ_mIrYEKzj"
 };
