@@ -2020,8 +2020,9 @@ async function syncSession(){
   CAP.admin=CAP.uid?await CAP.user.canEdit():false;
 }
 (async()=>{
-  if(!SBCFG.url||!SBCFG.anonKey||!window.supabase||!window.supabase.createClient){CAP.ready=true;authBtn();return;}
-  SB=window.supabase.createClient(SBCFG.url,SBCFG.anonKey,{auth:{flowType:"pkce",detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+  const KEY=SBCFG.anonKey||SBCFG.key||"";
+  if(!SBCFG.url||!KEY||!window.supabase||!window.supabase.createClient){CAP.ready=true;authBtn();return;}
+  SB=window.supabase.createClient(SBCFG.url,KEY,{auth:{flowType:"pkce",detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
   CAP.db=supaDb();CAP.user=supaUser();CAP.assets=supaAssets();
   try{await syncSession();}catch(_){}
   CAP.ready=true;

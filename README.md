@@ -43,9 +43,13 @@ Supabase. Язык по умолчанию — английский; выбор 
    бесплатном плане; отдельные базы под pull request (branching) — только на
    Pro. Достаточно чего-то одного: если схему уже прогнали руками, интеграция
    не нужна.
-3. **Ключи.** Settings → API → скопировать *Project URL* и *anon public* в
-   `config.js`. Оба значения публичные: anon key рассчитан на то, чтобы лежать
-   в коде сайта, данные закрывают политики RLS.
+3. **Ключи.** Settings → API Keys → вкладка *Publishable and secret API keys*
+   → скопировать **Publishable key** (`sb_publishable_…`) в `config.js`,
+   в поле `anonKey`. Project URL берётся там же или в диалоге *Connect*.
+   У старых проектов вместо publishable есть вкладка *Legacy API Keys* с
+   ключом *anon public* — он тоже подойдёт, но Supabase выводит его из
+   употребления к концу 2026 года. Оба значения публичные и рассчитаны на то,
+   чтобы лежать в коде сайта; данные закрывают политики RLS.
 4. **Адреса возврата.** Authentication → URL Configuration:
    Site URL = `https://timur-911.github.io/umpires/`,
    в Redirect URLs добавить его же (и `http://localhost:*`, если проверяете
