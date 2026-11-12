@@ -30,7 +30,7 @@ const NOTES = {16367:{ru:"Перерыв в списках Gold Badge с июн�
 const I18N = {
 ru:{
  nav_umpires:"Все судьи",nav_ump_menu:"Судьи",dd_gold:"Судьи Gold Badge",dd_blue:"Судьи Blue Badge",dd_white:"Судьи White Badge",list_w:"Судьи White Badge",list_w_sub:"Все международные судьи: White Badge — базовый уровень IU, поэтому в списке есть и обладатели Blue и Gold Badge. Активные и неактивные.",th_status:"Статус",st_active:"Активен",st_inactive:"Неактивен",dd_all:"Все судьи →",nav_countries:"Страны",nav_events:"Турниры",nav_graph:"Граф",gr_title:"Граф связей",gr_sub:(u,x,e,l)=>`${u} ${graphState.whoAll?plural(u,"официальное лицо","официальных лица","официальных лиц"):graphState.whoSel==="ref"?"рефери":plural(u,"судья","судьи","судей")} (из них ${x} без известного номера ${graphState.whoAll?"IU / IR":graphState.whoSel==="ref"?"IR / IU":"IU"}), ${e} ${plural(e,"турнир","турнира","турниров")}. Линия — двое работали на одном турнире, толщина — на скольких (${l} ${plural(l,"пара","пары","пар")}).`,gr_search:"Имя, номер IU или номер IR",gr_all:"Все связи",gr_multi:"2+ общих турнира",gr_reset:"Сбросить всё",gr_leg_u:"судья",gr_leg_u0:"номер IU неизвестен",gr_noiu:"NU",gr_leg_w:"общих турниров",gr_hint:"Наведите на точку — имя; нажмите — коллеги и общие турниры. Колёсико или щипок — масштаб.",gr_pick:"Выберите судью на графе или найдите судью либо турнир через поиск.",gr_ev_n:n=>`${n} ${plural(n,"судья","судьи","судей")}`,gr_u_n:n=>`${n} ${plural(n,"турнир","турнира","турниров")}`,gr_col_n:n=>`${n} ${plural(n,"коллега","коллеги","коллег")}`,gr_strong:n=>`из них ${n} — 2+ общих турнира`,gr_strong_h:"Коллеги с 2+ общими турнирами",gr_shared:n=>`${n} ${plural(n,"общий турнир","общих турнира","общих турниров")}`,gr_open:"Открыть страницу",gr_none:"Ничего не найдено",claim:"Это я!",
- foot1:"Независимый кураторский проект. Не связан с ITTF.",foot2:"Данные: List of Active International Umpires 01.01.2026 · Blue Badge Umpires 01.10.2026 · Gold Badge Umpires 09.2026 · International Referees 01.01.2026 · назначения WTT/ITTF на 19.10.2026",
+ foot1:"This website is not affiliated with the ITTF, WTT or its subsidiaries. The data is taken from open sources.",foot2:"Данные: List of Active International Umpires 01.01.2026 · Blue Badge Umpires 01.10.2026 · Gold Badge Umpires 10.2026 · International Referees 01.01.2026 · назначения WTT/ITTF на 19.10.2026",
  eyebrow:"🏓 Кураторская база судей и рефери",h1:"<span class=\"h1l\">Найдите себя.</span> <span class=\"h1l\"><span class=\"sr\">Познакомьтесь с судьями, рефери и коллегами.</span><span aria-hidden=\"true\">Познакомьтесь с <span class=\"rot\" data-w=\"судьями.|рефери.|коллегами.\">судьями.</span></span></span> <span class=\"h1l\">Делитесь опытом.</span>",
  lead:"Судьи, рефери и другие официальные лица турниров по настольному теннису. <button type=\"button\" class=\"dl\" data-find>Найдите</button> или <button type=\"button\" class=\"dl\" data-add>добавьте</button> себя или своих коллег.",
  search_ph:"Имя, номер IU или ассоциация",search_aria:"Поиск судьи",example:"Например:",nothing:"Никого не нашли.",add_umpire:"Добавить судью",assoc_lbl:"Ассоц.",
@@ -44,8 +44,8 @@ ru:{
  news:"Новое в списках ITTF",new_gb:"Новый Gold Badge",new_bb:"Новый Blue Badge",
  upcoming:"Ближайшие турниры",all_events:"Все турниры →",most:"Больше всего судей",all_countries:"Все страны →",
  by_country:"Судьи по странам",assoc_n:n=>`${n} ассоциаций`,
- list_all:"Все судьи",list_all_sub:"Международные судьи (активные и неактивные), национальные судьи и официальные лица Игр, которых мы знаем. Активные IU — по списку ITTF на 1 января 2026, с актуальными Blue и Gold Badge.",
- list_bb_sub:"Список Blue Badge Umpires на 1 октября 2026.",list_gb_sub:"Высшая категория ITTF. Список Gold Badge Umpires, октябрь 2026.",
+ list_all:"Все судьи",list_all_sub:"Международные судьи (активные и неактивные), национальные судьи и официальные лица Игр, которых мы знаем.",list_all_src:"Активные IU — по списку ITTF на 1 января 2026, с актуальными Blue и Gold Badge.",
+ list_bb_sub:"",list_bb_src:"Список Blue Badge Umpires на 1 октября 2026.",list_gb_sub:"Высшая категория ITTF.",list_gb_src:"Список Gold Badge Umpires, октябрь 2026.",
  filter_aria:"Фильтр по имени",all_cat:"Все категории",all_assoc:"Все ассоциации",cat:"Категория",assoc:"Ассоциация",
  n_umpires:n=>`${fmt(n)} ${plural(n,"судья","судьи","судей")}`,th_umpire:"Судья",th_bb:"Blue Badge с",th_gb:"Gold Badge с",more:n=>`Показать ещё ${n}`,
  countries_sub:(n,a)=>`${n} ассоциаций — членов ITTF. Число рядом — известные нам судьи ассоциации: международные, национальные и официальные лица Игр. Хотя бы один активный международный судья есть в ${a}.`,
@@ -86,7 +86,7 @@ ru:{
 },
 en:{
  nav_umpires:"All umpires",nav_ump_menu:"Umpires",dd_gold:"Gold Badge umpires",dd_blue:"Blue Badge umpires",dd_white:"White Badge umpires",list_w:"White Badge umpires",list_w_sub:"All International Umpires: White Badge is the base IU level, so Blue and Gold Badge holders are on this list too. Active and inactive.",th_status:"Status",st_active:"Active",st_inactive:"Inactive",dd_all:"All umpires →",nav_countries:"Countries",nav_events:"Tournaments",nav_graph:"Graph",gr_title:"Connections graph",gr_sub:(u,x,e,l)=>`${u} ${graphState.whoAll?"tournament officials":graphState.whoSel==="ref"?"referees":"umpires"} (${x} without a known ${graphState.whoAll?"IU / IR":graphState.whoSel==="ref"?"IR / IU":"IU"} number), ${e} tournaments. A line means two of them worked at the same tournament; its width shows how many (${l} pairs).`,gr_search:"Name, IU number or IR number",gr_all:"All links",gr_multi:"2+ shared tournaments",gr_reset:"Reset all",gr_leg_u:"umpire",gr_leg_u0:"IU number unknown",gr_noiu:"NU",gr_leg_w:"shared tournaments",gr_hint:"Hover a dot for the name; click for colleagues and shared tournaments. Scroll or pinch to zoom.",gr_pick:"Pick an umpire on the graph, or find an umpire or a tournament via search.",gr_ev_n:n=>`${n} ${n===1?"umpire":"umpires"}`,gr_u_n:n=>`${n} ${n===1?"tournament":"tournaments"}`,gr_col_n:n=>`${n} ${n===1?"colleague":"colleagues"}`,gr_strong:n=>`${n} with 2+ shared tournaments`,gr_strong_h:"Colleagues with 2+ shared tournaments",gr_shared:n=>`${n} shared ${n===1?"tournament":"tournaments"}`,gr_open:"Open page",gr_none:"Nothing found",claim:"That's me!",
- foot1:"Curated independent project. Not affiliated with the ITTF.",foot2:"Data: List of Active International Umpires 01.01.2026 · Blue Badge Umpires 01.10.2026 · Gold Badge Umpires 09.2026 · International Referees 01.01.2026 · WTT/ITTF selections as of 19.10.2026",
+ foot1:"This website is not affiliated with the ITTF, WTT or its subsidiaries. The data is taken from open sources.",foot2:"Data: List of Active International Umpires 01.01.2026 · Blue Badge Umpires 01.10.2026 · Gold Badge Umpires 10.2026 · International Referees 01.01.2026 · WTT/ITTF selections as of 19.10.2026",
  eyebrow:"🏓 Curated match officials database",h1:"<span class=\"h1l\">Look yourself up.</span> <span class=\"h1l\"><span class=\"sr\">Meet fellow umpires, referees and officials.</span><span aria-hidden=\"true\">Meet fellow <span class=\"rot\" data-w=\"umpires.|referees.|officials.\">umpires.</span></span></span> <span class=\"h1l\">Share your experience.</span>",
  lead:"Table tennis umpires, referees and other tournament officials. <button type=\"button\" class=\"dl\" data-find>Find</button> or <button type=\"button\" class=\"dl\" data-add>add</button> yourself, or your colleagues.",
  search_ph:"Name, IU number or association",search_aria:"Search umpires",example:"Try:",nothing:"No one found.",add_umpire:"Add an umpire",assoc_lbl:"Assoc.",
@@ -100,8 +100,8 @@ en:{
  news:"New in the ITTF lists",new_gb:"New Gold Badge",new_bb:"New Blue Badge",
  upcoming:"Upcoming tournaments",all_events:"All tournaments →",most:"Most umpires",all_countries:"All countries →",
  by_country:"Umpires by country",assoc_n:n=>`${n} associations`,
- list_all:"All umpires",list_all_sub:"International umpires (active and inactive), national umpires and Games officials we know of. Active IU: ITTF list of 1 January 2026, with current Blue and Gold Badges.",
- list_bb_sub:"Blue Badge Umpires list as of 1 October 2026.",list_gb_sub:"The highest ITTF level. Gold Badge Umpires list, October 2026.",
+ list_all:"All umpires",list_all_sub:"International umpires (active and inactive), national umpires and Games officials we know of.",list_all_src:"Active IU: ITTF list of 1 January 2026, with current Blue and Gold Badges.",
+ list_bb_sub:"",list_bb_src:"Blue Badge Umpires list as of 1 October 2026.",list_gb_sub:"The highest ITTF level.",list_gb_src:"Gold Badge Umpires list, October 2026.",
  filter_aria:"Filter by name",all_cat:"All badges",all_assoc:"All associations",cat:"Badge",assoc:"Association",
  n_umpires:n=>`${fmt(n)} ${n===1?"umpire":"umpires"}`,th_umpire:"Umpire",th_bb:"Blue Badge since",th_gb:"Gold Badge since",more:n=>`Show ${n} more`,
  countries_sub:(n,a)=>`${n} ITTF member associations. The number is the umpires we know of: international, national and Games officials. ${a} of them have at least one active international umpire.`,
@@ -371,7 +371,7 @@ function ganttCard(){
       <label class="gsort">${t.g_sort} <select id="gsort">${["start","dur"].map(k=>`<option value="${k}"${s.sort===k?" selected":""}>${t["g_s_"+k]}</option>`).join("")}</select></label>
     </div>
     <div id="ganttPlot" class="gplot"></div>
-    <p class="muted" style="font-size:12px;margin:10px 0 0">${t.g_note}</p>
+    ${CAP.admin?`<p class="muted" style="font-size:12px;margin:10px 0 0">${t.g_note}</p>`:""}
   </section>`;
 }
 function renderGantt(){
@@ -653,8 +653,8 @@ function viewList(preset){
   if(preset!==undefined&&preset!==listState.preset){listState.lvl=preset==="w"?"all":preset;listState.shown=100;listState.preset=preset;listState.c="all";listState.q="";}
   const P=listState.preset, pool=P==="all"||P==="w";
   const title = P==="1"?"Blue Badge":P==="2"?"Gold Badge":P==="w"?t.list_w:t.list_all;
-  const sub = P==="2"?t.list_gb_sub:P==="1"?t.list_bb_sub:P==="w"?t.list_w_sub:t.list_all_sub;
-  return `<h1>${title}</h1><p class="muted" style="margin:8px 0 0">${sub}</p>
+  const sub = [(P==="2"?t.list_gb_sub:P==="1"?t.list_bb_sub:P==="w"?t.list_w_sub:t.list_all_sub), CAP.admin?(P==="2"?t.list_gb_src:P==="1"?t.list_bb_src:P==="w"?"":t.list_all_src):""].filter(Boolean).join(" ");
+  return `<h1>${title}</h1>${sub?`<p class="muted" style="margin:8px 0 0">${sub}</p>`:""}
   ${listState.preset==="2"?ganttCard():""}
   <div class="controls">
     <input id="lq" type="search" placeholder="${t.search_ph}" value="${esc(listState.q)}" aria-label="${t.filter_aria}">
@@ -686,7 +686,7 @@ function renderListRows(){
   const showGb = s.lvl!=="0" && s.lvl!=="1", showBb = s.lvl!=="0";
   $("#listOut").innerHTML = `<div class="muted" style="font-size:13px;margin-bottom:8px">${t.n_umpires(rows.length)}</div>
   <div class="tbl"><table><thead><tr><th>IU</th><th>${t.th_umpire}</th><th>${t.assoc}</th><th>${t.cat}</th>${showBb?`<th>${t.th_bb}</th>`:""}${showGb?`<th>${t.th_gb}</th>`:""}</tr></thead><tbody>
-  ${rows.map(o=>`<tr data-go="u${o.iu}"><td class="num">${String(o.iu).padStart(5,"0")}</td><td><a href="#u${o.iu}">${esc(o.sur)}</a> ${esc(o.first)}</td><td>${esc(o.c.name)} <span class="code">${o.c.code}</span> ${contChip(contOf(o))}</td><td>${badge(o.lvl)}</td>${showBb?`<td class="num">${bbDate(o,o.iu)?fmtDate(bbDate(o,o.iu)):o.lvl==2?"—":""}</td>`:""}${showGb?`<td>${o.gb?fmtGb(o.gb):""}</td>`:""}</tr>`).join("")}
+  ${rows.slice(0,s.shown).map(o=>`<tr data-go="u${o.iu}"><td class="num">${String(o.iu).padStart(5,"0")}</td><td><a href="#u${o.iu}">${esc(o.sur)}</a> ${esc(o.first)}</td><td>${esc(o.c.name)} <span class="code">${o.c.code}</span> ${contChip(contOf(o))}</td><td>${badge(o.lvl)}</td>${showBb?`<td class="num">${bbDate(o,o.iu)?fmtDate(bbDate(o,o.iu)):o.lvl==2?"—":""}</td>`:""}${showGb?`<td>${o.gb?fmtGb(o.gb):""}</td>`:""}</tr>`).join("")}
   </tbody></table></div>
   ${rows.length>s.shown?`<div class="more"><button class="btn" id="moreBtn" type="button">${t.more(Math.min(100,rows.length-s.shown))}</button></div>`:""}`;
   const mb=$("#moreBtn"); if(mb) mb.onclick=()=>{s.shown+=100;renderListRows();};
@@ -712,7 +712,7 @@ function viewCountry(c){
   const evs=[...new Set(c.list.concat(EXTRA.filter(x=>x.c===c),c.list.length?[]:others.filter(o=>o.isRef)).flatMap(o=>o.asg.map(a=>a.e)))].sort((a,b)=>b.s.localeCompare(a.s));
   return `<div class="crumbs"><a href="#countries">${t.nav_countries}</a> / ${esc(c.name)}</div>
   <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap"><h1>${flagImg(c.code)}${esc(c.name)}</h1><span class="code" style="font-size:16px">${c.code}</span>${contChip(CONT[c.code])}</div>
-  <div class="facts" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+  <div class="facts f4">
     <div class="fact"><div class="v">${c.list.length}</div><div class="k">${t.intl_umpires}</div></div>
     <div class="fact"><div class="v">${n[0]}</div><div class="k">White Badge</div></div>
     <div class="fact"><div class="v" style="color:var(--bb)">${n[1]}</div><div class="k">Blue Badge</div></div>
@@ -1228,7 +1228,7 @@ function viewEvent(e){
   const own=u=>u.note==="nofinal"?` <span class="own" style="font-family:inherit;font-size:12px;font-style:italic" title="${t.venue.nofinal}">${t.not_final}</span>`:u.de&&(u.ds!==e.s||u.de!==e.e)?` <span class="own"${u.note==="known"?` title="${t.venue.known}"`:""}>${fmtRange(u.ds,u.de)}${u.note==="known"?"*":""}</span>`:"";
   const fnOf=u=>u.src!=null?evSrc.indexOf(u.src)+1:0;
   const allLocal=e.ump.concat(e.ref).length>0&&e.ump.concat(e.ref).every(u=>u.src!=null);
-  const sup=fn=>fn?`<sup class="fn" title="${esc(SRC[evSrc[fn-1]][0])}">${fn}</sup>`:"";
+  const sup=fn=>(fn&&CAP.admin)?`<sup class="fn" title="${esc(SRC[evSrc[fn-1]][0])}">${fn}</sup>`:"";
   const pRow=(p,right,fn,extra="",mid)=>p?`<a class="p${mid!==undefined?" p3":""}" href="${href(p)}"><span>${esc(fullName(p))}${sup(fn)}${extra}</span>${mid!==undefined?`<span class="urole">${mid}</span>`:""}<span class="r">${right}</span></a>`:"";
   const hasUR=e.ump.some(u=>u.urole); /* role column only when some umpire has a special role */
   return `<div class="crumbs"><a href="#events">${t.crumbs_events}</a> / ${esc(evName(e))}</div>
@@ -1243,13 +1243,13 @@ function viewEvent(e){
       ${(()=>{const ap=APPROVED.filter(x=>evMatch(x,e)&&x.kind==="was");return ap.length?`<div class="rgroup"><h4><span class="badge bx">${t.st_users}</span><span class="muted">${ap.length}</span></h4><div class="plist">${ap.map(x=>`<div class="p"><span>${esc(x.who)} <span class="own">${x.ds&&x.de&&(x.ds!==e.s||x.de!==e.e)?fmtRange(x.ds,x.de):""}</span></span><span class="r">${esc(roleName(x.role))}</span></div>`).join("")}</div><p class="muted" style="font-size:12px;margin:6px 0 0">${t.st_users_note}</p></div>`:"";})()}
       ${(()=>{const my=MINE.filter(x=>evMatch(x,e));return my.length?`<div class="mysubs"><b>${t.st_mine}</b>${my.sort((a,b)=>b.at-a.at).map(x=>`<div>${x.kind==="loc"?t.loc_upload+(x.files&&x.files.length?" · "+x.files.map(f=>esc(f.name)).join(", "):""):t.loc_was+" · "+esc(x.who)} — <span class="stt s-${x.status}">${t["st_"+x.status]}</span></div>`).join("")}</div>`:"";})()}
       ${e.ump.some(u=>u.src!=null)||APPROVED.some(x=>evMatch(x,e)&&x.kind==="loc")?"":`<div class="locnote"><p>${t.loc_unknown}</p><div class="acts"><button type="button" class="btn" data-evact="loc" data-ei="${e.i}">${t.loc_upload}</button><button type="button" class="btn" data-evact="was" data-ei="${e.i}">${t.loc_was}</button></div></div>`}
-      ${evSrc.length?`<div class="srcnote">${evSrc.map((k,i)=>`<div><sup class="fn">${i+1}</sup> ${t.src_local}: ${srcLink(k,`${esc(SRC[k][0])} — ${esc(SRC[k][1])}`)}</div>`).join("")}${allLocal?"":`<div class="muted">${t.src_rest}</div>`}</div>`:""}
+      ${(evSrc.length&&CAP.admin)?`<div class="srcnote">${evSrc.map((k,i)=>`<div><sup class="fn">${i+1}</sup> ${t.src_local}: ${srcLink(k,`${esc(SRC[k][0])} — ${esc(SRC[k][1])}`)}</div>`).join("")}${allLocal?"":`<div class="muted">${t.src_rest}</div>`}</div>`:""}
     </div>
     <div class="stack">
       <div class="card"><h3>${nOff(e)?t.refs_off:t.referees}</h3>
         ${e.ref.length?`<div class="plist" style="margin-top:10px">${e.ref.slice().sort((a,b)=>(ROLE_IX.get(a.role)??99)-(ROLE_IX.get(b.role)??99)).map(r=>r.p?pRow(r.p,roleShort(r.role),fnOf(r),own(r)):`<div class="p"><span>${esc(r.name)}${sup(fnOf(r))}${own(r)}</span><span class="r">${roleShort(r.role)}</span></div>`).join("")}</div>`:`<div class="empty" style="margin-top:12px">—</div>`}
       </div>
-      <div class="note">${allLocal?t.ev_src_local:t.ev_src}</div>
+      ${CAP.admin?`<div class="note">${allLocal?t.ev_src_local:t.ev_src}</div>`:""}
     </div>
   </div>`;
 }
@@ -1360,7 +1360,7 @@ function viewProfile(o){
       </div>`:""}
     </div>
   </div>
-  <div class="src">${t.sources}: ${src}. ${t.proto}</div>`;
+  ${CAP.admin?`<div class="src">${t.sources}: ${src}. ${t.proto}</div>`:""}`;
 }
 
 function viewReferees(){
@@ -1709,7 +1709,7 @@ function chrome(r){
    if(!window._ddDoc){window._ddDoc=1;document.addEventListener("click",e=>{const d=document.querySelector("#nav .dd");if(d&&!d.contains(e.target)){const mm=d.querySelector(".ddm");if(mm&&!mm.hidden){mm.hidden=true;d.querySelector(".ddb").setAttribute("aria-expanded","false");}}});}}
   $("#claimBtn").textContent=t.claim;
   document.querySelectorAll("[data-lang]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
-  $("#ft1").textContent=t.foot1; $("#ft2").innerHTML=esc(t.foot2)+(CAP.admin?` · <a href="#inbox">${t.st_inbox}</a>`:"");
+  $("#ft1").textContent=t.foot1; $("#ft2").innerHTML=CAP.admin?esc(t.foot2)+` · <a href="#inbox">${t.st_inbox}</a>`:"";
 }
 function route(keepScroll){
   const h=(location.hash||"#home").slice(1);
