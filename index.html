@@ -408,6 +408,9 @@ footer{margin-top:48px;font-size:12px;color:var(--muted);display:flex;justify-co
 /* loading skeleton: the shape of the home page while the directory arrives */
 .sk i,.nav .skp{display:block;border-radius:8px;background-color:var(--sunk);background-image:linear-gradient(90deg,transparent 0,color-mix(in srgb,var(--line) 75%,transparent) 50%,transparent 100%);background-size:240px 100%;background-repeat:no-repeat;animation:skshine 1.25s linear infinite}
 @keyframes skshine{from{background-position:-240px 0}to{background-position:calc(100% + 240px) 0}}
+.flag{display:inline-block;width:.95em;height:auto;aspect-ratio:4/3;object-fit:cover;vertical-align:-.06em;margin-right:.34em;border-radius:2px;box-shadow:0 0 0 1px rgba(12,29,38,.18)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .flag{box-shadow:0 0 0 1px rgba(255,255,255,.22)}}
+:root[data-theme="dark"] .flag{box-shadow:0 0 0 1px rgba(255,255,255,.22)}
 #claimBtn:empty{visibility:hidden}
 .nav .skp{display:inline-block;height:22px;margin:7px 5px;border-radius:8px;background-color:rgba(6,42,49,.16)}
 .sk i+i{margin-top:10px}
