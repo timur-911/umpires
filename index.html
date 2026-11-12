@@ -339,9 +339,9 @@ footer{margin-top:48px;font-size:12px;color:var(--muted);display:flex;justify-co
 </style>
 <style>
 /* additions: language switch, tournaments */
-.langs{display:inline-flex;border:1.5px solid var(--on-brand);border-radius:10px;overflow:hidden}
-.langs button{font:inherit;font-size:12px;font-weight:700;letter-spacing:.04em;border:0;background:transparent;color:var(--on-brand);padding:7px 10px;cursor:pointer}
-.langs button[aria-pressed="true"]{background:var(--on-brand);color:var(--brand)}
+.ftlang{display:inline-flex;gap:8px}
+.ftlang button{font:inherit;font-size:12px;border:0;background:none;color:var(--muted);padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.ftlang button[aria-pressed="true"]{color:var(--ink);text-decoration:none;cursor:default}
 .baract{display:flex;gap:10px;align-items:center}
 .bx{color:var(--muted);border-color:var(--line);background:var(--sunk)}
 .bx::before{background:var(--muted)}
@@ -455,7 +455,6 @@ tr.nolink{cursor:default}
     <a class="logo" href="#home">UMPIR<span>.</span>ES</a>
     <nav class="nav" id="nav"><i class="skp" style="width:78px"></i><i class="skp" style="width:62px"></i><i class="skp" style="width:74px"></i><i class="skp" style="width:86px"></i><i class="skp" style="width:54px"></i><i class="skp" style="width:64px"></i></nav>
     <div class="baract">
-      <div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="en">EN</button></div>
       <button class="btn" id="authBtn" type="button" hidden></button>
       <button class="btn solid" id="claimBtn" type="button"></button>
     </div>

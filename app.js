@@ -138,7 +138,7 @@ en:{
  months_full:["January","February","March","April","May","June","July","August","September","October","November","December"],
  lv:{WB:"White Badge",BB:"Blue Badge",GB:"Gold Badge",BBP:"BB in progress",NU:"National Umpire",EV:"Evaluator",IR:"International Referee",IRA:"IR Advanced",UNK:"Badge not stated",prog:"in progress"}
 }};
-let LANG="en"; try{const s=localStorage.getItem("umpires_lang");if(s==="en"||s==="ru")LANG=s;}catch(_){}
+let LANG="en"; /* посетителю всегда английский; сохранённый выбор применяется только куратору, см. syncSession */
 const T=()=>I18N[LANG];
 const plural=(n,a,b,c)=>{const m=n%10,h=n%100;return m==1&&h!=11?a:(m>=2&&m<=4&&(h<10||h>=20)?b:c)};
 const fmt = n=>n.toLocaleString(LANG==="ru"?"ru-RU":"en-GB");
@@ -1623,6 +1623,7 @@ function wireStreams(){
 async function syncSession(){
   CAP.uid=await CAP.user.id();
   CAP.admin=CAP.uid?await CAP.user.canEdit():false;
+  if(CAP.admin){try{const s=localStorage.getItem("umpires_lang");if(s==="en"||s==="ru")LANG=s;}catch(_){}}else LANG="en";
 }
 (async()=>{
   const KEY=SBCFG.anonKey||SBCFG.key||"";
@@ -1708,8 +1709,7 @@ function chrome(r){
    dd.onkeydown=e=>{if(e.key==="Escape"){open(false);b.focus();}};
    if(!window._ddDoc){window._ddDoc=1;document.addEventListener("click",e=>{const d=document.querySelector("#nav .dd");if(d&&!d.contains(e.target)){const mm=d.querySelector(".ddm");if(mm&&!mm.hidden){mm.hidden=true;d.querySelector(".ddb").setAttribute("aria-expanded","false");}}});}}
   $("#claimBtn").textContent=t.claim;
-  document.querySelectorAll("[data-lang]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===LANG));
-  $("#ft1").textContent=t.foot1; $("#ft2").innerHTML=CAP.admin?esc(t.foot2)+` · <a href="#inbox">${t.st_inbox}</a>`:"";
+  $("#ft1").textContent=t.foot1; $("#ft2").innerHTML=CAP.admin?esc(t.foot2)+` · <a href="#inbox">${t.st_inbox}</a> · <span class="ftlang" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="${LANG==="en"}">EN</button><button type="button" data-lang="ru" aria-pressed="${LANG==="ru"}">RU</button></span>`:"";
 }
 function route(keepScroll){
   const h=(location.hash||"#home").slice(1);
