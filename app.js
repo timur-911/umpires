@@ -48,7 +48,7 @@ ru:{
  list_bb_sub:"Список Blue Badge Umpires на 1 октября 2026.",list_gb_sub:"Высшая категория ITTF. Список Gold Badge Umpires, октябрь 2026.",
  filter_aria:"Фильтр по имени",all_cat:"Все категории",all_assoc:"Все ассоциации",cat:"Категория",assoc:"Ассоциация",
  n_umpires:n=>`${fmt(n)} ${plural(n,"судья","судьи","судей")}`,th_umpire:"Судья",th_bb:"Blue Badge с",th_gb:"Gold Badge с",more:n=>`Показать ещё ${n}`,
- countries_sub:(n,a)=>`${n} ассоциаций — членов ITTF, в ${a} из них есть хотя бы один активный международный судья.`,
+ countries_sub:(n,a)=>`${n} ассоциаций — членов ITTF. Число рядом — известные нам судьи ассоциации: международные, национальные и официальные лица Игр. Хотя бы один активный международный судья есть в ${a}.`,
  intl_umpires:"международных судей",country_sys:"Судейство в стране",no_desc:"Описания пока нет",
  no_desc_t:"Здесь куратор страны расскажет, как получают национальные категории, какие есть экзамены, как отбирают судей на турниры и есть ли финансирование.",
  nat:"Национальные судьи",nat_empty:"Список не загружен",nat_empty_t:"Куратор сможет загрузить судей национальных категорий файлом CSV или Excel.",
@@ -104,7 +104,7 @@ en:{
  list_bb_sub:"Blue Badge Umpires list as of 1 October 2026.",list_gb_sub:"The highest ITTF level. Gold Badge Umpires list, October 2026.",
  filter_aria:"Filter by name",all_cat:"All badges",all_assoc:"All associations",cat:"Badge",assoc:"Association",
  n_umpires:n=>`${fmt(n)} ${n===1?"umpire":"umpires"}`,th_umpire:"Umpire",th_bb:"Blue Badge since",th_gb:"Gold Badge since",more:n=>`Show ${n} more`,
- countries_sub:(n,a)=>`${n} ITTF member associations, ${a} of them with at least one active international umpire.`,
+ countries_sub:(n,a)=>`${n} ITTF member associations. The number is the umpires we know of: international, national and Games officials. ${a} of them have at least one active international umpire.`,
  intl_umpires:"international umpires",country_sys:"Umpiring in this country",no_desc:"No description yet",
  no_desc_t:"The country curator will explain how national badges are earned, which exams exist, how umpires are selected for events and whether travel is funded.",
  nat:"National umpires",nat_empty:"List not uploaded",nat_empty_t:"The curator will be able to upload national umpires as a CSV or Excel file.",
@@ -623,13 +623,16 @@ function renderTop(){
 }
 function azBlock(){
   const g={}; COUNTRIES.slice().sort(byName).forEach(c=>{(g[c.name[0]]=g[c.name[0]]||[]).push(c)});
-  return `<div class="az">${Object.keys(g).sort().map(L=>`<div class="L"><h4>${L}</h4>${g[L].map(c=>`<a href="#${c.slug}"${c.list.length?"":` class="z"`}><span>${esc(c.name)}</span><span class="num">${c.list.length}</span></a>`).join("")}</div>`).join("")}</div>`;
+  return `<div class="az">${Object.keys(g).sort().map(L=>`<div class="L"><h4>${L}</h4>${g[L].map(c=>`<a href="#${c.slug}"${cRoster(c)?"":` class="z"`}><span>${esc(c.name)}</span><span class="num">${cRoster(c)}</span></a>`).join("")}</div>`).join("")}</div>`;
 }
 
 const listState={q:"",lvl:"all",c:"all",cont:"all",shown:100};
 /* pool of all umpires for "All umpires" and "White Badge umpires" (curator 01.11.2026): active IU lists + IU seen elsewhere + NU + Games officials (TBD) */
 const xDup=x=>!!(x.iuX&&(BYIU.has(x.iuX)||EXTRA.some(y=>y!==x&&y.iuX===x.iuX&&(y.asg.length>x.asg.length||y.asg.length===x.asg.length&&y.k<x.k))));
 const xIsOff=x=>x.asg.length&&!x.asg.some(a=>a.role==="umpire");
+/* match officials we know of in an association: the rows its page shows in the umpires table */
+const C_ROSTER=new Map();
+const cRoster=c=>{let v=C_ROSTER.get(c);if(v===undefined){v=c.list.length+EXTRA.filter(x=>x.c===c&&!xDup(x)&&!xIsOff(x)).length;C_ROSTER.set(c,v);}return v;};
 const umpLevel=o=>{if(!o.x)return LVLKEY[o.lvl];const s=iuStatus(o);if(!s)return "TBD";if(s.k==="nu")return "NU";return o.csv==="GB"||o.csv==="BB"?o.csv:"WB";};
 let UMP_POOL=null;
 const umpPool=()=>UMP_POOL||(UMP_POOL=OFF.map(o=>({o,l:LVLKEY[o.lvl],st:"A",iu:o.iu,c:o.c}))
@@ -691,7 +694,7 @@ function viewCountries(){
 function viewCountry(c){
   const t=T(); const n=[0,0,0]; c.list.forEach(o=>n[o.lvl]++);
   /* one table of all umpires of the association: active IU (ITTF lists) + IU seen elsewhere (active / new / inactive) + NU (curator 30.10.2026) */
-  const xs=EXTRA.filter(x=>x.c===c&&!(x.iuX&&(BYIU.has(x.iuX)||EXTRA.some(y=>y!==x&&y.iuX===x.iuX&&(y.asg.length>x.asg.length||y.asg.length===x.asg.length&&y.k<x.k))))), isOff=x=>x.asg.length&&!x.asg.some(a=>a.role==="umpire");
+  const xs=EXTRA.filter(x=>x.c===c&&!xDup(x)), isOff=xIsOff;
   const lvlOf=o=>{if(!o.x)return LVLKEY[o.lvl];const s=iuStatus(o);if(!s)return "TBD";if(s.k==="nu")return "NU";return o.csv==="GB"||o.csv==="BB"?o.csv:"WB";};
   const LR={GB:3,BB:2,WB:1,NU:0,TBD:-1,"":-1};
   const rows=c.list.concat(xs.filter(x=>!isOff(x))).map(o=>({o,l:lvlOf(o),ina:!!o.x&&(iuStatus(o)||{}).k==="inact"}))
