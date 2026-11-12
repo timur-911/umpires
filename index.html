@@ -405,6 +405,20 @@ footer{margin-top:48px;font-size:12px;color:var(--muted);display:flex;justify-co
 .two.top-news{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:48px}
 @media (max-width:900px){.two.top-news{grid-template-columns:1fr}}
 [hidden]{display:none!important}
+/* loading skeleton: the shape of the home page while the directory arrives */
+.sk i,.nav .skp{display:block;border-radius:8px;background-color:var(--sunk);background-image:linear-gradient(90deg,transparent 0,color-mix(in srgb,var(--line) 75%,transparent) 50%,transparent 100%);background-size:240px 100%;background-repeat:no-repeat;animation:skshine 1.25s linear infinite}
+@keyframes skshine{from{background-position:-240px 0}to{background-position:calc(100% + 240px) 0}}
+#claimBtn:empty{visibility:hidden}
+.nav .skp{display:inline-block;height:22px;margin:7px 5px;border-radius:8px;background-color:rgba(6,42,49,.16)}
+.sk i+i{margin-top:10px}
+.sk-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:20px;align-items:stretch}
+.sk-row{display:grid;grid-template-columns:84px 1fr;gap:12px;align-items:center;margin-top:12px}
+.sk-row i,.sk-row i+i{margin:0}
+.sk-facts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:28px}
+.sk-fact{background:var(--surface);padding:16px 18px}
+.sk-map{margin-top:28px}
+@media (prefers-reduced-motion:reduce){.sk i,.nav .skp{animation:none}}
+@media (max-width:900px){.sk-hero{grid-template-columns:1fr}.sk-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.sk-fact:last-child{grid-column:1/-1}}
 .gantt{margin-top:20px}
 .gctl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin:16px 0 6px}
 .gcbox{position:relative;display:inline-flex;align-items:center;min-width:220px}
@@ -433,14 +447,14 @@ tr.nolink{cursor:default}
 <div class="wrap">
   <header class="bar">
     <a class="logo" href="#home">UMPIR<span>.</span>ES</a>
-    <nav class="nav" id="nav"></nav>
+    <nav class="nav" id="nav"><i class="skp" style="width:78px"></i><i class="skp" style="width:62px"></i><i class="skp" style="width:74px"></i><i class="skp" style="width:86px"></i><i class="skp" style="width:54px"></i><i class="skp" style="width:64px"></i></nav>
     <div class="baract">
       <div class="langs" role="group" aria-label="Language"><button type="button" data-lang="ru">RU</button><button type="button" data-lang="en">EN</button></div>
       <button class="btn" id="authBtn" type="button" hidden></button>
       <button class="btn solid" id="claimBtn" type="button"></button>
     </div>
   </header>
-  <main id="app"><p class="muted" id="bootmsg" style="padding:48px 4px">Loading the directory…</p></main>
+  <main id="app"><div class="sk" aria-busy="true" aria-label="Loading"><div class="sk-hero"><div class="card"><i style="width:38%;height:11px"></i><i style="width:94%;height:28px;margin-top:18px"></i><i style="width:76%;height:28px"></i><i style="width:58%;height:28px"></i><i style="width:90%;height:11px;margin-top:22px"></i><i style="width:64%;height:11px"></i><i style="width:132px;height:38px;border-radius:10px;margin-top:22px"></i></div><div class="card"><i style="height:50px;border-radius:12px"></i><div class="sk-row"><i style="height:10px"></i><i style="height:26px;width:92%"></i></div><div class="sk-row"><i style="height:10px"></i><i style="height:26px;width:72%"></i></div><div class="sk-row"><i style="height:10px"></i><i style="height:26px;width:48%"></i></div><div class="sk-row"><i style="height:10px"></i><i style="height:26px;width:28%"></i></div></div></div><div class="sk-facts"><div class="sk-fact"><i style="width:58px;height:32px"></i><i style="width:78%;height:10px;margin-top:12px"></i></div><div class="sk-fact"><i style="width:58px;height:32px"></i><i style="width:78%;height:10px;margin-top:12px"></i></div><div class="sk-fact"><i style="width:58px;height:32px"></i><i style="width:78%;height:10px;margin-top:12px"></i></div><div class="sk-fact"><i style="width:58px;height:32px"></i><i style="width:78%;height:10px;margin-top:12px"></i></div><div class="sk-fact"><i style="width:58px;height:32px"></i><i style="width:78%;height:10px;margin-top:12px"></i></div></div><div class="card sk-map"><i style="width:32%;height:20px"></i><i style="height:300px;border-radius:12px;margin-top:16px"></i></div></div></main>
   <footer><span id="ft1"></span><span id="ft2"></span></footer>
 </div>
 <div id="modalRoot"></div>

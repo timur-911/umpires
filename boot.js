@@ -16,9 +16,15 @@
   var base = String(cfg.url || "").replace(/\/+$/, "");
   var started = false;
 
-  function say(text) {
-    var el = document.getElementById("bootmsg");
-    if (el) el.textContent = text;
+  function say(text) {                       // снимает скелет и объясняет, что пошло не так
+    var app = document.getElementById("app");
+    if (!app) return;
+    app.innerHTML = "";
+    var p = document.createElement("p");
+    p.className = "muted";
+    p.style.padding = "48px 4px";
+    p.textContent = text;
+    app.appendChild(p);
   }
 
   function get(url) {
