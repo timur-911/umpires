@@ -518,7 +518,7 @@ function viewHome(){
   const upcoming = EV_BY_DATE.filter(e=>e.e>=TODAY).slice(0,8);
   return `
   <section class="hero">
-    <div class="card">
+    <div class="card herol">
       <div class="eyebrow">${t.eyebrow}</div>
       <div class="heroh"><h1 style="margin-top:10px">${t.h1}</h1></div>
       <p class="lead">${t.lead}</p>
