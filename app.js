@@ -565,6 +565,8 @@ function viewHome(){
     </div>
   </section>
 
+  <div class="section">${ganttCard()}</div> <!-- curator 13.11.2026: Gold Badge over time only on the home page, above Umpires by country -->
+
   <section class="section">
     <div class="section-head"><h2>${t.by_country}</h2><span class="muted">${t.assoc_n(COUNTRIES.length)}</span></div>
     ${azBlock()}
@@ -691,7 +693,6 @@ function viewList(preset){
   const title = P==="1"?"Blue Badge":P==="2"?"Gold Badge":P==="w"?t.list_w:t.list_all;
   const sub = [(P==="2"?t.list_gb_sub:P==="1"?t.list_bb_sub:P==="w"?t.list_w_sub:t.list_all_sub), CAP.admin?(P==="2"?t.list_gb_src:P==="1"?t.list_bb_src:P==="w"?"":t.list_all_src):""].filter(Boolean).join(" ");
   return `<h1>${title}</h1>${sub?`<p class="muted" style="margin:8px 0 0">${sub}</p>`:""}
-  ${listState.preset==="2"?ganttCard():""}
   <div class="controls">
     <input id="lq" type="search" placeholder="${t.search_ph}" value="${esc(listState.q)}" aria-label="${t.filter_aria}">
     <select id="llvl" aria-label="${t.cat}"><option value="all">${t.all_cat}</option>${pool?`<option value="2">Gold Badge</option><option value="1">Blue Badge</option><option value="0">White Badge</option>${P==="all"?`<option value="nu">National Umpire</option><option value="tbd">TBD</option>`:""}`:`<option value="0">White Badge</option><option value="1">Blue Badge</option><option value="2">Gold Badge</option>`}</select>
