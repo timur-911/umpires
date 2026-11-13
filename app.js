@@ -765,8 +765,8 @@ function wireMiniGraph(){
   const tip=$("#mgtip"), key=JSON.stringify([graphState.year,graphState.whoSel,graphState.whoAll]);
   const sub=()=>{const s=$("#mgsub");if(s&&MINI_G)s.textContent=T().mg_sub(MINI_G.nodes.length,MINI_G.links.length,graphState.year);};
   const build=()=>{const G=graphData();const idx=new Map();
-    const nodes=G.nodes.map((n,i)=>{idx.set(n,i);return {o:n,iu:!!n.iu,deg:0,nb:new Set()};});
-    const links=G.links.map(l=>{const a=nodes[idx.get(l.source)],b=nodes[idx.get(l.target)];a.deg++;b.deg++;a.nb.add(b);b.nb.add(a);return {source:a,target:b,w:l.evs.length};});
+    const nodes=G.nodes.map((n,i)=>{idx.set(n,i);return {o:n,iu:!!n.iu,deg:0,nb:new Set(),nbm:new Map()};});
+    const links=G.links.map(l=>{const a=nodes[idx.get(l.source)],b=nodes[idx.get(l.target)];a.deg++;b.deg++;a.nb.add(b);b.nb.add(a);const L={source:a,target:b,w:l.evs.length,evs:l.evs};a.nbm.set(b,L);b.nbm.set(a,L);return L;});
     const sim=d3.forceSimulation(nodes).force("link",d3.forceLink(links).distance(l=>l.w>1?16:34).strength(l=>Math.min(1,0.05+0.25*(l.w-1)+0.6/Math.max(1,Math.min(l.source.deg,l.target.deg)))))
       .force("charge",d3.forceManyBody().strength(-22).distanceMax(240)).force("collide",d3.forceCollide(n=>2.2+Math.sqrt(n.deg)*0.45+1))
       .force("x",d3.forceX(0).strength(0.04)).force("y",d3.forceY(0).strength(0.04)).stop();
@@ -798,7 +798,11 @@ function wireMiniGraph(){
     document.querySelectorAll("[data-mz]").forEach(b=>b.onclick=()=>{const z=b.dataset.mz;if(z==="reset")sel.transition().duration(300).call(zoom.transform,fit());else sel.transition().duration(250).call(zoom.scaleBy,z==="in"?1.6:1/1.6);});
     const pick=e=>{const [mx,my]=d3.pointer(e,cv);const tr=M.tr;let best=null,bd=1e9;nodes.forEach(n=>{const dx=tr.applyX(n.x)-mx,dy=tr.applyY(n.y)-my,d=dx*dx+dy*dy;if(d<bd){bd=d;best=n;}});return bd<=100?best:null;};
     cv.onpointermove=e=>{const n=pick(e);if(n!==hover){hover=n;draw();}cv.style.cursor=n?"pointer":"grab";
-      if(n){const [mx,my]=d3.pointer(e,cv);tip.innerHTML=esc(netName(n.o))+`<br><span style="opacity:.75">${T().gr_col_n(n.deg)}</span>`;tip.style.left=mx+"px";tip.style.top=my+"px";tip.hidden=false;}else tip.hidden=true;};
+      if(n){const [mx,my]=d3.pointer(e,cv),t=T();
+        /* same content as the tooltip on the graph page: name · IU · country; tournaments · colleagues; shared tournaments with the selected person */
+        let s=`<b>${esc(netName(n.o))}</b><br>${t.gr_u_n(n.o.evs.length)} · ${t.gr_col_n(n.deg)}`;
+        const f=M.sel;if(f&&n!==f&&f.nbm.has(n)){const l=f.nbm.get(n);s+=`<br>${t.gr_shared(l.evs.length)}: ${l.evs.map(e=>esc(evName(e))).join("; ")}`;}
+        tip.innerHTML=s;tip.style.left=Math.min(Math.max(mx,140),W-140)+"px";tip.style.top=my+"px";tip.hidden=false;}else tip.hidden=true;};
     cv.onpointerleave=()=>{hover=null;tip.hidden=true;draw();};
     const showInfo=()=>{const n=M.sel;if(!n){info.hidden=true;return;}const t=T();
       const col=[...n.nb].sort((a,b)=>b.deg-a.deg).slice(0,6);
