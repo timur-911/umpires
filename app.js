@@ -615,21 +615,21 @@ function renderTop(){
   const S=topState; if(!S.year||!evYears().includes(S.year))S.year=defYear(); const Y=S.year;
   const seg=(attr,val,cur,label)=>`<button type="button" role="tab" data-${attr}="${val}" aria-selected="${cur===val}">${label}</button>`;
   $("#topCtl").innerHTML=`<div class="topctl"><div class="tabs" role="tablist" aria-label="${t.role_l}">${seg("trole","ump",S.role,t.umpires)}${seg("trole","ref",S.role,t.referees)}${seg("trole","both",S.role,t.both_roles)}</div>
-    <div class="tabs" role="tablist" aria-label="${t.metric_l}">${seg("tmet","days",S.metric,t.m_days)}${seg("tmet","cnt",S.metric,t.m_cnt)}</div>${yearSel("tyear",Y)}</div>
+    <div class="tabs" role="tablist" aria-label="${t.metric_l}">${seg("tmet","days",S.metric,t.m_days)}${seg("tmet","cnt",S.metric,t.m_cnt)}</div></div>
     <p class="muted" style="font-size:13px;margin:8px 0 0">${S.metric==="days"?t.top_sub_days(Y):t.top_sub(Y)}</p>`;
-  $("#tyear").onchange=e=>{S.year=e.target.value;renderTop();};
-  $("#topSort").innerHTML=`<div class="chips" role="group" aria-label="${t.sort}"><button type="button" data-tsort="cnt" aria-pressed="${S.sort==="cnt"}">${S.metric==="days"?t.m_days:t.m_cnt}${S.sort==="cnt"?(S.dir<0?" ↓":" ↑"):""}</button><button type="button" data-tsort="name" aria-pressed="${S.sort==="name"}">${S.sort==="name"&&S.dir<0?t.za:t.az}</button></div>`;
+  $("#topSort").innerHTML=yearSel("tyear",Y); $("#tyear").onchange=e=>{S.year=e.target.value;renderTop();}; /* curator 13.11.2026: the year select replaces the Count / A-Z sort; the list is always by count */
   document.querySelectorAll("[data-trole]").forEach(b=>b.onclick=()=>{S.role=b.dataset.trole;renderTop();});
   document.querySelectorAll("[data-tmet]").forEach(b=>b.onclick=()=>{S.metric=b.dataset.tmet;renderTop();});
-  document.querySelectorAll("[data-tsort]").forEach(b=>b.onclick=()=>{const k=b.dataset.tsort;if(S.sort===k)S.dir*=-1;else{S.sort=k;S.dir=k==="cnt"?-1:1;}renderTop();});
   const people=OFF.concat(EXTRA,REFS.filter(r=>!r.o)).map(p=>{const evs=new Set(p.asg.filter(a=>a.e.s.startsWith(Y)&&attended(p).set.has(a.e)&&(topState.role==="both"?(a.role==="umpire"||isRefRole(a.role)):(topState.role==="ump"?a.role==="umpire":isRefRole(a.role)))).map(a=>a.e));return {p,n:topState.metric==="days"?daysOf(evs,Y,p):evs.size};}).filter(x=>x.n>0);
   people.sort((a,b)=>b.n-a.n||a.p.sur.localeCompare(b.p.sur));
   people.forEach((x,i)=>x.rank=i===0||people[i-1].n!==x.n?i+1:people[i-1].rank);
   const top=people.slice(0,10);
   const s=topState;
-  const rows=top.slice().sort(s.sort==="cnt"?(a,b)=>s.dir*(a.n-b.n)||a.p.sur.localeCompare(b.p.sur):(a,b)=>s.dir*(a.p.sur+" "+a.p.first).localeCompare(b.p.sur+" "+b.p.first));
-  const bdg=p=>s.role==="both"?(p.isRef?irBadge(p.st):p.x?csvBadge(p.csv):badge(p.lvl)+(p.irNo?irBadge(p.irSt):"")):s.role==="ref"?(p.isRef?irBadge(p.st):p.irNo?irBadge(p.irSt):""):(p.x?csvBadge(p.csv):badge(p.lvl));
-  out.innerHTML=`<div class="toplist">${rows.map(x=>`<a href="${href(x.p)}"><span class="rk num">${x.rank}</span><span class="nm">${esc(fullName(x.p))} <span class="code">${x.p.c?x.p.c.code:(x.p.code||"")}</span></span><span class="bd">${bdg(x.p)}</span><span class="ct num">${x.n}${s.metric==="days"?`<small>${t.d_short}</small>`:""}</span></a>`).join("")}</div>
+  const rows=top;
+  /* short badges in the Top 10: BB, GB, WB… with the full name as a tooltip (curator 13.11.2026) */
+  const sB=l=>`<span class="badge b${l}" title="${T().lv[LVLKEY[l]]}">${LVLKEY[l]}</span>`, sC=lv=>lv?`<span class="badge ${{WB:"b0",BB:"b1",GB:"b2",BBP:"bp"}[lv]||"bx"}" title="${T().lv[lv]||lv}">${lv==="UNK"?"?":lv}</span>`:"";
+  const bdg=p=>s.role==="both"?(p.isRef?irBadge(p.st):p.x?sC(p.csv):sB(p.lvl)+(p.irNo?irBadge(p.irSt):"")):s.role==="ref"?(p.isRef?irBadge(p.st):p.irNo?irBadge(p.irSt):""):(p.x?sC(p.csv):sB(p.lvl));
+  out.innerHTML=`<div class="toplist">${rows.map(x=>`<a href="${href(x.p)}"><span class="nm">${esc(fullName(x.p))} <span class="code">${x.p.c?x.p.c.code:(x.p.code||"")}</span></span><span class="bd">${bdg(x.p)}</span><span class="ct num">${x.n}${s.metric==="days"?`<small>${t.d_short}</small>`:""}</span></a>`).join("")}</div>
 `;
 }
 function azBlock(){

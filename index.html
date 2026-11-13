@@ -87,7 +87,7 @@ main{margin-top:24px}
 .howto .dl{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-decoration:underline dashed;text-decoration-thickness:1px;text-underline-offset:3px}
 .howto .dl:hover{color:var(--brand-ink)}
 .ysel{flex:none!important;width:auto!important;min-width:84px}
-.topctl .ysel,h3 .ysel{font-family:var(--f-body);font-size:13px;font-weight:500;padding:5px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);min-width:76px}
+.topctl .ysel,.section-head .ysel,h3 .ysel{font-family:var(--f-body);font-size:13px;font-weight:500;padding:5px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);min-width:76px}
 .h1l{display:block}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
 .rot{display:inline-block;position:relative;vertical-align:top;height:1.25em;overflow:hidden;transition:width .45s ease}
@@ -407,15 +407,16 @@ footer{margin-top:48px;font-size:12px;color:var(--muted);display:flex;justify-co
 .statrow b{display:block;font-family:var(--f-display);font-size:30px;color:var(--ink);font-weight:600;line-height:1.1}
 .bi{color:var(--brand-ink);border-color:var(--brand-ink);background:color-mix(in srgb,var(--brand) 15%,transparent)}
 .fdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:1px}.f-gn,.f-gr{background:var(--gb)}.f-bn,.f-br{background:var(--bb)}.f-gr,.f-br{background:transparent;box-shadow:inset 0 0 0 2px currentColor}.f-gr{color:var(--gb)}.f-br{color:var(--bb)}
-.toplist{display:flex;flex-direction:column}
-.toplist a{display:grid;grid-template-columns:28px minmax(0,1fr) auto 76px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);text-decoration:none;font-size:14px}
+/* Top 10 without place numbers; badges form a column right after the longest name (subgrid), count on the right (curator 13.11.2026) */
+.toplist{display:grid;grid-template-columns:minmax(0,max-content) auto 1fr auto;column-gap:10px}
+.toplist a{grid-column:1/-1;display:grid;grid-template-columns:subgrid;align-items:center;padding:8px 0;border-top:1px solid var(--line);text-decoration:none;font-size:14px}
 .toplist a:first-child{border-top:0}
 .toplist a:hover .nm{text-decoration:underline}
 .toplist .rk{color:var(--muted);font-size:12px}
 .toplist .ct small{font-size:12px;font-weight:400;color:var(--muted);font-family:var(--f-body)}
-.toplist .ct{white-space:nowrap;font-family:var(--f-display);font-size:20px;font-weight:600;text-align:right}
+.toplist .ct{grid-column:4;white-space:nowrap;font-family:var(--f-display);font-size:20px;font-weight:600;text-align:right}
 .toplist .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-@media (max-width:560px){.toplist .bd{display:none}.toplist a{grid-template-columns:28px minmax(0,1fr) 32px}}
+@media (max-width:560px){.toplist .bd{display:none}}
 .s.clash{color:var(--gb)}
 .topctl{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .bt{color:var(--ink);border-color:var(--ink);background:transparent;border-width:1px}
@@ -424,8 +425,9 @@ footer{margin-top:48px;font-size:12px;color:var(--muted);display:flex;justify-co
 .ctry{display:inline-flex;align-items:center;gap:5px}
 .idn .idn{font-weight:inherit}
 .idn{color:var(--ink);font-weight:600;white-space:nowrap}
-.two.top-news{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:48px}
-@media (max-width:900px){.two.top-news{grid-template-columns:1fr}}
+/* both home rows share one grid: the graph is as wide as Upcoming tournaments (curator 13.11.2026) */
+.two.top-news,.two.news-up{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);column-gap:48px}
+@media (max-width:900px){.two.top-news,.two.news-up{grid-template-columns:1fr}}
 [hidden]{display:none!important}
 /* loading skeleton: the shape of the home page while the directory arrives */
 .sk i,.nav .skp{display:block;border-radius:8px;background-color:var(--sunk);background-image:linear-gradient(90deg,transparent 0,color-mix(in srgb,var(--line) 75%,transparent) 50%,transparent 100%);background-size:240px 100%;background-repeat:no-repeat;animation:skshine 1.25s linear infinite}
