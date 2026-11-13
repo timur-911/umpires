@@ -49,7 +49,7 @@ ru:{
  filter_aria:"Фильтр по имени",all_cat:"Все категории",all_assoc:"Все ассоциации",cat:"Категория",assoc:"Ассоциация",
  n_umpires:n=>`${fmt(n)} ${plural(n,"судья","судьи","судей")}`,th_umpire:"Судья",th_bb:"Blue Badge с",th_gb:"Gold Badge с",more:n=>`Показать ещё ${n}`,
  countries_sub:(n,a)=>`${n} ассоциаций — членов ITTF. Число рядом — известные нам судьи ассоциации: международные, национальные и официальные лица Игр. Хотя бы один активный международный судья есть в ${a}.`,
- intl_umpires:"международных судей",country_sys:"Судейство в стране",no_desc:"Описания пока нет",
+ intl_umpires:"международных судей",intl_refs:"международных рефери",country_sys:"Судейство в стране",no_desc:"Описания пока нет",
  no_desc_t:"Здесь куратор страны расскажет, как получают национальные категории, какие есть экзамены, как отбирают судей на турниры и есть ли финансирование.",
  nat:"Национальные судьи",nat_empty:"Список не загружен",nat_empty_t:"Куратор сможет загрузить судей национальных категорий файлом CSV или Excel.",
  country_events:"Судьи страны на турнирах",
@@ -105,7 +105,7 @@ en:{
  filter_aria:"Filter by name",all_cat:"All badges",all_assoc:"All associations",cat:"Badge",assoc:"Association",
  n_umpires:n=>`${fmt(n)} ${n===1?"umpire":"umpires"}`,th_umpire:"Umpire",th_bb:"Blue Badge since",th_gb:"Gold Badge since",more:n=>`Show ${n} more`,
  countries_sub:(n,a)=>`${n} ITTF member associations. The number is the umpires we know of: international, national and Games officials. ${a} of them have at least one active international umpire.`,
- intl_umpires:"international umpires",country_sys:"Umpiring in this country",no_desc:"No description yet",
+ intl_umpires:"international umpires",intl_refs:"international referees",country_sys:"Umpiring in this country",no_desc:"No description yet",
  no_desc_t:"The country curator will explain how national badges are earned, which exams exist, how umpires are selected for events and whether travel is funded.",
  nat:"National umpires",nat_empty:"List not uploaded",nat_empty_t:"The curator will be able to upload national umpires as a CSV or Excel file.",
  country_events:"This country's umpires at tournaments",
@@ -737,11 +737,12 @@ function viewCountry(c){
   const evs=[...new Set(c.list.concat(EXTRA.filter(x=>x.c===c),c.list.length?[]:others.filter(o=>o.isRef)).flatMap(o=>o.asg.map(a=>a.e)))].sort((a,b)=>b.s.localeCompare(a.s));
   return `${crumbs([[t.nav_countries,"#countries"],[c.name,null]])}
   <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap"><h1>${flagImg(c.code)}${esc(c.name)}</h1><span class="code" style="font-size:16px">${c.code}</span>${contChip(CONT[c.code])}</div>
-  <div class="facts f4">
+  <div class="facts">
     <div class="fact"><div class="v">${c.list.length}</div><div class="k">${t.intl_umpires}</div></div>
     <div class="fact"><div class="v">${n[0]}</div><div class="k">White Badge</div></div>
     <div class="fact"><div class="v" style="color:var(--bb)">${n[1]}</div><div class="k">Blue Badge</div></div>
     <div class="fact"><div class="v" style="color:var(--gb)">${n[2]}</div><div class="k">Gold Badge</div></div>
+    <div class="fact"><div class="v">${REFS.filter(r=>r.c===c).length}</div><div class="k">${t.intl_refs}</div></div> <!-- curator 13.11.2026: referees of the association -->
   </div>
   <div class="pgrid">
     <div class="stack">${rows.length?`<div class="tbl"><table><thead><tr><th>IU</th><th>${t.th_umpire}</th><th>${t.level}</th><th>${t.tournaments}</th></tr></thead><tbody>
