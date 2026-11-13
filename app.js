@@ -522,7 +522,7 @@ function viewHome(){
   </section>
 
   <div class="facts top">
-    <div class="fact"><div class="v">${fmt(Math.floor((umpPool().length+REFS.filter(r=>!r.o).length+EXTRA.filter(x=>xIsOff(x)&&!xDup(x)).length)/100)*100)}+</div><div class="k">${t.umps_refs}</div></div> <!-- curator 13.11.2026: replaces the % women / GB associations tiles and the total line -->
+    <div class="fact"><div class="v">${fmt(Math.floor((umpPool().length+REFS.length)/100)*100)}+</div><div class="k">${t.umps_refs}</div></div> <!-- curator 13.11.2026: replaces the % women / GB associations tiles and the total line -->
     <div class="fact"><div class="v">${fmt(counts[0])}</div><div class="k">White Badge (IU)</div></div>
     <div class="fact"><div class="v" style="color:var(--bb)">${fmt(counts[1])}</div><div class="k">Blue Badge</div></div>
     <div class="fact"><div class="v" style="color:var(--gb)">${fmt(counts[2])}</div><div class="k">Gold Badge</div></div>
