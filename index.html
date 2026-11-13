@@ -430,6 +430,8 @@ footer{margin-top:48px;font-size:12px;color:var(--muted);display:flex;justify-co
 .two.top-news,.two.news-up{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);column-gap:48px}
 @media (max-width:900px){.two.top-news,.two.news-up{grid-template-columns:1fr}}
 [hidden]{display:none!important}
+/* all selects: own chevron, set a bit further in from the right edge than the native arrow (curator 13.11.2026) */
+select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23858b94' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 13px center!important;background-size:10px 6px!important;padding-right:34px!important}
 /* loading skeleton: the shape of the home page while the directory arrives */
 .sk i,.nav .skp{display:block;border-radius:8px;background-color:var(--sunk);background-image:linear-gradient(90deg,transparent 0,color-mix(in srgb,var(--line) 75%,transparent) 50%,transparent 100%);background-size:240px 100%;background-repeat:no-repeat;animation:skshine 1.25s linear infinite}
 @keyframes skshine{from{background-position:-240px 0}to{background-position:calc(100% + 240px) 0}}
