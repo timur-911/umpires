@@ -846,7 +846,7 @@ function wireMiniGraph(){
     cv.onpointerleave=()=>{hover=null;tip.hidden=true;draw();};
     const showInfo=()=>{const n=M.sel;if(!n){info.hidden=true;return;}const t=T();
       const col=[...n.nb].sort((a,b)=>b.deg-a.deg).slice(0,6);
-      info.innerHTML=`<button type="button" class="mgx" aria-label="${t.close}">×</button><a href="${href(n.o.p)}"><b>${esc(netName(n.o))}</b></a><div class="muted" style="margin:2px 0 6px">${t.gr_col_n(n.deg)}</div>${col.map(c=>`<a href="${href(c.o.p)}">${esc(netName(c.o))}</a>`).join("<br>")}${n.deg>col.length?`<div style="margin-top:6px"><a href="#graph" class="mgall">${t.mg_more}</a></div>`:""}`;
+      info.innerHTML=`<button type="button" class="mgx" aria-label="${t.close}">×</button><a href="${href(n.o.p)}"><b>${esc(netName(n.o))}</b></a><div class="muted" style="margin:2px 0 6px">${t.gr_u_n(n.o.evs.length)} · ${t.gr_col_n(n.deg)}</div>${col.map(c=>`<a href="${href(c.o.p)}">${esc(netName(c.o))}</a>`).join("<br>")}${n.deg>col.length?`<div style="margin-top:6px"><a href="#graph" class="mgall">${t.mg_more}</a></div>`:""}`;
       info.hidden=false;info.querySelector(".mgx").onclick=()=>{M.sel=null;showInfo();draw();};
       const all=info.querySelector(".mgall");if(all)all.onclick=()=>{graphState.view="net";};};
     cv.onclick=e=>{if(dragMoved){dragMoved=false;return;}const n=pick(e);M.sel=(n&&n!==M.sel)?n:null;showInfo();draw();};
