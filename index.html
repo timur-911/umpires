@@ -284,6 +284,14 @@ td a{text-decoration:none;font-weight:500}
 :root[data-theme="dark"] #heb .hall text:hover{fill:#ff9a4a}
 #heb .hlbl path{fill:none;stroke:var(--muted);stroke-width:.5;stroke-opacity:.6;pointer-events:none}
 #hebinfo:empty{display:none}
+.mgcard{min-width:0}
+.mgcard .section-head{align-items:center}
+.mgexp{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:9px;border:1.5px solid var(--line);color:var(--ink);background:var(--surface)}
+.mgexp:hover{border-color:var(--brand-ink);color:var(--brand-ink)}
+.mgwrap{border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
+.mgwrap canvas{display:block;width:100%;height:440px}
+@media (max-width:900px){.mgwrap canvas{height:320px}}
+.news-up{margin-top:8px}
 .gwrap{position:relative;margin-top:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
 .gwrap canvas{display:block;width:100%;height:640px;touch-action:none;cursor:grab}
 .gwrap canvas.drag{cursor:grabbing}
