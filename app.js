@@ -39,7 +39,7 @@ const NOTES = {16367:{ru:"Перерыв в списках Gold Badge с июн�
 const I18N = {
 ru:{
  nav_umpires:"Все судьи",nav_ump_menu:"Судьи",dd_gold:"Судьи Gold Badge",dd_blue:"Судьи Blue Badge",dd_white:"Судьи White Badge",list_w:"Судьи White Badge",list_w_sub:"Все международные судьи: White Badge — базовый уровень IU, поэтому в списке есть и обладатели Blue и Gold Badge. Активные и неактивные.",th_status:"Статус",st_active:"Активен",st_inactive:"Неактивен",dd_all:"Все судьи →",nav_countries:"Страны",nav_events:"Турниры",nav_graph:"Сеть судей",gr_title:"Граф связей",mg_title:"Сеть судей",top_lead:"Число турниров в выбранной роли или дней, проведённых на всех турнирах",mg_open:"Открыть граф связей",mg_hint:"Наведите на точку — имя; нажмите — связи. Перетаскивайте, чтобы сдвинуть; колёсико, щипок или кнопки +⁠/⁠− — масштаб.",mg_more:"Все связи на графе →",mg_sub:(n,l,y)=>`${fmt(n)} судей и ${fmt(l)} связей: кто работал на одних турнирах${y&&y!=="all"?" в "+y+" году":""}.`,gr_sub:(u,x,e,l)=>`${u} ${graphState.whoAll?plural(u,"официальное лицо","официальных лица","официальных лиц"):graphState.whoSel==="ref"?"рефери":plural(u,"судья","судьи","судей")} (из них ${x} без известного номера ${graphState.whoAll?"IU / IR":graphState.whoSel==="ref"?"IR / IU":"IU"}), ${e} ${plural(e,"турнир","турнира","турниров")}. Линия — двое работали на одном турнире, толщина — на скольких (${l} ${plural(l,"пара","пары","пар")}).`,gr_search:"Имя, номер IU или номер IR",gr_all:"Все связи",gr_multi:"2+ общих турнира",gr_reset:"Сбросить всё",gr_leg_u:"судья",gr_leg_u0:"номер IU неизвестен",gr_noiu:"NU",gr_leg_w:"общих турниров",gr_hint:"Наведите на точку — имя; нажмите — коллеги и общие турниры. Колёсико или щипок — масштаб.",gr_pick:"Выберите судью на графе или найдите судью либо турнир через поиск.",gr_ev_n:n=>`${n} ${plural(n,"судья","судьи","судей")}`,gr_u_n:n=>`${n} ${plural(n,"турнир","турнира","турниров")}`,gr_col_n:n=>`${n} ${plural(n,"коллега","коллеги","коллег")}`,gr_strong:n=>`из них ${n} — 2+ общих турнира`,gr_strong_h:"Коллеги с 2+ общими турнирами",gr_shared:n=>`${n} ${plural(n,"общий турнир","общих турнира","общих турниров")}`,gr_open:"Открыть страницу",gr_none:"Ничего не найдено",claim:"Это я!",
- foot1:"This website is not affiliated with the ITTF, WTT or its subsidiaries. The data is taken from open sources.",foot2:"Данные: List of Active International Umpires 01.01.2026 · Blue Badge Umpires 01.10.2026 · Gold Badge Umpires 10.2026 · International Referees 01.01.2026 · назначения WTT/ITTF на 19.10.2026",
+ meta_country:"Судьи и рефери · %s",foot1:"This website is not affiliated with the ITTF, WTT or its subsidiaries. The data is taken from open sources.",foot2:"Данные: List of Active International Umpires 01.01.2026 · Blue Badge Umpires 01.10.2026 · Gold Badge Umpires 10.2026 · International Referees 01.01.2026 · назначения WTT/ITTF на 19.10.2026",
  eyebrow:"🏓 Кураторская база судей и рефери",h1:"<span class=\"h1l\">Найдите себя.</span> <span class=\"h1l\"><span class=\"sr\">Познакомьтесь с судьями, рефери и коллегами.</span><span aria-hidden=\"true\">Познакомьтесь с <span class=\"rot\" data-w=\"судьями.|рефери.|коллегами.\">судьями.</span></span></span> <span class=\"h1l\">Делитесь опытом.</span>",
  lead:"Судьи, рефери и другие официальные лица турниров по настольному теннису. <button type=\"button\" class=\"dl\" data-find>Найдите</button> или <button type=\"button\" class=\"dl\" data-add>добавьте</button> себя или своих коллег.",howto:"Мы собираем всё, что удаётся найти в разных источниках, и проверяем каждое дополнение вручную. Помогите заполнить пробелы: <button type=\"button\" class=\"dl\" data-find>найдите свой профиль</button>, <button type=\"button\" class=\"dl\" data-add>добавьте местных официальных лиц</button> — или даже целые национальные турниры.",
  search_ph:"Имя, номер IU или ассоциация",search_aria:"Поиск судьи",example:"Например:",nothing:"Никого не нашли.",add_umpire:"Добавить судью",assoc_lbl:"Ассоц.",
@@ -95,7 +95,7 @@ ru:{
 },
 en:{
  nav_umpires:"All umpires",nav_ump_menu:"Umpires",dd_gold:"Gold Badge umpires",dd_blue:"Blue Badge umpires",dd_white:"White Badge umpires",list_w:"White Badge umpires",list_w_sub:"All International Umpires: White Badge is the base IU level, so Blue and Gold Badge holders are on this list too. Active and inactive.",th_status:"Status",st_active:"Active",st_inactive:"Inactive",dd_all:"All umpires →",nav_countries:"Countries",nav_events:"Tournaments",nav_graph:"Umpire network",gr_title:"Connections graph",mg_title:"Umpire network",top_lead:"Number of events in the selected role, or days spent at all the events",mg_open:"Open the connections graph",mg_hint:"Hover a dot for the name; click for the connections. Drag to move; scroll, pinch or the +⁠/⁠− buttons to zoom.",mg_more:"All connections in the graph →",mg_sub:(n,l,y)=>`${fmt(n)} umpires and ${fmt(l)} links: who worked at the same tournaments${y&&y!=="all"?" in "+y:""}.`,gr_sub:(u,x,e,l)=>`${u} ${graphState.whoAll?"tournament officials":graphState.whoSel==="ref"?"referees":"umpires"} (${x} without a known ${graphState.whoAll?"IU / IR":graphState.whoSel==="ref"?"IR / IU":"IU"} number), ${e} tournaments. A line means two of them worked at the same tournament; its width shows how many (${l} pairs).`,gr_search:"Name, IU number or IR number",gr_all:"All links",gr_multi:"2+ shared tournaments",gr_reset:"Reset all",gr_leg_u:"umpire",gr_leg_u0:"IU number unknown",gr_noiu:"NU",gr_leg_w:"shared tournaments",gr_hint:"Hover a dot for the name; click for colleagues and shared tournaments. Scroll or pinch to zoom.",gr_pick:"Pick an umpire on the graph, or find an umpire or a tournament via search.",gr_ev_n:n=>`${n} ${n===1?"umpire":"umpires"}`,gr_u_n:n=>`${n} ${n===1?"tournament":"tournaments"}`,gr_col_n:n=>`${n} ${n===1?"colleague":"colleagues"}`,gr_strong:n=>`${n} with 2+ shared tournaments`,gr_strong_h:"Colleagues with 2+ shared tournaments",gr_shared:n=>`${n} shared ${n===1?"tournament":"tournaments"}`,gr_open:"Open page",gr_none:"Nothing found",claim:"That's me!",
- foot1:"This website is not affiliated with the ITTF, WTT or its subsidiaries. The data is taken from open sources.",foot2:"Data: List of Active International Umpires 01.01.2026 · Blue Badge Umpires 01.10.2026 · Gold Badge Umpires 10.2026 · International Referees 01.01.2026 · WTT/ITTF selections as of 19.10.2026",
+ meta_country:"Table tennis officials in %s",foot1:"This website is not affiliated with the ITTF, WTT or its subsidiaries. The data is taken from open sources.",foot2:"Data: List of Active International Umpires 01.01.2026 · Blue Badge Umpires 01.10.2026 · Gold Badge Umpires 10.2026 · International Referees 01.01.2026 · WTT/ITTF selections as of 19.10.2026",
  eyebrow:"🏓 Curated match officials database",h1:"<span class=\"h1l\">Look yourself up.</span> <span class=\"h1l\"><span class=\"sr\">Meet fellow umpires, referees and officials.</span><span aria-hidden=\"true\">Meet fellow <span class=\"rot\" data-w=\"umpires.|referees.|officials.\">umpires.</span></span></span> <span class=\"h1l\">Share your experience.</span>",
  lead:"Table tennis umpires, referees and other tournament officials. <button type=\"button\" class=\"dl\" data-find>Find</button> or <button type=\"button\" class=\"dl\" data-add>add</button> yourself, or your colleagues.",howto:"We bring together everything we can find from different sources and check each addition by hand. Help fill the gaps: <button type=\"button\" class=\"dl\" data-find>claim your profile</button>, <button type=\"button\" class=\"dl\" data-add>add local officials</button> and national events.",
  search_ph:"Name, IU number or association",search_aria:"Search umpires",example:"Try:",nothing:"No one found.",add_umpire:"Add an umpire",assoc_lbl:"Assoc.",
@@ -1854,10 +1854,21 @@ function chrome(r){
 /* breadcrumbs on every page except home (curator 13.11.2026): Home → section → item, separated by arrows; the last item is plain text */
 const crumbs=items=>`<nav class="crumbs" aria-label="Breadcrumb">${[[T().crumb_home,"#home"],...items].map(([l,h],i,a)=>h&&i<a.length-1?`<a href="${h}">${esc(l)}</a>`:`<span>${esc(l)}</span>`).join(`<span class="sep" aria-hidden="true" style="margin:0 .45em">→</span>`)}</nav>`;
 let PREV_PAGE=""; /* last non-profile page: a profile opened from Referees gets Home → Referees → country → name (curator 13.11.2026) */
+const BRAND="UMPIR.ES";
+const BASE_TITLE=BRAND+" — table tennis umpires and referees";
+function pageTitle(h,html,isHome){
+  if(isHome) return BASE_TITLE;
+  const m=/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html);
+  if(!m) return BASE_TITLE;
+  const txt=m[1].replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/\s+/g," ").trim();
+  if(!txt) return BASE_TITLE;
+  const c=h[0]==="c"&&COUNTRIES.find(x=>x.slug===h);
+  return (c?T().meta_country.replace("%s",txt):txt)+" · "+BRAND;
+}
 function route(keepScroll){
   const h=(location.hash||"#home").slice(1);
   if(!/^[urx]\d+$/.test(h))PREV_PAGE=h;
-  let html,r="home";
+  let html,r="home",isHome=false;
   if(h==="umpires"){html=viewList("all");r="umpires";}
   else if(h==="blue"){html=viewList("1");r="blue";}
   else if(h==="gold"){html=viewList("2");r="gold";}
@@ -1874,8 +1885,9 @@ function route(keepScroll){
   else if(/^u\d+$/.test(h)&&BYIU.get(+h.slice(1))){html=viewProfile(BYIU.get(+h.slice(1)));r="";}
   else if(/^x\d+$/.test(h)&&EXTRA[+h.slice(1)]){const x=EXTRA[+h.slice(1)];if(!x.asg.length&&x.iuX&&BYIU.get(x.iuX)){location.replace("#u"+x.iuX);return;}html=viewProfile(x);r="";}
   else if(h[0]==="c"&&COUNTRIES.find(c=>c.slug===h)){html=viewCountry(COUNTRIES.find(c=>c.slug===h));r="countries";}
-  else html=viewHome();
+  else {html=viewHome();isHome=true;}
   if(r!=="home"&&!/^\s*<(div|nav) class="crumbs"/.test(html)){const m=/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html);if(m)html=crumbs([[m[1].replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").trim(),null]])+html;}
+  document.title=pageTitle(h,html,isHome);
   curRoute=r;chrome(r);
   $("#app").innerHTML=html;
   wire();fitH1();startRot();
