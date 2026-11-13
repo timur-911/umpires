@@ -490,7 +490,18 @@ const searchBox=()=>{const t=T();return `<div class="search" role="search">
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
   <input id="q" type="search" autocomplete="off" placeholder="${t.search_ph}" aria-label="${t.search_aria}">
   <div class="results" id="res" hidden></div></div>
-  <div class="hint">${t.example} <button type="button" data-q="KHOJAYEV">Khojayev</button>, <button type="button" data-q="MAIZ">Maiz Calle</button>, <button type="button" data-q="14301">14301</button></div>`;};
+  <div class="hint">${t.example} ${tryPicks().map((o,i)=>i<2?`<button type="button" data-q="${esc(o.sur)}">${esc(tCase(o.sur))}</button>`:`<button type="button" data-q="${o.iu}">${String(o.iu).padStart(5,"0")}</button>`).join(", ")}</div>`;};
+/* "Try:" examples (curator 13.11.2026): three different Gold Badge umpires of the current ITTF list, two by surname and one by IU number,
+   picked at random once per browser session (sessionStorage), so every visitor sees a new set in each new session */
+const tCase=s=>s.toLowerCase().replace(/(^|[\s\-'’])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase());
+let TRY_P=null;
+function tryPicks(){
+  if(TRY_P)return TRY_P;const gb=OFF.filter(o=>o.lvl===2);let ids=null;
+  try{ids=JSON.parse(sessionStorage.getItem("umpTry")||"null");}catch(_){}
+  let ps=Array.isArray(ids)?ids.map(i=>gb.find(o=>o.iu===i)).filter(Boolean):[];
+  if(ps.length<Math.min(3,gb.length)){const a=gb.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}ps=a.slice(0,3);
+    try{sessionStorage.setItem("umpTry",JSON.stringify(ps.map(o=>o.iu)));}catch(_){}}
+  return TRY_P=ps;}
 const miniEvents = list=>`<div class="mini">${list.map(e=>`<a href="#e${e.i}"><span class="d">${evStatus(e)==="now"?'<span class="live"></span>':""}${fmtRange(e.s,e.e)}</span><span><span class="n">${esc(evName(e))}</span><span class="s">${T().n_ump(e.ump.length)}${nRef(e)?" · "+T().n_ref(nRef(e)):""}</span></span></a>`).join("")}</div>`;
 
 function viewHome(){
