@@ -1855,7 +1855,7 @@ function chrome(r){
 const crumbs=items=>`<nav class="crumbs" aria-label="Breadcrumb">${[[T().crumb_home,"#home"],...items].map(([l,h],i,a)=>h&&i<a.length-1?`<a href="${h}">${esc(l)}</a>`:`<span>${esc(l)}</span>`).join(`<span class="sep" aria-hidden="true" style="margin:0 .45em">→</span>`)}</nav>`;
 let PREV_PAGE=""; /* last non-profile page: a profile opened from Referees gets Home → Referees → country → name (curator 13.11.2026) */
 const BRAND="UMPIR.ES";
-const BASE_TITLE=BRAND+" — table tennis umpires and referees";
+const BASE_TITLE=BRAND+" — Table tennis umpires and referees";
 function pageTitle(h,html,isHome){
   if(isHome) return BASE_TITLE;
   const m=/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html);
