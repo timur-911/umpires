@@ -621,7 +621,7 @@ function renderTop(){
   document.querySelectorAll("[data-trole]").forEach(b=>b.onclick=()=>{S.role=b.dataset.trole;renderTop();});
   document.querySelectorAll("[data-tmet]").forEach(b=>b.onclick=()=>{S.metric=b.dataset.tmet;renderTop();});
   const people=OFF.concat(EXTRA,REFS.filter(r=>!r.o)).map(p=>{const evs=new Set(p.asg.filter(a=>a.e.s.startsWith(Y)&&attended(p).set.has(a.e)&&(topState.role==="both"?(a.role==="umpire"||isRefRole(a.role)):(topState.role==="ump"?a.role==="umpire":isRefRole(a.role)))).map(a=>a.e));return {p,n:topState.metric==="days"?daysOf(evs,Y,p):evs.size};}).filter(x=>x.n>0);
-  people.sort((a,b)=>b.n-a.n||a.p.sur.localeCompare(b.p.sur));
+  people.sort((a,b)=>b.n-a.n||a.p.sur.localeCompare(b.p.sur)||(a.p.first||"").localeCompare(b.p.first||"")); /* ties: alphabetical by surname, then first name (curator 13.11.2026) */
   people.forEach((x,i)=>x.rank=i===0||people[i-1].n!==x.n?i+1:people[i-1].rank);
   const top=people.slice(0,10);
   const s=topState;
