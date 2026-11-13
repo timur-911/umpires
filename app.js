@@ -1,3 +1,12 @@
+/* light / dark switch after Olympics (curator 13.11.2026): follows the system until the visitor flips it, then remembers the choice in this browser */
+const THEME_KEY="umpTheme";
+try{const v=localStorage.getItem(THEME_KEY);if(v==="light"||v==="dark")document.documentElement.dataset.theme=v;}catch(_){}
+const isDark=()=>{const d=document.documentElement.dataset.theme;return d?d==="dark":!!(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);};
+const themeSw=()=>{const d=isDark(),ru=typeof LANG!=="undefined"&&LANG==="ru";return `<button type="button" class="thsw${d?" dk":""}" id="themeSw" role="switch" aria-checked="${d}" aria-label="${ru?"Тёмная тема":"Dark theme"}" title="${d?(ru?"Светлая тема":"Light theme"):(ru?"Тёмная тема":"Dark theme")}"><span class="kn"></span><svg class="su" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="2.3" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M6 .6v1.5M6 9.9v1.5M.6 6h1.5M9.9 6h1.5M2.2 2.2l1 1M8.8 8.8l1 1M2.2 9.8l1-1M8.8 3.2l1-1" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg><svg class="mo" viewBox="0 0 12 12" aria-hidden="true"><path d="M7.6 10.6A4.6 4.6 0 0 1 4.9 1.6a4 4 0 1 0 4.9 7.6 4.6 4.6 0 0 1-2.2 1.4z" fill="currentColor" transform="translate(-1 0)"/><path d="M9.6 1.2l.35.85.85.35-.85.35-.35.85-.35-.85-.85-.35.85-.35z" fill="currentColor"/></svg></button>`;};
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("#themeSw");if(!b)return;
+  const nd=isDark()?"light":"dark";document.documentElement.dataset.theme=nd;try{localStorage.setItem(THEME_KEY,nd);}catch(_){}
+  b.classList.toggle("dk",nd==="dark");b.setAttribute("aria-checked",nd==="dark");
+  setTimeout(()=>{try{route(true);}catch(_){}},220);});
 /* The directory itself lives in Supabase, in the table `catalog`.
    boot.js fetches it before this file runs and leaves it on window.CATALOG.
    Shapes are unchanged, so everything below reads them as before. */
@@ -1818,11 +1827,18 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
 
 /* ---------- chrome + router ---------- */
 let curRoute="home";
+/* hamburger (curator 13.11.2026) */
+{const bar=document.querySelector(".bar"),bt=document.getElementById("burger");
+  const set=o=>{bar.classList.toggle("open",o);bt.setAttribute("aria-expanded",o);};
+  bt.addEventListener("click",e=>{e.stopPropagation();set(!bar.classList.contains("open"));});
+  document.addEventListener("click",e=>{if(bar.classList.contains("open")&&!bar.contains(e.target))set(false);});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&bar.classList.contains("open")){set(false);bt.focus();}});
+  addEventListener("hashchange",()=>set(false));}
 function chrome(r){
   const t=T();
   document.documentElement.lang=LANG;
   const umpR=["umpires","blue","gold","white"].includes(r);
-  $("#nav").innerHTML=`<div class="navc"><div class="dd"><button type="button" class="ddb" aria-haspopup="true" aria-expanded="false"${umpR?' aria-current="page"':""}>${t.nav_ump_menu}<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="ddm" hidden><a href="#gold" data-r="gold">${t.dd_gold}</a><a href="#blue" data-r="blue">${t.dd_blue}</a><a href="#white" data-r="white">${t.dd_white}</a><a href="#umpires" data-r="umpires" class="ddall">${t.dd_all}</a></div></div><a href="#referees" data-r="referees">${t.nav_refs}</a><a href="#countries" data-r="countries">${t.nav_countries}</a><a href="#events" data-r="events">${t.nav_events}</a></div><a href="#graph" data-r="graph">${t.nav_graph}</a><a href="#olympics" data-r="olympics">${LANG==="ru"?"Олимпиады":"Olympics"}</a>`;
+  $("#nav").innerHTML=`<div class="navc"><div class="dd"><button type="button" class="ddb" aria-haspopup="true" aria-expanded="false"${umpR?' aria-current="page"':""}>${t.nav_ump_menu}<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="ddm" hidden><a href="#gold" data-r="gold">${t.dd_gold}</a><a href="#blue" data-r="blue">${t.dd_blue}</a><a href="#white" data-r="white">${t.dd_white}</a><a href="#umpires" data-r="umpires" class="ddall">${t.dd_all}</a></div></div><a href="#referees" data-r="referees">${t.nav_refs}</a><a href="#countries" data-r="countries">${t.nav_countries}</a><a href="#events" data-r="events">${t.nav_events}</a></div><a href="#graph" data-r="graph">${t.nav_graph}</a><a href="#olympics" data-r="olympics">${LANG==="ru"?"Олимпиады":"Olympics"}</a>${themeSw()}`;
   document.querySelectorAll("#nav a").forEach(a=>{if(a.dataset.r===r)a.setAttribute("aria-current","page");});
   {const dd=$("#nav .dd"),b=dd.querySelector(".ddb"),m=dd.querySelector(".ddm");let tm=0;
    const open=v=>{clearTimeout(tm);m.hidden=!v;b.setAttribute("aria-expanded",v);};

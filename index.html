@@ -50,6 +50,32 @@ h3{font-size:20px}
 .nav a:hover{background:rgba(6,42,49,.1)}
 .nav a[aria-current="page"]{background:var(--on-brand);color:var(--brand)}
 .nav .soon{opacity:.6}
+/* mobile: menu items hide under a hamburger; the panel opens below the logo row and closes on navigation, Escape or a tap outside (curator 13.11.2026) */
+.burger{display:none;order:2;align-items:center;justify-content:center;width:40px;height:40px;margin:-4px -6px -4px 0;padding:0;border:0;border-radius:10px;background:none;color:var(--on-brand);cursor:pointer}
+.burger:hover{background:rgba(6,42,49,.1)}
+.burger svg path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round} /* one colour for all three lines (whole-pixel rows), a plain symmetric cross when open */
+.burger .hbx,.bar.open .burger .hbi{display:none}.bar.open .burger .hbx{display:block}
+@media (max-width:760px){
+  .bar .burger{display:inline-flex}
+  .baract{margin-left:auto}
+  .bar .nav{display:none;order:3;flex-basis:100%;flex-direction:column;align-items:stretch;gap:2px;padding:6px 0 4px;border-top:1px solid rgba(6,42,49,.15)}
+  .bar.open .nav{display:flex}
+  .bar .nav a,.bar .nav .ddb{padding:10px 10px;font-size:16px}
+  .bar .nav a[data-r="graph"]{margin-left:0}
+  .bar .nav .dd{display:block}.bar .nav .ddb{width:100%;justify-content:space-between}
+  .bar .nav .ddm{position:static;min-width:0;background:none;color:inherit;border:0;box-shadow:none;padding:0 0 4px 14px}
+  .bar .nav .ddm::before{display:none}.bar .nav .ddm a{color:inherit}.bar .nav .ddm a:hover,.bar .nav .ddm a[aria-current="page"]{background:rgba(6,42,49,.1);color:inherit}
+  .bar .nav .ddm .ddall{border-top:0;margin-top:0;padding-top:8px}
+  .bar .thsw{align-self:flex-start;margin:8px 0 4px 10px}
+}
+/* compact theme switch: light = pale track, sun on the left, dark knob on the right; dark = black track, white knob on the left, moon on the right */
+.thsw{position:relative;align-self:center;flex:none;width:44px;height:24px;margin-left:10px;padding:0;border-radius:12px;border:1px solid rgba(0,0,0,.12);background:#f1f2f3;box-shadow:inset 0 1px 2px rgba(0,0,0,.12);cursor:pointer;transition:background .2s,border-color .2s}
+.thsw .kn{position:absolute;top:2px;left:22px;width:18px;height:18px;border-radius:50%;background:#0b6b75;box-shadow:0 1px 2px rgba(0,0,0,.35);transition:left .2s,background .2s}
+.thsw svg{position:absolute;top:5px;width:12px;height:12px}
+.thsw .su{left:5px;color:#2a2c2f}.thsw .mo{right:5px;color:#fff;display:none}
+.thsw.dk{background:#0b6b75;border-color:#085a63}.thsw.dk .kn{left:2px;background:#fff} /* dark teal = --brand-ink of the light theme (curator 13.11.2026) */.thsw.dk .su{display:none}.thsw.dk .mo{display:block}
+.thsw:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.thsw,.thsw .kn{transition:none}}
 /* the first four menu items are centred on the whole bar; below 1100px they flow as before (curator 13.11.2026) */
 .nav .navc{display:contents}
 @media (min-width:1100px){.nav .navc{display:flex;gap:4px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}}
@@ -488,6 +514,7 @@ tr.nolink{cursor:default}
   <header class="bar">
     <a class="logo" href="#home">UMPIR<span>.</span>ES</a>
     <nav class="nav" id="nav"><i class="skp" style="width:78px"></i><i class="skp" style="width:62px"></i><i class="skp" style="width:74px"></i><i class="skp" style="width:86px"></i><i class="skp" style="width:54px"></i><i class="skp" style="width:64px"></i></nav>
+    <button class="burger" id="burger" type="button" aria-label="Menu" aria-controls="nav" aria-expanded="false"><svg class="hbi" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14"/></svg><svg class="hbx" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
     <div class="baract">
       <button class="btn" id="authBtn" type="button" hidden></button>
       <button class="btn solid" id="claimBtn" type="button"></button>
