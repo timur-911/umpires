@@ -778,6 +778,21 @@ const hebGrp=()=>graphState.hebGroup, hebLocal=()=>graphState.hebAll&&!hebRefOnl
 const graphNum=n=>{const p=n.p;return !n.ump&&(p.isRef||p.irNo)?(p.isRef?p.ir:p.irNo):iuOf(p);};
 /* home preview of the connections graph (curator 13.11.2026): the graph's current selection, no controls, interactive.
    Works like the main graph: hover a dot for the name; click to show its connections (click again or on empty space to clear); drag to move; wheel, pinch or +/− buttons to zoom; the expand icon (bottom right) opens #graph */
+/* "living" graph (curator 13.11.2026): once the layout has settled, every dot drifts slowly around its place along its own
+   path (two sine waves with random speeds and phases per axis, so the motion looks chaotic but never wanders off).
+   ~30 fps, no physics while drifting; dragging pauses it, it resumes when the layout settles again; off for prefers-reduced-motion */
+function liveDrift(nodes,draw,alive,R){
+  if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return {start(){},stop(){}};
+  let raf=0,t0=0,last=0;const rnd=(a,b)=>a+Math.random()*(b-a);
+  const frame=ts=>{if(!alive()){raf=0;return;}raf=requestAnimationFrame(frame);if(ts-last<33)return;last=ts;
+    const s=ts/1000,e=Math.min(1,(ts-t0)/3000);
+    nodes.forEach(n=>{if(n.fx!=null)return;const w=n._w;
+      n.x=n._hx+e*R*(Math.sin(s*w[0]+w[1])+0.5*Math.sin(s*w[2]+w[3]));n.y=n._hy+e*R*(Math.cos(s*w[4]+w[5])+0.5*Math.cos(s*w[6]+w[7]));});
+    draw();};
+  return {start(){if(raf||!alive())return;nodes.forEach(n=>{n._hx=n.x;n._hy=n.y;n.vx=n.vy=0;if(!n._w)n._w=[rnd(.12,.32),rnd(0,6.3),rnd(.35,.75),rnd(0,6.3),rnd(.12,.32),rnd(0,6.3),rnd(.35,.75),rnd(0,6.3)];});
+      t0=performance.now();last=0;raf=requestAnimationFrame(frame);},
+    stop(){if(raf)cancelAnimationFrame(raf);raf=0;}};
+}
 let MINI_G=null;
 function wireMiniGraph(){
   const cv=$("#mgcv"); if(!cv||typeof d3==="undefined") return;
@@ -818,7 +833,8 @@ function wireMiniGraph(){
     const pick=e=>{const [mx,my]=d3.pointer(e,cv);const tr=M.tr;let best=null,bd=1e9;nodes.forEach(n=>{const dx=tr.applyX(n.x)-mx,dy=tr.applyY(n.y)-my,d=dx*dx+dy*dy;if(d<bd){bd=d;best=n;}});return bd<=100?best:null;};
     /* drag a dot: the layout wakes up, neighbours are pushed away and links pull (curator 13.11.2026) */
     let drag=null,dragMoved=false; M.sim.on("tick",draw);
-    cv.onpointerdown=e=>{if(e.button)return;const n=pick(e);if(!n)return;drag=n;dragMoved=false;try{cv.setPointerCapture(e.pointerId);}catch(_){}n.fx=n.x;n.fy=n.y;M.sim.alphaTarget(0.3).restart();};
+    if(M.live)M.live.stop(); M.live=liveDrift(nodes,draw,()=>cv.isConnected,4); M.sim.on("end",()=>M.live.start()); M.live.start();
+    cv.onpointerdown=e=>{if(e.button)return;const n=pick(e);if(!n)return;drag=n;dragMoved=false;try{cv.setPointerCapture(e.pointerId);}catch(_){}n.fx=n.x;n.fy=n.y;M.live.stop();M.sim.alphaTarget(0.3).restart();};
     const endDrag=()=>{if(!drag)return;drag.fx=null;drag.fy=null;drag=null;M.sim.alphaTarget(0);};
     cv.onpointerup=endDrag;cv.onpointercancel=endDrag;
     cv.onpointermove=e=>{if(drag){const [mx,my]=d3.pointer(e,cv);drag.fx=M.tr.invertX(mx);drag.fy=M.tr.invertY(my);dragMoved=true;tip.hidden=true;return;}const n=pick(e);if(n!==hover){hover=n;draw();}cv.style.cursor=n?"pointer":"grab";
@@ -1181,6 +1197,7 @@ function wireGraph(){
     const k=Math.min(3.2,0.86*Math.min(W/((x1-x0)||60),H/((y1-y0)||60)));const T0=d3.zoomIdentity.translate(W/2-k*(x0+x1)/2,H/2-k*(y0+y1)/2).scale(k);
     dur?sel.transition().duration(dur).call(zoom.transform,T0):sel.call(zoom.transform,T0);};
   const focusNodes=()=>!focus?nodes:focus.kind==="u"?[focus.n,...nb.get(focus.n).keys()]:[...focus.set];
+  const live=liveDrift(nodes,draw,()=>!ac.signal.aborted&&cv.isConnected,4); sim.on("end",()=>live.start());
   sim.on("tick",()=>{req();if(!fitted&&!userMoved&&sim.alpha()<0.08){fitted=true;fitTo(focusNodes(),600);}});
   const pick=ev=>{const [mx,my]=d3.pointer(ev,cv);const x=(mx-tr.x)/tr.k,y=(my-tr.y)/tr.k;let best=null,bd=Infinity;nodes.forEach(n=>{const d=Math.hypot(n.x-x,n.y-y);if(d<rOf(n)+6/tr.k&&d<bd){bd=d;best=n;}});return {n:best,mx,my};};
   const tipHtml=n=>{let s=`<b>${esc(netName(n))}</b><br>${t.gr_u_n(n.evs.length)} · ${colTxt(n)}`;
@@ -1190,7 +1207,7 @@ function wireGraph(){
   cv.addEventListener("pointerleave",()=>{hover=null;tip.hidden=true;req();},sig);
   /* drag a dot: it follows the pointer and the simulation wakes up, so neighbours are pushed away and links pull (curator 13.11.2026) */
   let drag=null,dragMoved=false;
-  cv.addEventListener("pointerdown",ev=>{if(ev.button)return;const {n}=pick(ev);if(!n)return;drag=n;dragMoved=false;try{cv.setPointerCapture(ev.pointerId);}catch(_){}n.fx=n.x;n.fy=n.y;sim.alphaTarget(0.3).restart();},sig);
+  cv.addEventListener("pointerdown",ev=>{if(ev.button)return;const {n}=pick(ev);if(!n)return;drag=n;dragMoved=false;try{cv.setPointerCapture(ev.pointerId);}catch(_){}n.fx=n.x;n.fy=n.y;live.stop();sim.alphaTarget(0.3).restart();},sig);
   cv.addEventListener("pointermove",ev=>{if(!drag)return;const [mx,my]=d3.pointer(ev,cv);drag.fx=(mx-tr.x)/tr.k;drag.fy=(my-tr.y)/tr.k;dragMoved=true;userMoved=true;tip.hidden=true;},sig);
   const endDrag=()=>{if(!drag)return;drag.fx=null;drag.fy=null;drag=null;sim.alphaTarget(0);};
   cv.addEventListener("pointerup",endDrag,sig);cv.addEventListener("pointercancel",endDrag,sig);
