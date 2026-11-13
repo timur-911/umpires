@@ -74,10 +74,10 @@ h3{font-size:20px}
 .thsw.dk{background:#0b6b75;border-color:#085a63}.thsw.dk .kn{left:2px;background:#fff} /* dark teal = --brand-ink of the light theme (curator 13.11.2026) */.thsw.dk .su{display:none}.thsw.dk .mo{display:block}
 .thsw:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.thsw,.thsw .kn{transition:none}}
-/* the first four menu items are centred on the whole bar; below 1100px they flow as before (curator 13.11.2026) */
-.nav .navc{display:contents}
-@media (min-width:1100px){.nav .navc{display:flex;gap:4px;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}}
-.nav a[data-r="graph"]{margin-left:auto} /* Umpire network and Olympics sit at the right end, next to Sign in (curator 13.11.2026) */
+/* the first four menu items sit midway between the logo and Umpire network, whatever the width: equal auto margins on both sides;
+   the extra 16px before Umpire network matches the 20px bar gap after the logo (curator 13.11.2026) */
+.nav .navc{display:flex;gap:4px;flex-wrap:wrap;margin:0 auto}
+.nav a[data-r="graph"]{margin-left:16px} /* Umpire network and Olympics sit at the right end, next to Sign in (curator 13.11.2026) */
 @media (max-width:560px){.nav a[data-r="graph"]{margin-left:0}}
 .nav .dd{position:relative;display:inline-flex}
 .nav .ddb{font:inherit;font-weight:500;font-size:14px;color:inherit;background:none;border:0;padding:6px 10px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
