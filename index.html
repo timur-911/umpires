@@ -50,6 +50,8 @@ h3{font-size:20px}
 .nav a:hover{background:rgba(6,42,49,.1)}
 .nav a[aria-current="page"]{background:var(--on-brand);color:var(--brand)}
 .nav .soon{opacity:.6}
+.nav a[data-r="graph"]{margin-left:auto} /* Umpire network and Olympics sit at the right end, next to Sign in (curator 13.11.2026) */
+@media (max-width:560px){.nav a[data-r="graph"]{margin-left:0}}
 .nav .dd{position:relative;display:inline-flex}
 .nav .ddb{font:inherit;font-weight:500;font-size:14px;color:inherit;background:none;border:0;padding:6px 10px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .nav .ddb:hover,.nav .ddb[aria-expanded="true"]{background:rgba(6,42,49,.1)}
