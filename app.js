@@ -789,7 +789,7 @@ function wireMiniGraph(){
       .force("charge",d3.forceManyBody().strength(-22).distanceMax(240)).force("collide",d3.forceCollide(n=>2.2+Math.sqrt(n.deg)*0.45+1))
       .force("x",d3.forceX(0).strength(0.04)).force("y",d3.forceY(0).strength(0.04)).stop();
     for(let i=0;i<260;i++)sim.tick();
-    return {key,nodes,links,tr:null,k0:1};};
+    return {key,nodes,links,tr:null,k0:1,sim};};
   const start=()=>{
     if(!MINI_G||MINI_G.key!==key)MINI_G=build();
     const M=MINI_G,{nodes,links}=M; sub();
@@ -810,12 +810,17 @@ function wireMiniGraph(){
       ctx.globalAlpha=1;};
     const size=()=>{const w=cv.clientWidth,h=cv.clientHeight;if(!w||!h)return;const first=!W;W=w;H=h;cv.width=W*dpr;cv.height=H*dpr;if(first&&!M.tr)M.tr=fit();if(first)sel.call(zoom.transform,M.tr);draw();};
     const sel=d3.select(cv);
-    const zoom=d3.zoom().scaleExtent([0.2,40]).filter(e=>!e.button)
+    const zoom=d3.zoom().scaleExtent([0.2,40]).filter(e=>!e.button&&(e.type==="wheel"||!pick(e)))
       .on("zoom",e=>{M.tr=e.transform;tip.hidden=true;draw();});
     sel.call(zoom).on("dblclick.zoom",null);
     document.querySelectorAll("[data-mz]").forEach(b=>b.onclick=()=>{const z=b.dataset.mz;if(z==="reset")sel.transition().duration(300).call(zoom.transform,fit());else sel.transition().duration(250).call(zoom.scaleBy,z==="in"?1.6:1/1.6);});
     const pick=e=>{const [mx,my]=d3.pointer(e,cv);const tr=M.tr;let best=null,bd=1e9;nodes.forEach(n=>{const dx=tr.applyX(n.x)-mx,dy=tr.applyY(n.y)-my,d=dx*dx+dy*dy;if(d<bd){bd=d;best=n;}});return bd<=100?best:null;};
-    cv.onpointermove=e=>{const n=pick(e);if(n!==hover){hover=n;draw();}cv.style.cursor=n?"pointer":"grab";
+    /* drag a dot: the layout wakes up, neighbours are pushed away and links pull (curator 13.11.2026) */
+    let drag=null,dragMoved=false; M.sim.on("tick",draw);
+    cv.onpointerdown=e=>{if(e.button)return;const n=pick(e);if(!n)return;drag=n;dragMoved=false;try{cv.setPointerCapture(e.pointerId);}catch(_){}n.fx=n.x;n.fy=n.y;M.sim.alphaTarget(0.3).restart();};
+    const endDrag=()=>{if(!drag)return;drag.fx=null;drag.fy=null;drag=null;M.sim.alphaTarget(0);};
+    cv.onpointerup=endDrag;cv.onpointercancel=endDrag;
+    cv.onpointermove=e=>{if(drag){const [mx,my]=d3.pointer(e,cv);drag.fx=M.tr.invertX(mx);drag.fy=M.tr.invertY(my);dragMoved=true;tip.hidden=true;return;}const n=pick(e);if(n!==hover){hover=n;draw();}cv.style.cursor=n?"pointer":"grab";
       if(n){const [mx,my]=d3.pointer(e,cv),t=T();
         /* same content as the tooltip on the graph page: name · IU · country; tournaments · colleagues; shared tournaments with the selected person */
         let s=`<b>${esc(netName(n.o))}</b><br>${t.gr_u_n(n.o.evs.length)} · ${t.gr_col_n(n.deg)}`;
@@ -827,7 +832,7 @@ function wireMiniGraph(){
       info.innerHTML=`<button type="button" class="mgx" aria-label="${t.close}">×</button><a href="${href(n.o.p)}"><b>${esc(netName(n.o))}</b></a><div class="muted" style="margin:2px 0 6px">${t.gr_col_n(n.deg)}</div>${col.map(c=>`<a href="${href(c.o.p)}">${esc(netName(c.o))}</a>`).join("<br>")}${n.deg>col.length?`<div style="margin-top:6px"><a href="#graph" class="mgall">${t.mg_more}</a></div>`:""}`;
       info.hidden=false;info.querySelector(".mgx").onclick=()=>{M.sel=null;showInfo();draw();};
       const all=info.querySelector(".mgall");if(all)all.onclick=()=>{graphState.view="net";};};
-    cv.onclick=e=>{const n=pick(e);M.sel=(n&&n!==M.sel)?n:null;showInfo();draw();};
+    cv.onclick=e=>{if(dragMoved){dragMoved=false;return;}const n=pick(e);M.sel=(n&&n!==M.sel)?n:null;showInfo();draw();};
     showInfo();
     window._mgRO=new ResizeObserver(()=>{if(document.body.contains(cv))size();else window._mgRO.disconnect();});window._mgRO.observe(cv);
     size();};
@@ -1169,7 +1174,7 @@ function wireGraph(){
   }
   let userMoved=false, fitted=false;
   const sel=d3.select(cv);
-  const zoom=d3.zoom().scaleExtent([0.15,8]).on("zoom",ev=>{tr=ev.transform;if(ev.sourceEvent)userMoved=true;tip.hidden=true;req();}).on("start",()=>cv.classList.add("drag")).on("end",()=>cv.classList.remove("drag"));
+  const zoom=d3.zoom().scaleExtent([0.15,8]).filter(ev=>(!ev.ctrlKey||ev.type==="wheel")&&!ev.button&&(ev.type==="wheel"||!pick(ev).n)).on("zoom",ev=>{tr=ev.transform;if(ev.sourceEvent)userMoved=true;tip.hidden=true;req();}).on("start",()=>cv.classList.add("drag")).on("end",()=>cv.classList.remove("drag"));
   sel.call(zoom).call(zoom.transform,tr);
   const fitTo=(arr,dur)=>{if(!arr.length)return;const xs=arr.map(n=>n.x),ys=arr.map(n=>n.y);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
     const k=Math.min(3.2,0.86*Math.min(W/((x1-x0)||60),H/((y1-y0)||60)));const T0=d3.zoomIdentity.translate(W/2-k*(x0+x1)/2,H/2-k*(y0+y1)/2).scale(k);
@@ -1182,8 +1187,14 @@ function wireGraph(){
   cv.addEventListener("pointermove",ev=>{const {n,mx,my}=pick(ev);if(n!==hover){hover=n;req();}
     if(n){tip.innerHTML=tipHtml(n);tip.hidden=false;tip.style.left=Math.min(Math.max(mx,140),W-140)+"px";tip.style.top=my+"px";}else tip.hidden=true;},sig);
   cv.addEventListener("pointerleave",()=>{hover=null;tip.hidden=true;req();},sig);
+  /* drag a dot: it follows the pointer and the simulation wakes up, so neighbours are pushed away and links pull (curator 13.11.2026) */
+  let drag=null,dragMoved=false;
+  cv.addEventListener("pointerdown",ev=>{if(ev.button)return;const {n}=pick(ev);if(!n)return;drag=n;dragMoved=false;try{cv.setPointerCapture(ev.pointerId);}catch(_){}n.fx=n.x;n.fy=n.y;sim.alphaTarget(0.3).restart();},sig);
+  cv.addEventListener("pointermove",ev=>{if(!drag)return;const [mx,my]=d3.pointer(ev,cv);drag.fx=(mx-tr.x)/tr.k;drag.fy=(my-tr.y)/tr.k;dragMoved=true;userMoved=true;tip.hidden=true;},sig);
+  const endDrag=()=>{if(!drag)return;drag.fx=null;drag.fy=null;drag=null;sim.alphaTarget(0);};
+  cv.addEventListener("pointerup",endDrag,sig);cv.addEventListener("pointercancel",endDrag,sig);
   const setFocus=f=>{focus=f;S.sel=!f?null:f.kind==="u"?{kind:"u",ref:f.n.p}:{kind:"e",ref:f.e};const ge=$("#gev");if(ge)ge.value=f&&f.kind==="e"?hebEvLabel(f.e):"";side();req();};
-  cv.addEventListener("click",ev=>{const {n}=pick(ev);setFocus(n&&!(focus&&focus.kind==="u"&&focus.n===n)?{kind:"u",n}:null);},sig);
+  cv.addEventListener("click",ev=>{if(dragMoved){dragMoved=false;return;}const {n}=pick(ev);setFocus(n&&!(focus&&focus.kind==="u"&&focus.n===n)?{kind:"u",n}:null);},sig);
   function side(){
     const box=$("#gside");if(!box)return;
     if(!focus){box.innerHTML=`<p class="muted" style="margin:0">${t.gr_pick}</p>`;return;}
