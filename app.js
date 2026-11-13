@@ -1423,7 +1423,7 @@ function viewProfile(o){
   const ids=o.isRef?`<span class="idn">${num("IR",o.ir)}${o.iuR?` · ${iuChip(o)}`:""}</span>`:`<span class="idn">${iuChip(o)}${o.irNo?` · ${num("IR",o.irNo)}`:""}</span>`;
   const meta=`${ids}${headBadge}${o.x&&!o.iuX&&!o.ogo?`<span>${t.not_listed}</span>`:""}${o.aka?`<span>${LANG==="ru"?"в списках ITTF":"in ITTF lists"}: ${esc(o.aka)}</span>`:""}<span class="ctry">${c?`<a href="#${c.slug}">${esc(c.name)}</a><span class="code">${c.code}</span>`:`<span>${esc(o.cname||XNAME[o.code]||"")}</span><span class="code">${o.code||""}</span>`}${contChip(contOf(o))}</span>`;
   const src=[o.act?t.src_active:"",lvl==1?t.src_bb:"",lvl==2?t.src_gb:"",o.asg.some(a=>a.src==null)?t.src_ev:"",...[...new Set(o.asg.filter(a=>a.src!=null).map(a=>a.src))].map(k=>srcLink(k,`${esc(SRC[k][0])}: ${esc(SRC[k][1])}`)),(o.isRef||o.irNo)?t.src_ir:"",(o.evl||o.mnt)?t.src_trn:"",olyYears(o)?[olyYears(o).some(x=>x[2]==="o")?`<a href="https://www.olympedia.org" target="_blank" rel="noopener">Olympedia</a>${LANG==="ru"?" (Олимпийские игры)":" (Olympic Games)"}`:"",olyYears(o).some(x=>x[2]==="c")?(LANG==="ru"?"куратор UMPIR.ES (Олимпийские игры)":"UMPIR.ES curator (Olympic Games)"):"",olyYears(o).some(x=>x[2]==="b")?(LANG==="ru"?`официальные книги результатов ОИ (${[...new Set(olyYears(o).filter(x=>x[2]==="b").map(x=>({2000:"Сидней 2000",2004:"Афины 2004",2008:"Пекин 2008",2012:"Лондон 2012",2020:"Токио 2020"})[x[0]]))].join(", ")}), предоставленные куратором UMPIR.ES`:`official Olympic results books (${[...new Set(olyYears(o).filter(x=>x[2]==="b").map(x=>({2000:"Sydney 2000",2004:"Athens 2004",2008:"Beijing 2008",2012:"London 2012",2020:"Tokyo 2020"})[x[0]]))].join(", ")}) provided by the UMPIR.ES curator`):"",olyYears(o).some(x=>x[2]==="p")?(LANG==="ru"?"списки ITO ITTF (Rio 2016, Paris 2024), предоставленные куратором UMPIR.ES":"ITTF ITOs lists (Rio 2016, Paris 2024) provided by the UMPIR.ES curator"):""].filter(Boolean).join("; "):""].filter(Boolean).join("; ");
-  return `${crumbs([[o.isRef?t.nav_refs:t.nav_ump_menu,o.isRef?"#referees":"#umpires"],...(c?[[c.name,"#"+c.slug]]:[]),[fullName(o),null]])}
+  return `${crumbs([...[(o.isRef||(o.irNo&&PREV_PAGE==="referees"))?[t.nav_refs,"#referees"]:[t.nav_ump_menu,"#umpires"]],...(c?[[c.name,"#"+c.slug]]:[]),[fullName(o),null]])}
   <div class="card"><div class="phead">
     <div class="avatar l${lvl<0?0:lvl}" aria-hidden="true">${esc(ini)}</div>
     <div style="min-width:0">
@@ -1807,8 +1807,10 @@ function chrome(r){
 }
 /* breadcrumbs on every page except home (curator 13.11.2026): Home → section → item, separated by arrows; the last item is plain text */
 const crumbs=items=>`<nav class="crumbs" aria-label="Breadcrumb">${[[T().crumb_home,"#home"],...items].map(([l,h],i,a)=>h&&i<a.length-1?`<a href="${h}">${esc(l)}</a>`:`<span>${esc(l)}</span>`).join(`<span class="sep" aria-hidden="true" style="margin:0 .45em">→</span>`)}</nav>`;
+let PREV_PAGE=""; /* last non-profile page: a profile opened from Referees gets Home → Referees → country → name (curator 13.11.2026) */
 function route(keepScroll){
   const h=(location.hash||"#home").slice(1);
+  if(!/^[urx]\d+$/.test(h))PREV_PAGE=h;
   let html,r="home";
   if(h==="umpires"){html=viewList("all");r="umpires";}
   else if(h==="blue"){html=viewList("1");r="blue";}
