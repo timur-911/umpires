@@ -238,6 +238,29 @@ const esc = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt
 function facetSel(sel,cur,ok){if(!sel)return;[...sel.options].forEach(o=>{o.disabled=o.value!==String(cur)&&!ok(o.value);});}
 function facetBtns(nodes,key,ok){nodes.forEach(b=>{const z=!ok(b.dataset[key]);b.disabled=z;if(z)b.setAttribute("aria-disabled","true");else b.removeAttribute("aria-disabled");});}
 const NFD=x=>x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+/* Matching names across spellings (curator 14.11.2026). A query without diacritics finds the
+   diacritic spelling and the other way round: Malgorzata finds Małgorzata, Reiß finds Reis and Reiss,
+   Mueller finds Müller and Muller. Each letter is compared both with its closest plain Latin letter
+   (ü→u, ß→s, å→a, ø→o, ł→l) and with its digraph (ü→ue, ß→ss, å→aa, ø→oe). Two different diacritics are
+   never matched to each other, so Jörgensen does not find Jørgensen — only the identical spelling does. */
+const DIA_1={"ß":"s","ü":"u","ö":"o","ä":"a","å":"a","æ":"a","ø":"o","œ":"o","ł":"l","đ":"d","ð":"d","þ":"t","ı":"i","ŋ":"n","ħ":"h","ſ":"s"};
+const DIA_2={"ß":"ss","ü":"ue","ö":"oe","ä":"ae","å":"aa","æ":"ae","ø":"oe","œ":"oe","þ":"th","đ":"dj","ð":"dh"};
+const DIA_RE=new RegExp("["+Object.keys(DIA_1).join("")+"]","g");
+const deMark=x=>x.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const foldA=s=>deMark(s.toLowerCase().replace(DIA_RE,c=>DIA_1[c]));
+const foldB=s=>deMark(s.toLowerCase().replace(DIA_RE,c=>DIA_2[c]||DIA_1[c]));
+const FOLD=new Map();
+function foldInfo(s){let v=FOLD.get(s);
+  if(!v){if(FOLD.size>6000)FOLD.clear();v={l:s.toLowerCase(),p:!/[^\u0000-\u007f]/.test(s),a:foldA(s),b:foldB(s)};FOLD.set(s,v);}
+  return v;}
+function nameMatch(hay,needle,pre){
+  const H=foldInfo(hay),N=foldInfo(needle);
+  const has=(h,n)=>pre?h.startsWith(n):h.includes(n);
+  if(has(H.l,N.l))return true;
+  if(!H.p&&!N.p)return false; /* diacritic against a different diacritic */
+  return has(H.a,N.a)||has(H.a,N.b)||has(H.b,N.a)||has(H.b,N.b);
+}
+const nameHas=(h,n)=>nameMatch(h,n,false), nameStarts=(h,n)=>nameMatch(h,n,true);
 const fullName = o=>(o.first?o.first+" ":"")+o.sur;
 const href = p=>p.isRef?`#r${p.ir}`:p.x?`#x${p.k}`:`#u${p.iu}`;
 const fmtDate = d=>{ if(!d) return ""; const [y,m,dd]=d.split("-"); return `${+dd} ${T().months[m-1]} ${y}`; };
@@ -262,12 +285,10 @@ const PEOPLE = OFF.concat(EXTRA.filter(x=>x.asg.length||x.arch||x.ogp||x.ogo),RE
 
 function searchOff(q,limit=8){
   q=q.trim().toLowerCase(); if(!q) return [];
-  const norm=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
-  const nq=norm(q);
   if(/^\d+$/.test(q)) return OFF.filter(o=>String(o.iu).startsWith(String(+q))).slice(0,limit);
   const hits=[];
-  for(const o of PEOPLE){ const a=norm(o.sur+" "+o.first+(o.aka?" "+o.aka:"")), b=norm(o.first+" "+o.sur);
-    if(a.startsWith(nq)||b.startsWith(nq)) hits.unshift(o); else if(a.includes(nq)) hits.push(o);
+  for(const o of PEOPLE){ const a=o.sur+" "+o.first+(o.aka?" "+o.aka:""), b=o.first+" "+o.sur;
+    if(nameStarts(a,q)||nameStarts(b,q)) hits.unshift(o); else if(nameHas(a,q)) hits.push(o);
     if(hits.length>200) break; }
   return hits.slice(0,limit);
 }
@@ -715,11 +736,11 @@ function listEmpty(){
   $("#fclr").onclick=()=>{s.q="";s.c="all";s.cont="all";s.lvl=s.preset==="w"?"all":s.preset;s.shown=100;route(true);};
 }
 function listFacets(){
-  const s=listState,q=s.q.trim().toLowerCase(),num=/^\d+$/.test(q),nq=NFD(q);
+  const s=listState,q=s.q.trim().toLowerCase(),num=/^\d+$/.test(q);
   const cand=listCand();
   const L=new Set(),K=new Set(),C=new Set();
   cand.forEach(c=>{
-    if(q&&!(num?(c.iu&&String(c.iu).startsWith(String(+q))):NFD(c.nm).includes(nq)))return;
+    if(q&&!(num?(c.iu&&String(c.iu).startsWith(String(+q))):nameHas(c.nm,q)))return;
     const lv=s.lvl==="all"||c.v===s.lvl,ko=s.cont==="all"||c.k===s.cont,co=s.c==="all"||c.ci===s.c;
     if(ko&&co)L.add(c.v);
     if(lv)K.add(c.k); /* the association is reset when the continent changes, so it is not counted here */
@@ -783,10 +804,9 @@ function countryOpts(){const t=T();const P=listState.preset;const base=P==="all"
 function renderListRows(){
   listFacets();
   const t=T(); const s=listState; const q=s.q.trim().toLowerCase();
-  const nz=x=>x.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
   if(s.preset==="all"||s.preset==="w"){const W=s.preset==="w";
     let rows=umpPool().filter(r=>(!W||r.l==="GB"||r.l==="BB"||r.l==="WB")&&(s.lvl==="all"||r.l===LV_FILTER[s.lvl])&&(s.c==="all"||(r.c&&r.c.i==+s.c))&&(s.cont==="all"||contOf(r.o)===s.cont));
-    if(q) rows=/^\d+$/.test(q)?rows.filter(r=>r.iu&&String(r.iu).startsWith(String(+q))):rows.filter(r=>nz(r.o.sur+" "+(r.o.first||"")+" "+(r.o.first||"")+" "+r.o.sur+" "+(r.o.aka||"")).includes(nz(q)));
+    if(q) rows=/^\d+$/.test(q)?rows.filter(r=>r.iu&&String(r.iu).startsWith(String(+q))):rows.filter(r=>nameHas(r.o.sur+" "+(r.o.first||"")+" "+(r.o.first||"")+" "+r.o.sur+" "+(r.o.aka||""),q));
     if(!rows.length){listEmpty();return;}
     const showGb=false, showBb=false; /* curator 01.11.2026: no badge-date columns in All umpires / White Badge lists */
     const assoc=r=>r.c?`${esc(r.c.name)} <span class="code">${r.c.code}</span> ${contChip(contOf(r.o))}`:`${esc(r.o.cname||"")} <span class="code">${r.o.code||""}</span>`;
@@ -798,7 +818,7 @@ function renderListRows(){
     const mb=$("#moreBtn"); if(mb) mb.onclick=()=>{s.shown+=100;renderListRows();};
     return;}
   let rows=OFF.filter(o=>(s.lvl==="all"||o.lvl==+s.lvl)&&(s.c==="all"||o.c.i==+s.c)&&(s.cont==="all"||contOf(o)===s.cont));
-  if(q) rows = /^\d+$/.test(q)?rows.filter(o=>String(o.iu).startsWith(String(+q))):rows.filter(o=>nz(o.sur+" "+o.first+" "+o.first+" "+o.sur+" "+(o.aka||"")).includes(nz(q)));
+  if(q) rows = /^\d+$/.test(q)?rows.filter(o=>String(o.iu).startsWith(String(+q))):rows.filter(o=>nameHas(o.sur+" "+o.first+" "+o.first+" "+o.sur+" "+(o.aka||""),q));
   if(!rows.length){listEmpty();return;}
   if(s.lvl==="2") rows.sort((a,b)=>gbKey(a.gb)-gbKey(b.gb));
   const showGb = s.lvl!=="0" && s.lvl!=="1", showBb = s.lvl!=="0";
@@ -1326,7 +1346,7 @@ function wireGraph(){
   const go=h=>{res.hidden=true;q.value="";setFocus({kind:"u",n:h.n});fitTo(focusNodes(),500);};
   const numS=n=>[n.iu,graphNum(n),n.p.isRef?n.p.ir:n.p.irNo].filter(Boolean).map(x=>iu5(x)).join(" ");
   q.oninput=()=>{const v=norm(q.value.trim());hi=-1;if(!v){res.hidden=true;return;}
-    hits=nodes.filter(n=>numS(n).includes(v)||norm(fullName(n.p)).includes(v)||norm(n.p.sur+" "+n.p.first).includes(v)).slice(0,10).map(n=>({n}));
+    hits=nodes.filter(n=>numS(n).includes(v)||nameHas(fullName(n.p),q.value.trim())||nameHas(n.p.sur+" "+n.p.first,q.value.trim())).slice(0,10).map(n=>({n}));
     res.hidden=false;res.innerHTML=hits.length?hits.map((h,i)=>`<button type="button" data-i="${i}"><span>${esc(netName(h.n))}</span></button>`).join(""):`<div class="muted" style="padding:10px 12px;font-size:14px">${t.gr_none}</div>`;
     res.querySelectorAll("button").forEach(b=>b.onclick=()=>go(hits[+b.dataset.i]));};
   q.onkeydown=e=>{const bs=[...res.querySelectorAll("button")];if(e.key==="Escape"){res.hidden=true;return;}if(!bs.length)return;
@@ -1608,7 +1628,7 @@ function olyRows(){
       rows.push({sur:nm[0],first:nm[1],code:nm[2],cname:(COUNTRIES.find(c=>c.code&&c.code===nm[2])||{}).name||nm[3]||"",go:null,iu:/^\d+$/.test(k)?+k:0,part});
     }
   }
-  rows.forEach(r=>{r.part.sort((a,b)=>a[0]-b[0]||(a[3]<b[3]?-1:1));r.n=new Set(r.part.map(x=>x[3]+x[0])).size;r.key=(r.sur+" "+r.first+" "+r.first+" "+r.sur+" "+(r.iu?String(r.iu).padStart(5,"0"):"")).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();});
+  rows.forEach(r=>{r.part.sort((a,b)=>a[0]-b[0]||(a[3]<b[3]?-1:1));r.n=new Set(r.part.map(x=>x[3]+x[0])).size;r.key=r.sur+" "+r.first+" "+r.first+" "+r.sur+" "+(r.iu?String(r.iu).padStart(5,"0"):"");});
   return OLY_ROWS=rows;
 }
 const OLY_STATE={q:"",g:"",r:"",sort:"name"};
@@ -1635,16 +1655,16 @@ function viewOlympics(){
 }
 function renderOlyRows(){
   const ru=LANG==="ru", R=GAMES_ROLE(ru), S=OLY_STATE;
-  const q=S.q.trim().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+  const q=S.q.trim().toLowerCase();
   const match=x=>(!S.g||x[3]+"|"+x[0]===S.g)&&(!S.r||x[1]===S.r);
   {const G=new Set(),RO=new Set();
-   olyRows().forEach(p=>{if(q&&!q.split(/\s+/).every(w=>p.key.includes(w)))return;
+   olyRows().forEach(p=>{if(q&&!q.split(/\s+/).every(w=>nameHas(p.key,w)))return;
      p.part.forEach(x=>{const g=x[3]+"|"+x[0];
        if(!S.r||x[1]===S.r)G.add(g);
        if(!S.g||g===S.g)RO.add(x[1]);});});
    facetSel($("#olyG"),S.g,v=>v===""?G.size>0:G.has(v));
    facetSel($("#olyR"),S.r,v=>v===""?RO.size>0:RO.has(v));}
-  let rows=olyRows().filter(p=>(!q||q.split(/\s+/).every(w=>p.key.includes(w)))&&p.part.some(match));
+  let rows=olyRows().filter(p=>(!q||q.split(/\s+/).every(w=>nameHas(p.key,w)))&&p.part.some(match));
   rows.sort(S.sort==="games"?(a,b)=>b.n-a.n||a.sur.localeCompare(b.sur):S.sort==="first"?(a,b)=>a.part[0][0]-b.part[0][0]||a.sur.localeCompare(b.sur):(a,b)=>a.sur.localeCompare(b.sur)||a.first.localeCompare(b.first));
   const parts=rows.reduce((s,p)=>s+p.part.filter(match).length,0);
   $("#olyN").textContent=ru?`Найдено: ${rows.length} ${plural(rows.length,"человек","человека","человек")}, ${parts} ${plural(parts,"участие","участия","участий")}`:`Found: ${rows.length} ${rows.length===1?"person":"people"}, ${parts} ${parts===1?"appointment":"appointments"}`;
