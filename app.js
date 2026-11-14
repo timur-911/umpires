@@ -550,7 +550,7 @@ function viewHome(){
     <div class="fact"><div class="v">${fmt(Math.floor((umpPool().length+REFS.length)/100)*100)}+</div><div class="k">${t.umps_refs}</div></div> <!-- curator 13.11.2026: replaces the % women / GB associations tiles and the total line -->
     <div class="fact"><div class="v"><a href="#white">${fmt(counts[0])}</a></div><div class="k">White Badge (IU)</div></div>
     <div class="fact"><div class="v" style="color:var(--bb)"><a href="#blue">${fmt(counts[1])}</a></div><div class="k">Blue Badge</div></div>
-    <div class="fact"><div class="v" style="color:var(--gb)"><a href="#gold">${fmt(counts[2])}</a></div><div class="k">Gold Badge</div></div>
+    <div class="fact"><div class="v" style="color:var(--gb-ink)"><a href="#gold">${fmt(counts[2])}</a></div><div class="k">Gold Badge</div></div>
     <div class="fact fadd"><div class="k">${t.tile_add_q}</div><button class="btn solid" type="button" id="addBtn">${t.add}</button></div>
   </div>
 
@@ -767,7 +767,7 @@ function viewCountry(c){
     <div class="fact"><div class="v">${c.list.length}</div><div class="k">${t.intl_umpires}</div></div>
     <div class="fact"><div class="v">${n[0]}</div><div class="k">White Badge</div></div>
     <div class="fact"><div class="v" style="color:var(--bb)">${n[1]}</div><div class="k">Blue Badge</div></div>
-    <div class="fact"><div class="v" style="color:var(--gb)">${n[2]}</div><div class="k">Gold Badge</div></div>
+    <div class="fact"><div class="v" style="color:var(--gb-ink)">${n[2]}</div><div class="k">Gold Badge</div></div>
     <div class="fact"><div class="v">${REFS.filter(r=>r.c===c).length}</div><div class="k">${t.intl_refs}</div></div> <!-- curator 13.11.2026: referees of the association -->
   </div>
   <div class="pgrid">
