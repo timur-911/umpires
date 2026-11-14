@@ -233,6 +233,11 @@ const LVLKEY=["WB","BB","GB"];
 const GBM = {January:1,February:2,March:3,April:4,May:5,June:6,July:7,August:8,September:9,October:10,November:11,December:12};
 const $ = s=>document.querySelector(s);
 const esc = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+/* Filter options with nothing behind them are disabled (curator 14.11.2026).
+   The value in force is never disabled, so any dead end can still be left. */
+function facetSel(sel,cur,ok){if(!sel)return;[...sel.options].forEach(o=>{o.disabled=o.value!==String(cur)&&!ok(o.value);});}
+function facetBtns(nodes,key,ok){nodes.forEach(b=>{const z=!ok(b.dataset[key]);b.disabled=z;if(z)b.setAttribute("aria-disabled","true");else b.removeAttribute("aria-disabled");});}
+const NFD=x=>x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const fullName = o=>(o.first?o.first+" ":"")+o.sur;
 const href = p=>p.isRef?`#r${p.ir}`:p.x?`#x${p.k}`:`#u${p.iu}`;
 const fmtDate = d=>{ if(!d) return ""; const [y,m,dd]=d.split("-"); return `${+dd} ${T().months[m-1]} ${y}`; };
@@ -371,6 +376,7 @@ function wireMap(){
 
 /* ---------- Gold Badge Gantt (ported from the owner's Observable notebook) ---------- */
 const ganttState={status:"all",sex:["F","M"],sort:"start",ctry:""};
+let GCTRY_N=new Map(); /* country code -> umpires under the other Gold Badge filters; filled by renderGantt, read by the country field */
 /* countries that have (or had) a Gold Badge umpire, for the country filter */
 function ganttCountries(){const n=new Map();GANTT.forEach(([iu,,,,,,c])=>{if(!n.has(c))n.set(c,new Set());n.get(c).add(iu);});
   return [...n].map(([code,s])=>({code,name:(COUNTRIES.find(x=>x.code===code)||{}).name||code,n:s.size})).sort((a,b)=>a.name.localeCompare(b.name));}
@@ -398,6 +404,14 @@ function renderGantt(){
   const person=new Map([...by].map(([iu,ps])=>[iu,{active:ps.some(p=>p.ongoing),first:d3.min(ps,p=>p.start),days:d3.sum(ps,p=>Math.round((p.end-p.start)/864e5)),y:ps[0].y}]));
   const S=ganttState;
   let rows=all.filter(d=>(!S.ctry||d.c===S.ctry)&&S.sex.includes(d.sex)&&(S.status==="all"||(S.status==="active")===person.get(d.iu).active));
+  {const ST=new Set(),SX=new Set(),CT=new Map();
+   all.forEach(d=>{const a=person.get(d.iu).active,st=S.status==="all"||(S.status==="active")===a,ct=!S.ctry||d.c===S.ctry,sx=S.sex.includes(d.sex);
+     if(ct&&sx)ST.add(a?"active":"expired");
+     if(ct&&st)SX.add(d.sex);
+     if(sx&&st)CT.set(d.c,(CT.get(d.c)||new Set()).add(d.iu));});
+   GCTRY_N=CT;
+   facetBtns([...document.querySelectorAll("[data-gst]")],"gst",v=>v===S.status||(v==="all"?ST.size>0:ST.has(v)));
+   facetBtns([...document.querySelectorAll("[data-gsex]")],"gsex",v=>SX.has(v));}
   const order=[...new Set(rows.map(d=>d.iu))].sort((a,b)=>{const A=person.get(a),B=person.get(b);
     return S.sort==="year"?A.y-B.y||A.first-B.first:S.sort==="dur"?B.days-A.days||A.first-B.first:A.first-B.first||A.y-B.y;});
   const nameOf=new Map(rows.map(d=>[d.iu,d.name]));
@@ -463,14 +477,17 @@ function wireGanttCountry(){
   const norm=s=>s.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
   const all=ganttCountries(); let items=[],hi=-1;
   const nameOf=c=>(all.find(x=>x.code===c)||{}).name||"";
+  /* counts follow the status and sex filters; a country with nothing left is disabled */
+  const nOf=c=>{if(c.code)return (GCTRY_N.get(c.code)||new Set()).size;const u=new Set();GCTRY_N.forEach(v=>v.forEach(i=>u.add(i)));return u.size;};
+  const dead=c=>!nOf(c)&&c.code!==S.ctry;
   const draw=q=>{const v=norm(q.trim());
-    items=[{code:"",name:t.g_ctry_all,n:new Set(GANTT.map(r=>r[0])).size},...all.filter(c=>!v||norm(c.name).includes(v)||norm(c.code).includes(v))];
+    items=[{code:"",name:t.g_ctry_all},...all.filter(c=>!v||norm(c.name).includes(v)||norm(c.code).includes(v))];
     if(v)items=items.slice(1);
     hi=items.findIndex(c=>c.code===S.ctry&&!v);
-    lst.innerHTML=items.length?items.map((c,i)=>`<button type="button" role="option" data-i="${i}" aria-selected="${c.code===S.ctry}" class="${i===hi?"on":""}"><span>${esc(c.name)}${c.code?` <span class="m">${c.code}</span>`:""}</span><span class="m">${c.n}</span></button>`).join(""):`<div class="m" style="padding:8px 12px">${t.ev_none}</div>`;
+    lst.innerHTML=items.length?items.map((c,i)=>`<button type="button" role="option" data-i="${i}" aria-selected="${c.code===S.ctry}" class="${i===hi?"on":""}"${dead(c)?" disabled":""}><span>${esc(c.name)}${c.code?` <span class="m">${c.code}</span>`:""}</span><span class="m">${nOf(c)}</span></button>`).join(""):`<div class="m" style="padding:8px 12px">${t.ev_none}</div>`;
     lst.hidden=false;inp.setAttribute("aria-expanded","true");};
   const close=()=>{lst.hidden=true;inp.setAttribute("aria-expanded","false");inp.value=S.ctry?nameOf(S.ctry):"";};
-  const pick=c=>{S.ctry=c.code;close();renderGantt();};
+  const pick=c=>{if(dead(c))return;S.ctry=c.code;close();renderGantt();};
   const mark=()=>lst.querySelectorAll("button").forEach((b,i)=>{b.classList.toggle("on",i===hi);if(i===hi)b.scrollIntoView({block:"nearest"});});
   inp.onfocus=()=>{inp.select();draw("");};
   inp.onclick=()=>{if(lst.hidden)draw("");};
@@ -479,9 +496,10 @@ function wireGanttCountry(){
   btn.onclick=()=>{if(lst.hidden){inp.focus();draw("");}else close();};
   lst.onmousedown=e=>e.preventDefault();
   lst.onclick=e=>{const b=e.target.closest("[data-i]");if(b)pick(items[+b.dataset.i]);};
+  const step=d=>{let i=hi;for(;;){const j=i+d;if(j<0||j>=items.length)return hi;i=j;if(!dead(items[i]))return i;}}; /* arrows skip countries with nothing behind them */
   inp.onkeydown=e=>{
-    if(e.key==="ArrowDown"){e.preventDefault();if(lst.hidden)draw("");hi=Math.min(items.length-1,hi+1);mark();}
-    else if(e.key==="ArrowUp"){e.preventDefault();hi=Math.max(0,hi-1);mark();}
+    if(e.key==="ArrowDown"){e.preventDefault();if(lst.hidden)draw("");hi=step(1);mark();}
+    else if(e.key==="ArrowUp"){e.preventDefault();hi=step(-1);mark();}
     else if(e.key==="Enter"){e.preventDefault();const c=items[hi>=0?hi:0];if(c&&!lst.hidden)pick(c);}
     else if(e.key==="Escape"){close();}
   };
@@ -647,6 +665,14 @@ function renderTop(){
   $("#topSort").innerHTML=yearSel("tyear",Y); $("#tyear").onchange=e=>{S.year=e.target.value;renderTop();}; /* curator 13.11.2026: the year select replaces the Count / A-Z sort; the list is always by count */
   document.querySelectorAll("[data-trole]").forEach(b=>b.onclick=()=>{S.role=b.dataset.trole;renderTop();});
   document.querySelectorAll("[data-tmet]").forEach(b=>b.onclick=()=>{S.metric=b.dataset.tmet;renderTop();});
+  {const rk=(a,r)=>r==="both"?(a.role==="umpire"||isRefRole(a.role)):(r==="ump"?a.role==="umpire":isRefRole(a.role));
+   const RL=new Set(),YR=new Set();
+   OFF.concat(EXTRA,REFS.filter(r=>!r.o)).forEach(p=>{const at=attended(p).set;
+     p.asg.forEach(a=>{if(!at.has(a.e))return;const y=a.e.s.slice(0,4);
+       if(y===Y)["ump","ref","both"].forEach(r=>{if(rk(a,r))RL.add(r);});
+       if(rk(a,S.role))YR.add(y);});});
+   facetBtns([...document.querySelectorAll("[data-trole]")],"trole",v=>v===S.role||RL.has(v));
+   facetSel($("#tyear"),Y,v=>YR.has(v));}
   const people=OFF.concat(EXTRA,REFS.filter(r=>!r.o)).map(p=>{const evs=new Set(p.asg.filter(a=>a.e.s.startsWith(Y)&&attended(p).set.has(a.e)&&(topState.role==="both"?(a.role==="umpire"||isRefRole(a.role)):(topState.role==="ump"?a.role==="umpire":isRefRole(a.role)))).map(a=>a.e));return {p,n:topState.metric==="days"?daysOf(evs,Y,p):evs.size};}).filter(x=>x.n>0);
   people.sort((a,b)=>b.n-a.n||a.p.sur.localeCompare(b.p.sur)||(a.p.first||"").localeCompare(b.p.first||"")); /* ties: alphabetical by surname, then first name (curator 13.11.2026) */
   people.forEach((x,i)=>x.rank=i===0||people[i-1].n!==x.n?i+1:people[i-1].rank);
@@ -665,6 +691,26 @@ function azBlock(){
 }
 
 const listState={q:"",lvl:"all",c:"all",cont:"all",shown:100};
+/* select value that picks a given level, for the facet counts below */
+const LVV={GB:"2",BB:"1",WB:"0",NU:"nu",TBD:"tbd"};
+function listFacets(){
+  const s=listState,q=s.q.trim().toLowerCase(),num=/^\d+$/.test(q),nq=NFD(q);
+  const pool=s.preset==="all"||s.preset==="w",W=s.preset==="w";
+  const cand=pool?umpPool().filter(r=>!W||r.l==="GB"||r.l==="BB"||r.l==="WB")
+      .map(r=>({v:LVV[r.l]||"",ci:r.c?String(r.c.i):"",k:contOf(r.o),iu:r.iu,nm:r.o.sur+" "+(r.o.first||"")+" "+(r.o.first||"")+" "+r.o.sur+" "+(r.o.aka||"")}))
+    :OFF.map(o=>({v:String(o.lvl),ci:String(o.c.i),k:contOf(o),iu:o.iu,nm:o.sur+" "+o.first+" "+o.first+" "+o.sur+" "+(o.aka||"")}));
+  const L=new Set(),K=new Set(),C=new Set();
+  cand.forEach(c=>{
+    if(q&&!(num?(c.iu&&String(c.iu).startsWith(String(+q))):NFD(c.nm).includes(nq)))return;
+    const lv=s.lvl==="all"||c.v===s.lvl,ko=s.cont==="all"||c.k===s.cont,co=s.c==="all"||c.ci===s.c;
+    if(ko&&co)L.add(c.v);
+    if(lv)K.add(c.k); /* the association is reset when the continent changes, so it is not counted here */
+    if(lv&&ko)C.add(c.ci);
+  });
+  facetSel($("#llvl"),s.lvl,v=>v==="all"?L.size>0:L.has(v));
+  facetSel($("#lcont"),s.cont,v=>v==="all"?K.size>0:K.has(v));
+  facetSel($("#lc"),s.c,v=>v==="all"?C.size>0:C.has(v));
+}
 /* pool of all umpires for "All umpires" and "White Badge umpires" (curator 01.11.2026): active IU lists + IU seen elsewhere + NU + Games officials (TBD) */
 const xDup=x=>!!(x.iuX&&(BYIU.has(x.iuX)||EXTRA.some(y=>y!==x&&y.iuX===x.iuX&&(y.asg.length>x.asg.length||y.asg.length===x.asg.length&&y.k<x.k))));
 const xIsOff=x=>x.asg.length&&!x.asg.some(a=>a.role==="umpire");
@@ -717,6 +763,7 @@ function viewList(preset){
 }
 function countryOpts(){const t=T();const P=listState.preset;const base=P==="all"||P==="w"?COUNTRIES.filter(c=>umpPool().some(r=>r.c===c&&(P==="all"||r.l==="GB"||r.l==="BB"||r.l==="WB"))).sort(byName):ACTIVE_C;return `<option value="all">${t.all_assoc}</option>${base.filter(c=>listState.cont==="all"||CONT[c.code]===listState.cont).map(c=>`<option value="${c.i}">${esc(c.name)}</option>`).join("")}`;}
 function renderListRows(){
+  listFacets();
   const t=T(); const s=listState; const q=s.q.trim().toLowerCase();
   const nz=x=>x.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
   if(s.preset==="all"||s.preset==="w"){const W=s.preset==="w";
@@ -1287,7 +1334,7 @@ function viewInbox(){
   const list=INBOX.filter(x=>inboxState.show==="all"||x.status===inboxState.show).sort((a,b)=>b.at-a.at);
   const cnt=k=>INBOX.filter(x=>x.status===k).length;
   return `<h1>${t.st_inbox}</h1><p class="muted" style="margin:8px 0 0">${t.st_inbox_sub}</p>
-  <div class="controls" style="margin-top:16px"><div class="chips">${["pending","accepted","rejected","all"].map(k=>`<button type="button" data-ibx="${k}" aria-pressed="${inboxState.show===k}">${t["st_"+k+"_p"]}${k==="all"?"":` · ${cnt(k)}`}</button>`).join("")}</div>
+  <div class="controls" style="margin-top:16px"><div class="chips">${["pending","accepted","rejected","all"].map(k=>`<button type="button" data-ibx="${k}" aria-pressed="${inboxState.show===k}"${k!==inboxState.show&&(k==="all"?!INBOX.length:!cnt(k))?" disabled":""}>${t["st_"+k+"_p"]}${k==="all"?"":` · ${cnt(k)}`}</button>`).join("")}</div>
   <button class="btn" type="button" id="ibxRefresh">${t.st_refresh}</button></div>
   <div class="stack" style="margin-top:16px">${list.length?list.map(x=>{const e=EVENTS.find(v=>v.name===x.ev);const ok=!!e;
     const isP=x.kind==="claim"||x.kind==="add";
@@ -1349,6 +1396,16 @@ function viewEvents(){
 }
 function renderEvents(){
   const t=T(); const s=evState; const q=s.q.trim().toLowerCase();
+  {const per=e=>s.period==="all"||(s.period==="up"?e.e>=TODAY:e.e<TODAY),ty=e=>s.type==="all"||e.type===s.type;
+   const Y=new Set(),P=new Set(),K=new Set();
+   EV_BY_DATE.forEach(e=>{if(q&&!e.name.toLowerCase().includes(q))return;
+     const cur=e.s.startsWith(s.year);
+     if(ty(e)&&per(e))Y.add(e.s.slice(0,4));
+     if(cur&&ty(e))P.add(e.e>=TODAY?"up":"past");
+     if(cur&&per(e))K.add(e.type);});
+   facetSel($("#eyear"),s.year,v=>Y.has(v));
+   facetBtns([...document.querySelectorAll("[data-period]")],"period",v=>v===s.period||(v==="all"?P.size>0:P.has(v)));
+   facetBtns([...document.querySelectorAll("[data-etype]")],"etype",v=>v===s.type||(v==="all"?K.size>0:K.has(v)));}
   let list=EV_BY_DATE.filter(e=>e.s.startsWith(s.year)&&(s.type==="all"||e.type===s.type)&&(s.period==="all"||(s.period==="up"?e.e>=TODAY:e.e<TODAY))&&(!q||e.name.toLowerCase().includes(q)));
   if(s.period==="past") list=list.slice().reverse();
   const groups=[]; let cur=null;
@@ -1560,6 +1617,13 @@ function renderOlyRows(){
   const ru=LANG==="ru", R=GAMES_ROLE(ru), S=OLY_STATE;
   const q=S.q.trim().normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
   const match=x=>(!S.g||x[3]+"|"+x[0]===S.g)&&(!S.r||x[1]===S.r);
+  {const G=new Set(),RO=new Set();
+   olyRows().forEach(p=>{if(q&&!q.split(/\s+/).every(w=>p.key.includes(w)))return;
+     p.part.forEach(x=>{const g=x[3]+"|"+x[0];
+       if(!S.r||x[1]===S.r)G.add(g);
+       if(!S.g||g===S.g)RO.add(x[1]);});});
+   facetSel($("#olyG"),S.g,v=>v===""?G.size>0:G.has(v));
+   facetSel($("#olyR"),S.r,v=>v===""?RO.size>0:RO.has(v));}
   let rows=olyRows().filter(p=>(!q||q.split(/\s+/).every(w=>p.key.includes(w)))&&p.part.some(match));
   rows.sort(S.sort==="games"?(a,b)=>b.n-a.n||a.sur.localeCompare(b.sur):S.sort==="first"?(a,b)=>a.part[0][0]-b.part[0][0]||a.sur.localeCompare(b.sur):(a,b)=>a.sur.localeCompare(b.sur)||a.first.localeCompare(b.first));
   const parts=rows.reduce((s,p)=>s+p.part.filter(match).length,0);
