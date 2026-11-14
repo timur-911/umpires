@@ -293,6 +293,11 @@ function nameMatch(hay,needle,pre){
   return false;
 }
 const nameHas=(h,n)=>nameMatch(h,n,false), nameStarts=(h,n)=>nameMatch(h,n,true);
+/* numbers shown on a profile: IU (or the archive IU) and IR. A numeric query matches either of them,
+   typed bare (16367) or padded as the site prints it (02115) — curator 14.11.2026 */
+const numsOf=p=>!p?[]:[p.isRef?p.iuR:(p.x?p.iuX:p.iu), p.isRef?p.ir:p.irNo].filter(Boolean);
+const numHit=(p,q)=>{const n=String(+q);return numsOf(p).some(x=>String(x).startsWith(n)||iu5(x).startsWith(q));};
+const numExact=(p,q)=>{const n=+q;return numsOf(p).some(x=>x===n);};
 const fullName = o=>(o.first?o.first+" ":"")+o.sur;
 const href = p=>p.isRef?`#r${p.ir}`:p.x?`#x${p.k}`:`#u${p.iu}`;
 const fmtDate = d=>{ if(!d) return ""; const [y,m,dd]=d.split("-"); return `${+dd} ${T().months[m-1]} ${y}`; };
@@ -317,7 +322,9 @@ const PEOPLE = OFF.concat(EXTRA.filter(x=>x.asg.length||x.arch||x.ogp||x.ogo),RE
 
 function searchOff(q,limit=8){
   q=q.trim().toLowerCase(); if(!q) return [];
-  if(/^\d+$/.test(q)) return OFF.filter(o=>String(o.iu).startsWith(String(+q))).slice(0,limit);
+  if(/^\d+$/.test(q)){const hits=PEOPLE.filter(p=>numHit(p,q));
+    hits.sort((a,b)=>numExact(b,q)-numExact(a,q));                 /* the exact number first */
+    return hits.slice(0,limit);}
   const hits=[];
   for(const o of PEOPLE){ const a=o.sur+" "+o.first+(o.aka?" "+o.aka:""), b=o.first+" "+o.sur;
     if(nameStarts(a,q)||nameStarts(b,q)) hits.unshift(o); else if(nameHas(a,q)) hits.push(o);
@@ -749,8 +756,8 @@ const LVV={GB:"2",BB:"1",WB:"0",NU:"nu",TBD:"tbd"};
 function listCand(){
   const s=listState,pool=s.preset==="all"||s.preset==="w",W=s.preset==="w";
   return pool?umpPool().filter(r=>!W||r.l==="GB"||r.l==="BB"||r.l==="WB")
-      .map(r=>({v:LVV[r.l]||"",ci:r.c?String(r.c.i):"",k:contOf(r.o),iu:r.iu,nm:r.o.sur+" "+(r.o.first||"")+" "+(r.o.first||"")+" "+r.o.sur+" "+(r.o.aka||"")}))
-    :OFF.map(o=>({v:String(o.lvl),ci:String(o.c.i),k:contOf(o),iu:o.iu,nm:o.sur+" "+o.first+" "+o.first+" "+o.sur+" "+(o.aka||"")}));
+      .map(r=>({v:LVV[r.l]||"",ci:r.c?String(r.c.i):"",k:contOf(r.o),p:r.o,nm:r.o.sur+" "+(r.o.first||"")+" "+(r.o.first||"")+" "+r.o.sur+" "+(r.o.aka||"")}))
+    :OFF.map(o=>({v:String(o.lvl),ci:String(o.c.i),k:contOf(o),p:o,nm:o.sur+" "+o.first+" "+o.first+" "+o.sur+" "+(o.aka||"")}));
 }
 /* Switching between the four lists keeps the continent and the association (curator 14.11.2026),
    but a value with nothing behind it on the new list falls back to "all" instead of showing an empty table. */
@@ -772,7 +779,7 @@ function listFacets(){
   const cand=listCand();
   const L=new Set(),K=new Set(),C=new Set();
   cand.forEach(c=>{
-    if(q&&!(num?(c.iu&&String(c.iu).startsWith(String(+q))):nameHas(c.nm,q)))return;
+    if(q&&!(num?numHit(c.p,q):nameHas(c.nm,q)))return;
     const lv=s.lvl==="all"||c.v===s.lvl,ko=s.cont==="all"||c.k===s.cont,co=s.c==="all"||c.ci===s.c;
     if(ko&&co)L.add(c.v);
     if(lv)K.add(c.k); /* the association is reset when the continent changes, so it is not counted here */
@@ -838,7 +845,7 @@ function renderListRows(){
   const t=T(); const s=listState; const q=s.q.trim().toLowerCase();
   if(s.preset==="all"||s.preset==="w"){const W=s.preset==="w";
     let rows=umpPool().filter(r=>(!W||r.l==="GB"||r.l==="BB"||r.l==="WB")&&(s.lvl==="all"||r.l===LV_FILTER[s.lvl])&&(s.c==="all"||(r.c&&r.c.i==+s.c))&&(s.cont==="all"||contOf(r.o)===s.cont));
-    if(q) rows=/^\d+$/.test(q)?rows.filter(r=>r.iu&&String(r.iu).startsWith(String(+q))):rows.filter(r=>nameHas(r.o.sur+" "+(r.o.first||"")+" "+(r.o.first||"")+" "+r.o.sur+" "+(r.o.aka||""),q));
+    if(q) rows=/^\d+$/.test(q)?rows.filter(r=>numHit(r.o,q)):rows.filter(r=>nameHas(r.o.sur+" "+(r.o.first||"")+" "+(r.o.first||"")+" "+r.o.sur+" "+(r.o.aka||""),q));
     if(!rows.length){listEmpty();return;}
     const showGb=false, showBb=false; /* curator 01.11.2026: no badge-date columns in All umpires / White Badge lists */
     const assoc=r=>r.c?`${esc(r.c.name)} <span class="code">${r.c.code}</span> ${contChip(contOf(r.o))}`:`${esc(r.o.cname||"")} <span class="code">${r.o.code||""}</span>`;
@@ -850,7 +857,7 @@ function renderListRows(){
     const mb=$("#moreBtn"); if(mb) mb.onclick=()=>{s.shown+=100;renderListRows();};
     return;}
   let rows=OFF.filter(o=>(s.lvl==="all"||o.lvl==+s.lvl)&&(s.c==="all"||o.c.i==+s.c)&&(s.cont==="all"||contOf(o)===s.cont));
-  if(q) rows = /^\d+$/.test(q)?rows.filter(o=>String(o.iu).startsWith(String(+q))):rows.filter(o=>nameHas(o.sur+" "+o.first+" "+o.first+" "+o.sur+" "+(o.aka||""),q));
+  if(q) rows = /^\d+$/.test(q)?rows.filter(o=>numHit(o,q)):rows.filter(o=>nameHas(o.sur+" "+o.first+" "+o.first+" "+o.sur+" "+(o.aka||""),q));
   if(!rows.length){listEmpty();return;}
   if(s.lvl==="2") rows.sort((a,b)=>gbKey(a.gb)-gbKey(b.gb));
   const showGb = s.lvl!=="0" && s.lvl!=="1", showBb = s.lvl!=="0";
@@ -1654,13 +1661,13 @@ function olyRows(){
     const p=olyProf(k);
     if(p){ if(seen.has(p)) continue; seen.add(p);
       const part=olyYears(p)||[]; if(!part.length) continue;
-      rows.push({sur:p.sur,first:p.first||"",code:(p.c&&p.c.code)||p.code||"",cname:p.c?p.c.name:(p.cname||""),go:href(p),iu:p.isRef?(p.iuR||0):p.x?(p.iuX||0):p.iu,part});
+      rows.push({sur:p.sur,first:p.first||"",code:(p.c&&p.c.code)||p.code||"",cname:p.c?p.c.name:(p.cname||""),go:href(p),iu:p.isRef?(p.iuR||0):p.x?(p.iuX||0):p.iu,ir:p.isRef?p.ir:(p.irNo||0),part});
     } else { const nm=OLY_NAMES[k]||[k,"",""];
       const part=[...(OLY[k]||[]).map(x=>[x[0],x[1],x[2],"og"]),...(PARA[k]||[]).map(x=>[x[0],x[1],x[2],"pg"])];
       rows.push({sur:nm[0],first:nm[1],code:nm[2],cname:(COUNTRIES.find(c=>c.code&&c.code===nm[2])||{}).name||nm[3]||"",go:null,iu:/^\d+$/.test(k)?+k:0,part});
     }
   }
-  rows.forEach(r=>{r.part.sort((a,b)=>a[0]-b[0]||(a[3]<b[3]?-1:1));r.n=new Set(r.part.map(x=>x[3]+x[0])).size;r.key=r.sur+" "+r.first+" "+r.first+" "+r.sur+" "+(r.iu?String(r.iu).padStart(5,"0"):"");});
+  rows.forEach(r=>{r.part.sort((a,b)=>a[0]-b[0]||(a[3]<b[3]?-1:1));r.n=new Set(r.part.map(x=>x[3]+x[0])).size;r.key=r.sur+" "+r.first+" "+r.first+" "+r.sur+" "+(r.iu?iu5(r.iu):"")+" "+(r.ir?iu5(r.ir):"");});
   return OLY_ROWS=rows;
 }
 const OLY_STATE={q:"",g:"",r:"",sort:"name"};
@@ -2121,7 +2128,7 @@ function wire(){
     const draw=()=>{const hits=searchOff(q.value);const cs=assoc(q.value);sel=-1;
       if(!q.value.trim()){res.hidden=true;return;}
       res.hidden=false;
-      res.innerHTML=cs.map(c=>`<a href="#${c.slug}" class="ras"><span class="num muted" style="font-size:12px">${t.assoc_lbl}</span><span class="nm">${esc(c.name)} <span class="muted" style="font-weight:400">· ${c.list.length||!refsOf(c).length?t.n_umpires(c.list.length):t.ref_only(refsOf(c).length)}</span></span><span class="code">${c.code}</span></a>`).join("")+(hits.length?hits.map(o=>`<a href="${href(o)}"><span class="num muted" style="font-size:12px">${o.isRef?"IR":o.x?"—":String(o.iu).padStart(5,"0")}</span><span class="nm">${esc(o.sur)} ${esc(o.first)}</span><span class="code">${o.c?o.c.code:(o.code||"")}</span>${o.isRef?irBadge(o.st):o.x?csvBadge(o.csv):o.lvl?badge(o.lvl):""}</a>`).join(""):cs.length?"":`<div class="muted" style="padding:10px">${t.nothing} <button type="button" data-add style="font:inherit;color:var(--brand-ink);background:none;border:0;text-decoration:underline;cursor:pointer">${t.add_umpire}</button></div>`);};
+      res.innerHTML=cs.map(c=>`<a href="#${c.slug}" class="ras"><span class="num muted" style="font-size:12px">${t.assoc_lbl}</span><span class="nm">${esc(c.name)} <span class="muted" style="font-weight:400">· ${c.list.length||!refsOf(c).length?t.n_umpires(c.list.length):t.ref_only(refsOf(c).length)}</span></span><span class="code">${c.code}</span></a>`).join("")+(hits.length?hits.map(o=>`<a href="${href(o)}"><span class="num muted" style="font-size:12px">${o.isRef?"IR "+iu5(o.ir):o.x?(o.iuX?iu5(o.iuX):"—"):iu5(o.iu)}</span><span class="nm">${esc(o.sur)} ${esc(o.first)}</span><span class="code">${o.c?o.c.code:(o.code||"")}</span>${o.isRef?irBadge(o.st):o.x?csvBadge(o.csv):o.lvl?badge(o.lvl):""}</a>`).join(""):cs.length?"":`<div class="muted" style="padding:10px">${t.nothing} <button type="button" data-add style="font:inherit;color:var(--brand-ink);background:none;border:0;text-decoration:underline;cursor:pointer">${t.add_umpire}</button></div>`);};
     q.oninput=draw;
     q.onkeydown=e=>{const items=[...res.querySelectorAll("a")];if(!items.length)return;
       if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();sel=(sel+(e.key==="ArrowDown"?1:-1)+items.length)%items.length;items.forEach((a,i)=>a.classList.toggle("on",i===sel));}
