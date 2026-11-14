@@ -1665,7 +1665,7 @@ function openModal(kind,iu,cc){
     try{
       await saveSubmission(sub,[]);
       $("#mok").innerHTML=`<div class="ok">${subT().ok}</div>`;
-      btn.remove();
+      btn.remove(); modalDone();
     }catch(err){
       btn.disabled=false;
       if(err&&err.code==="no_store"&&typeof SB!=="undefined"&&SB){
@@ -1674,6 +1674,7 @@ function openModal(kind,iu,cc){
       }else $("#mok").innerHTML=`<div class="ok">${subErr(t,err)}</div>`;
     }
   };
+  modalOpened();
 }
 const SUB_T={ru:{ok:"Отправлено куратору на проверку. Он свяжется с вами по указанному адресу, если понадобятся уточнения."},
              en:{ok:"Sent to the curator for review. They will write to the address you gave if anything needs clarifying."}};
@@ -1807,9 +1808,10 @@ function openAuthModal(){
     try{
       const {error}=await SB.auth.signInWithOtp({email:$("#a_mail").value.trim(),options:{emailRedirectTo:location.origin+location.pathname}});
       if(error)throw error;
-      $("#aok").innerHTML=`<div class="ok">${a.sent}</div>`;
+      $("#aok").innerHTML=`<div class="ok">${a.sent}</div>`;modalDone();
     }catch(_){btn.disabled=false;$("#aok").innerHTML=`<div class="ok">${a.fail}</div>`;}
   };
+  modalOpened();
 }
 if(typeof chrome==="function"){const chrome0=chrome;chrome=function(r){chrome0(r);try{authBtn();}catch(_){}};}
 
@@ -1887,10 +1889,10 @@ function openEvModal(kind,ei,cty){
     const sub=cty?{kind:"loc",cc:cty.code,ev:cty.name,docType:v("m_kind"),note:v("m_note"),email:v("m_mail")}:up?{kind:"loc",ei:e.i,ev:e.name,docType:v("m_kind"),note:v("m_note"),email:v("m_mail")}
       :{kind:"was",ei:e.i,ev:e.name,who:v("m_who"),role:v("m_role"),ds:v("m_ds"),de:v("m_de"),note:v("m_note"),email:v("m_mail")};
     try{await saveSubmission(sub,up?[...$("#m_file").files]:[]);
-      $("#mok").innerHTML=`<div class="ok">${t.st_saved}</div>`;$("#mf").querySelectorAll("input,select,textarea").forEach(x=>x.disabled=true);btn.remove();}
+      $("#mok").innerHTML=`<div class="ok">${t.st_saved}</div>`;$("#mf").querySelectorAll("input,select,textarea").forEach(x=>x.disabled=true);btn.remove();modalDone();}
     catch(err){$("#mok").innerHTML=`<div class="ok" style="background:var(--gb-soft)">${subErr(t,err)}</div>`;btn.disabled=false;btn.textContent=t.send;}
   };
-  const f=$("#modalRoot input,#modalRoot select");if(f)f.focus();
+  modalOpened();
 }
 /* "We are looking for selections data" → add officials to this tournament: one by one (name, association, role) or a file with a list.
    Both go to the curator's inbox as a "loc" item (typed rows are written into the note), so the existing review flow handles them (curator 14.11.2026) */
@@ -1928,12 +1930,44 @@ function openSelModal(ei){
     const sub=mode==="one"?{kind:"loc",ei:e.i,ev:e.name,docType:"Typed list",rows,note:list+(v("m_note")?"\n\n"+v("m_note"):""),email:v("m_mail")}
       :{kind:"loc",ei:e.i,ev:e.name,docType:v("m_kind"),note:v("m_note"),email:v("m_mail")};
     try{await saveSubmission(sub,files);
-      $("#mok").innerHTML=`<div class="ok">${t.st_saved}</div>`;$("#mf").querySelectorAll("input,select,textarea,button:not(#mclose)").forEach(x=>x.disabled=true);document.querySelectorAll("[data-smode]").forEach(x=>x.disabled=true);btn.remove();}
+      $("#mok").innerHTML=`<div class="ok">${t.st_saved}</div>`;$("#mf").querySelectorAll("input,select,textarea,button:not(#mclose)").forEach(x=>x.disabled=true);document.querySelectorAll("[data-smode]").forEach(x=>x.disabled=true);btn.remove();modalDone();}
     catch(err){$("#mok").innerHTML=`<div class="ok" style="background:var(--gb-soft)">${subErr(t,err)}</div>`;btn.disabled=false;btn.textContent=t.send;}
   };
-  const f=$("#s_rows .s_name");if(f)f.focus();
+  modalOpened();
 }
-function closeModal(){$("#modalRoot").innerHTML="";}
+/* Dialogs (curator 14.11.2026): focus moves into the dialog, the rest of the page goes inert while it is
+   open, and focus returns to whatever opened it. Four dialogs share this, so they behave alike. */
+const HAS_INERT="inert" in HTMLElement.prototype;
+const MFOC='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+let modalPrev=null;
+const bgInert=on=>[...document.body.children].forEach(el=>{
+  if(el.id==="modalRoot"||el.tagName==="SCRIPT")return;
+  if(HAS_INERT){el.inert=on;return;}
+  if(on)el.setAttribute("aria-hidden","true");else el.removeAttribute("aria-hidden");});
+function modalOpened(){
+  if(!modalPrev)modalPrev=document.activeElement; /* a dialog opened from a dialog keeps the first trigger */
+  bgInert(true);
+  document.documentElement.style.overflow="hidden";
+  const box=$("#modalRoot .modal"); if(!box)return;
+  const h=box.querySelector("h2,h3");
+  if(h){h.tabIndex=-1;h.focus();}else{const f=box.querySelector(MFOC);if(f)f.focus();}
+  box.addEventListener("keydown",e=>{ /* keep Tab inside: with inert alone the cycle still passes through the page body */
+    if(e.key!=="Tab")return;
+    const f=[...box.querySelectorAll(MFOC)].filter(x=>x.offsetParent!==null); if(!f.length)return;
+    const a=document.activeElement,first=f[0],last=f[f.length-1];
+    if(e.shiftKey&&(a===first||a===h)){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&a===last){e.preventDefault();first.focus();}});
+}
+/* after a successful send the submit button is removed, so focus would fall to the page: hold it on the reply */
+function modalDone(){const k=$("#modalRoot .ok");if(k){k.tabIndex=-1;k.focus();}}
+function closeModal(){
+  const root=$("#modalRoot"); if(!root.firstChild){modalPrev=null;return;}
+  root.innerHTML="";
+  bgInert(false);
+  document.documentElement.style.overflow="";
+  if(modalPrev&&modalPrev.focus&&document.body.contains(modalPrev))modalPrev.focus();
+  modalPrev=null;
+}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
 
 /* ---------- chrome + router ---------- */
