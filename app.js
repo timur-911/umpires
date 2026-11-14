@@ -246,19 +246,51 @@ const NFD=x=>x.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const DIA_1={"ß":"s","ü":"u","ö":"o","ä":"a","å":"a","æ":"a","ø":"o","œ":"o","ł":"l","đ":"d","ð":"d","þ":"t","ı":"i","ŋ":"n","ħ":"h","ſ":"s"};
 const DIA_2={"ß":"ss","ü":"ue","ö":"oe","ä":"ae","å":"aa","æ":"ae","ø":"oe","œ":"oe","þ":"th","đ":"dj","ð":"dh"};
 const DIA_RE=new RegExp("["+Object.keys(DIA_1).join("")+"]","g");
-const deMark=x=>x.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
-const foldA=s=>deMark(s.toLowerCase().replace(DIA_RE,c=>DIA_1[c]));
-const foldB=s=>deMark(s.toLowerCase().replace(DIA_RE,c=>DIA_2[c]||DIA_1[c]));
+/* one folded character per source letter, plus that letter as written (base + its marks), so the
+   two can be compared position by position */
+function foldSeq(str){
+  const a=[],o=[],t=str.toLowerCase().normalize("NFD");
+  for(const ch of t){
+    if(ch>="\u0300"&&ch<="\u036f"){if(o.length)o[o.length-1]+=ch;continue;}
+    a.push(DIA_1[ch]||ch);o.push(ch);
+  }
+  return {a:a.join(""),o};
+}
+/* every spelling of the word: each letter with a digraph counts both ways (ö = o and oe), so Gossner
+   finds Gößner even though the query expands one letter and not the other */
+function foldVars(str){
+  const t=str.toLowerCase().normalize("NFC"); let n=0;
+  for(const c of t) if(DIA_2[c]!==undefined) n++;
+  const base=c=>{const d=DIA_1[c];return d!==undefined?d:c.normalize("NFD").replace(/[\u0300-\u036f]/g,"");};
+  if(n>4) return [[...t].map(base).join(""),[...t].map(c=>DIA_2[c]||base(c)).join("")];
+  let out=[""];
+  for(const c of t){const b=base(c),d2=DIA_2[c];
+    out=(d2&&d2!==b)?out.flatMap(x=>[x+b,x+d2]):out.map(x=>x+b);}
+  return [...new Set(out)];
+}
+const marked=c=>c.length>1||DIA_1[c]!==undefined; /* letter carries a diacritic */
 const FOLD=new Map();
 function foldInfo(s){let v=FOLD.get(s);
-  if(!v){if(FOLD.size>6000)FOLD.clear();v={l:s.toLowerCase(),p:!/[^\u0000-\u007f]/.test(s),a:foldA(s),b:foldB(s)};FOLD.set(s,v);}
+  if(!v){if(FOLD.size>6000)FOLD.clear();const f=foldSeq(s);
+    v={l:s.toLowerCase(),p:!/[^\u0000-\u007f]/.test(s),a:f.a,o:f.o,v:foldVars(s)};FOLD.set(s,v);}
   return v;}
+/* at this position the two spellings agree unless both letters carry a diacritic and the diacritics differ */
+function diaOk(H,N,at){
+  for(let k=0;k<N.o.length;k++){const x=H.o[at+k],y=N.o[k];
+    if(x===undefined)return false;
+    if(marked(x)&&marked(y)&&x!==y)return false;}
+  return true;
+}
 function nameMatch(hay,needle,pre){
   const H=foldInfo(hay),N=foldInfo(needle);
-  const has=(h,n)=>pre?h.startsWith(n):h.includes(n);
-  if(has(H.l,N.l))return true;
-  if(!H.p&&!N.p)return false; /* diacritic against a different diacritic */
-  return has(H.a,N.a)||has(H.a,N.b)||has(H.b,N.a)||has(H.b,N.b);
+  if(pre?H.l.startsWith(N.l):H.l.includes(N.l))return true;          /* written the same way */
+  for(let i=H.a.indexOf(N.a);i>=0;i=pre?-1:H.a.indexOf(N.a,i+1)){    /* same letters, diacritics checked one by one */
+    if(pre&&i!==0)break;
+    if(diaOk(H,N,i))return true;
+  }
+  if(H.p||N.p){const f=(h,n)=>pre?h.startsWith(n):h.includes(n);     /* digraphs: ue=ü, ss=ß, aa=å */
+    for(const h of H.v) for(const n of N.v) if(f(h,n))return true;}
+  return false;
 }
 const nameHas=(h,n)=>nameMatch(h,n,false), nameStarts=(h,n)=>nameMatch(h,n,true);
 const fullName = o=>(o.first?o.first+" ":"")+o.sur;
