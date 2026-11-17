@@ -679,9 +679,12 @@ const MOST={iu:{m:"abs",p:0},bb:{m:"abs",p:0},gb:{m:"abs",p:0}};
 function mostCard(k){
   const t=T(),st=MOST[k],per=st.m==="per";
   const cnt=c=>k==="iu"?c.list.length:c.list.filter(o=>o.lvl===(k==="bb"?1:2)).length;
-  const rows=COUNTRIES.map(c=>({c,n:cnt(c)})).filter(x=>x.n>0&&(!per||POPS[x.c.code])).map(x=>({...x,v:per?x.n/POPS[x.c.code]*PER:x.n}))
-    .sort((a,b)=>b.v-a.v||a.c.name.localeCompare(b.c.name));
-  rows.forEach((x,i)=>{x.r=i&&x.v===rows[i-1].v?rows[i-1].r:i+1;});
+  /* per capita (curator 17.11.2026): countries under 100,000 people go to the bottom, otherwise they lead artificially;
+     equal values — the smaller population first, so places are not shared there */
+  const rows=COUNTRIES.map(c=>({c,n:cnt(c)})).filter(x=>x.n>0&&(!per||POPS[x.c.code])).map(x=>({...x,pop:POPS[x.c.code]||0,v:per?x.n/POPS[x.c.code]*PER:x.n}))
+    .map(x=>({...x,sm:per&&x.pop<PER?1:0}))
+    .sort((a,b)=>a.sm-b.sm||b.v-a.v||(per?a.pop-b.pop:0)||a.c.name.localeCompare(b.c.name));
+  rows.forEach((x,i)=>{const y=rows[i-1];x.r=i&&x.v===y.v&&x.sm===y.sm&&(!per||x.pop===y.pop)?y.r:i+1;});
   const pages=Math.max(1,Math.ceil(rows.length/10));if(st.p>=pages)st.p=pages-1;if(st.p<0)st.p=0;
   const max=rows.length?rows[0].v:1, pg=rows.slice(st.p*10,st.p*10+10);
   const bar=x=>{const lv=[0,0,0];if(k==="iu")x.c.list.forEach(o=>lv[o.lvl]++);
@@ -912,8 +915,10 @@ let CPOP_MODE="abs";
 const POPS=(typeof CATALOG!=="undefined"&&CATALOG.POP)||{}, PER=100000;
 const fmtPer=v=>v==null?"—":v===0?"0":v>=100?fmt(Math.round(v)):v>=10?v.toFixed(1):v>=1?v.toFixed(2):String(+v.toPrecision(2));
 let IU_RANK=null;
-const iuRank=c=>{if(!IU_RANK){const r=COUNTRIES.filter(x=>x.list.length&&POPS[x.code]).map(x=>[x,x.list.length/POPS[x.code]]);
-    IU_RANK=new Map(r.map(([x,v])=>[x,1+r.filter(y=>y[1]>v).length]));IU_RANK.n=r.length;}
+const iuRank=c=>{if(!IU_RANK){ /* same order as the Countries charts: under 100,000 people at the bottom; equal values — smaller population higher */
+    const r=COUNTRIES.filter(x=>x.list.length&&POPS[x.code]).map(x=>({x,v:x.list.length/POPS[x.code],p:POPS[x.code],sm:POPS[x.code]<PER?1:0}))
+      .sort((a,b)=>a.sm-b.sm||b.v-a.v||a.p-b.p);
+    IU_RANK=new Map();r.forEach((o,i)=>{const y=r[i-1];IU_RANK.set(o.x,i&&o.v===y.v&&o.sm===y.sm&&o.p===y.p?IU_RANK.get(y.x):i+1);});IU_RANK.n=r.length;}
   return IU_RANK.get(c)?{r:IU_RANK.get(c),n:IU_RANK.n}:null;};
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-cpm]");if(!b||b.dataset.cpm===CPOP_MODE)return;CPOP_MODE=b.dataset.cpm;route(true);});
 function viewCountry(c){
