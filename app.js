@@ -914,7 +914,7 @@ function viewCountry(c){
   return `${crumbs([[t.nav_countries,"#countries"],[c.name,null]])}
   <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap"><h1>${flagImg(c.code)}${esc(c.name)}</h1><span class="code" style="font-size:16px">${c.code}</span>${contChip(CONT[c.code])}${pop?`<div class="tabs" role="tablist" aria-label="${t.cp_aria}" style="margin-left:auto;align-self:center">${[["abs",t.cp_abs],["per",t.cp_per]].map(([v,l])=>`<button type="button" role="tab" data-cpm="${v}" aria-selected="${CPOP_MODE===v}">${l}</button>`).join("")}</div>`:""}</div>
   <div class="facts f6">
-    <div class="fact"><div class="v">${V(c.list.length,t.intl_umpires)}</div><div class="k">${t.intl_umpires}</div>${rk?`<div class="crk">${t.cp_rank(rk.r,rk.n)}</div>`:""}</div>
+    <div class="fact"><div class="v">${V(c.list.length,t.intl_umpires)}</div><div class="k">${t.intl_umpires}</div>${per&&rk?`<div class="crk">${t.cp_rank(rk.r,rk.n)}</div>`:""}</div>
     <div class="fact"><div class="v">${V(n[0],"White Badge")}</div><div class="k">White Badge</div></div>
     <div class="fact"><div class="v" style="color:var(--bb)">${V(n[1],"Blue Badge")}</div><div class="k">Blue Badge</div></div>
     <div class="fact"><div class="v" style="color:var(--gb-ink)">${V(n[2],"Gold Badge")}</div><div class="k">Gold Badge</div></div>
