@@ -60,7 +60,7 @@ ru:{
  countries_sub:(n,a)=>`${n} ассоциаций — членов ITTF. Число рядом — известные нам судьи ассоциации: международные, национальные и официальные лица Игр. Хотя бы один активный международный судья есть в ${a}.`,
  intl_umpires:"международных судей",intl_refs:"международных рефери",cp_aria:"Как считать",cp_abs:"Всего",cp_per:"На 100 000 жителей",
  cp_rank:(r,n)=>`${r}-е место из ${n} по судьям IU на 100 000 жителей`,
- cp_tip:(k,what,p,src)=>`${what[0].toUpperCase()+what.slice(1)}: ${k} ÷ ${p} жителей × 100 000. Население: ${src}.`,cp_src:{UN:"оценка ООН на 2023 год (World Population Prospects 2024)",ONS:"ONS, середина 2023 года",IRL:"весь остров: Ирландия (ООН, 2023) и Северная Ирландия (ONS, середина 2023 года)",BES:"только Бонайре, CBS, 1 января 2024 года",NFK:"перепись Австралии 2021 года"},
+ cp_tip:(k,what,p,src)=>`${what[0].toUpperCase()+what.slice(1)}: ${k} ÷ ${p} жителей × 100 000. Население: ${src}.`,cp_src:{UN:"оценка ООН на 2023 год (World Population Prospects 2024)",ONS:"ONS, середина 2023 года",BES:"только Бонайре, CBS, 1 января 2024 года",NFK:"перепись Австралии 2021 года"},
  cp_note:p=>`На 100 000 жителей · население ${p}.`,cp_small:"Здесь живёт меньше 100 000 человек, поэтому значение пересчитано на 100 000 по пропорции.",
  c_addnu_pre:"Добавьте",c_addnu_nu:"национальных судей",c_addnu_tip:"Мы приветствуем и поддерживаем, когда пользователи добавляют сведения о судьях — особенно о судьях национальной категории (NU), о которых у нас почти нет информации.",country_sys:"Судейство в стране",no_desc:"Описания пока нет",
  no_desc_t:"Здесь куратор страны расскажет, как получают национальные категории, какие есть экзамены, как отбирают судей на турниры и есть ли финансирование.",
@@ -120,7 +120,7 @@ en:{
  countries_sub:(n,a)=>`${n} ITTF member associations. The number is the umpires we know of: international, national and Games officials. ${a} of them have at least one active international umpire.`,
  intl_umpires:"international umpires",intl_refs:"international referees",cp_aria:"Count",cp_abs:"Total",cp_per:"Per 100,000 people",
  cp_rank:(r,n)=>`${r}${r%100>=11&&r%100<=13?"th":["th","st","nd","rd"][r%10]||"th"} of ${n} by IU per 100,000 people`,
- cp_tip:(k,what,p,src)=>`${what[0].toUpperCase()+what.slice(1)}: ${k} ÷ ${p} people × 100,000. Population: ${src}.`,cp_src:{UN:"UN estimate for 2023 (World Population Prospects 2024)",ONS:"ONS mid-2023 estimate",IRL:"the whole island — Ireland (UN, 2023) and Northern Ireland (ONS, mid-2023)",BES:"Bonaire only, CBS, 1 January 2024",NFK:"Australian Census 2021"},
+ cp_tip:(k,what,p,src)=>`${what[0].toUpperCase()+what.slice(1)}: ${k} ÷ ${p} people × 100,000. Population: ${src}.`,cp_src:{UN:"UN estimate for 2023 (World Population Prospects 2024)",ONS:"ONS mid-2023 estimate",BES:"Bonaire only, CBS, 1 January 2024",NFK:"Australian Census 2021"},
  cp_note:p=>`Per 100,000 people · population ${p}.`,cp_small:"Fewer than 100,000 people live here, so the figure is scaled up to 100,000 in proportion.",
  c_addnu_pre:"Add",c_addnu_nu:"national umpires",c_addnu_tip:"We welcome and support information about umpires added by users — especially National Umpires (NU), about whom we have almost no information.",country_sys:"Umpiring in this country",no_desc:"No description yet",
  no_desc_t:"The country curator will explain how national badges are earned, which exams exist, how umpires are selected for events and whether travel is funded.",
@@ -885,8 +885,7 @@ function viewCountries(){
   return `<h1>${T().nav_countries}</h1><p class="muted" style="margin:8px 0 22px">${T().countries_sub(COUNTRIES.length,ACTIVE_C.length)}</p>${mostBlock()}<section class="section"><div class="section-head"><h2>${T().by_country}</h2></div>${azBlock()}</section>`;
 }
 /* Country pages, per-capita switch (curator 17.11.2026): counts on the facts strip can be shown per 100,000 people.
-   Population — key POP of the catalog (core.association_population: UN WPP 2024 for 2023; England, Scotland, Wales — ONS mid-2023;
-   Ireland — all-island). Rank: place among associations with at least one IU by IU per 100,000 people; no rank with 0 IU. */
+   Population — key POP of the catalog (core.association_population: UN WPP 2024 for 2023; England, Scotland, Wales — ONS mid-2023). Rank: place among associations with at least one IU by IU per 100,000 people; no rank with 0 IU. */
 let CPOP_MODE="abs";
 const POPS=(typeof CATALOG!=="undefined"&&CATALOG.POP)||{}, PER=100000;
 const fmtPer=v=>v==null?"—":v===0?"0":v>=100?fmt(Math.round(v)):v>=10?v.toFixed(1):v>=1?v.toFixed(2):String(+v.toPrecision(2));
@@ -911,7 +910,7 @@ function viewCountry(c){
     </tbody></table></div>`:"";
   const evs=[...new Set(c.list.concat(EXTRA.filter(x=>x.c===c),c.list.length?[]:others.filter(o=>o.isRef)).flatMap(o=>o.asg.map(a=>a.e)))].sort((a,b)=>b.s.localeCompare(a.s));
   const pop=POPS[c.code]||0, per=!!pop&&CPOP_MODE==="per", rk=pop?iuRank(c):null;
-  const V=(k,what)=>per?`<span class="ftip" tabindex="0" data-tip="${esc(t.cp_tip(k,what,fmt(pop),t.cp_src[{ENG:"ONS",SCO:"ONS",WAL:"ONS",IRL:"IRL",BES:"BES",NFK:"NFK"}[c.code]||"UN"])+(pop<PER?" "+t.cp_small:""))}">${fmtPer(k/pop*PER)}</span>`:k;
+  const V=(k,what)=>per?`<span class="ftip" tabindex="0" data-tip="${esc(t.cp_tip(k,what,fmt(pop),t.cp_src[{ENG:"ONS",SCO:"ONS",WAL:"ONS",BES:"BES",NFK:"NFK"}[c.code]||"UN"])+(pop<PER?" "+t.cp_small:""))}">${fmtPer(k/pop*PER)}</span>`:k;
   return `${crumbs([[t.nav_countries,"#countries"],[c.name,null]])}
   <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap"><h1>${flagImg(c.code)}${esc(c.name)}</h1><span class="code" style="font-size:16px">${c.code}</span>${contChip(CONT[c.code])}${pop?`<div class="tabs" role="tablist" aria-label="${t.cp_aria}" style="margin-left:auto;align-self:center">${[["abs",t.cp_abs],["per",t.cp_per]].map(([v,l])=>`<button type="button" role="tab" data-cpm="${v}" aria-selected="${CPOP_MODE===v}">${l}</button>`).join("")}</div>`:""}</div>
   <div class="facts f6">
