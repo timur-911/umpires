@@ -681,7 +681,7 @@ function mostCard(k){
   const cnt=c=>k==="iu"?c.list.length:c.list.filter(o=>o.lvl===(k==="bb"?1:2)).length;
   /* per capita (curator 17.11.2026): countries under 100,000 people go to the bottom, otherwise they lead artificially;
      equal values (in both views) — the smaller population first, so places are not shared */
-  const rows=COUNTRIES.map(c=>({c,n:cnt(c)})).filter(x=>x.n>0&&(!per||POPS[x.c.code])).map(x=>({...x,pop:POPS[x.c.code]||0,v:per?x.n/POPS[x.c.code]*PER:x.n}))
+  const rows=COUNTRIES.map(c=>({c,n:cnt(c)})).filter(x=>x.n>0&&(!per||POPS[x.c.code]>=PER)) /* under 100,000 people: left out of per-capita charts (curator 17.11.2026) */.map(x=>({...x,pop:POPS[x.c.code]||0,v:per?x.n/POPS[x.c.code]*PER:x.n}))
     .map(x=>({...x,sm:per&&x.pop<PER?1:0}))
     .sort((a,b)=>a.sm-b.sm||b.v-a.v||(a.pop||Infinity)-(b.pop||Infinity)||a.c.name.localeCompare(b.c.name));
   rows.forEach((x,i)=>{const y=rows[i-1];x.r=i&&x.v===y.v&&x.sm===y.sm&&x.pop===y.pop?y.r:i+1;});
@@ -916,7 +916,7 @@ const POPS=(typeof CATALOG!=="undefined"&&CATALOG.POP)||{}, PER=100000;
 const fmtPer=v=>v==null?"—":v===0?"0":v>=100?fmt(Math.round(v)):v>=10?v.toFixed(1):v>=1?v.toFixed(2):String(+v.toPrecision(2));
 let IU_RANK=null;
 const iuRank=c=>{if(!IU_RANK){ /* same order as the Countries charts: under 100,000 people at the bottom; equal values — smaller population higher */
-    const r=COUNTRIES.filter(x=>x.list.length&&POPS[x.code]).map(x=>({x,v:x.list.length/POPS[x.code],p:POPS[x.code],sm:POPS[x.code]<PER?1:0}))
+    const r=COUNTRIES.filter(x=>x.list.length&&POPS[x.code]>=PER).map(x=>({x,v:x.list.length/POPS[x.code],p:POPS[x.code],sm:POPS[x.code]<PER?1:0}))
       .sort((a,b)=>a.sm-b.sm||b.v-a.v||a.p-b.p);
     IU_RANK=new Map();r.forEach((o,i)=>{const y=r[i-1];IU_RANK.set(o.x,i&&o.v===y.v&&o.sm===y.sm&&o.p===y.p?IU_RANK.get(y.x):i+1);});IU_RANK.n=r.length;}
   return IU_RANK.get(c)?{r:IU_RANK.get(c),n:IU_RANK.n}:null;};
@@ -936,7 +936,7 @@ function viewCountry(c){
       ${others.map(o=>`<tr data-go="${oHref(o).slice(1)}"><td class="num">${o.isRef?"IR "+String(o.ir).padStart(5,"0"):o.iuX?String(o.iuX).padStart(5,"0"):"—"}</td><td><a href="${oHref(o)}">${esc(o.sur)}</a> ${esc(o.first)}</td><td>${o.isRef?irBadge(o.st):csvBadge(o.csv)}</td><td class="num">${o.asg.length||""}</td></tr>`).join("")}
     </tbody></table></div>`:"";
   const evs=[...new Set(c.list.concat(EXTRA.filter(x=>x.c===c),c.list.length?[]:others.filter(o=>o.isRef)).flatMap(o=>o.asg.map(a=>a.e)))].sort((a,b)=>b.s.localeCompare(a.s));
-  const pop=POPS[c.code]||0, per=!!pop&&CPOP_MODE==="per", rk=pop?iuRank(c):null;
+  const pop=POPS[c.code]>=PER?POPS[c.code]:0, per=!!pop&&CPOP_MODE==="per", rk=pop?iuRank(c):null; /* under 100,000 people: no per-capita figures at all (curator 17.11.2026) */
   const V=(k,what)=>per?`<span class="ftip" tabindex="0" data-tip="${esc(t.cp_tip(k,what,fmt(pop),t.cp_src[{ENG:"ONS",SCO:"ONS",WAL:"ONS",BES:"BES",NFK:"NFK"}[c.code]||"UN"])+(pop<PER?" "+t.cp_small:""))}">${fmtPer(k/pop*PER)}</span>`:k;
   return `${crumbs([[t.nav_countries,"#countries"],[c.name,null]])}
   <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap"><h1>${flagImg(c.code)}${esc(c.name)}</h1><span class="code" style="font-size:16px">${c.code}</span>${contChip(CONT[c.code])}${pop?`<div class="tabs" role="tablist" aria-label="${t.cp_aria}" style="margin-left:auto;align-self:center">${[["abs",t.cp_abs],["per",t.cp_per]].map(([v,l])=>`<button type="button" role="tab" data-cpm="${v}" aria-selected="${CPOP_MODE===v}">${l}</button>`).join("")}</div>`:""}</div>
