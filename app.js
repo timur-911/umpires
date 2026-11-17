@@ -58,7 +58,7 @@ ru:{
  filter_aria:"Фильтр по имени",all_cat:"Все категории",all_assoc:"Все ассоциации",cat:"Категория",assoc:"Ассоциация",
  n_umpires:n=>`${fmt(n)} ${plural(n,"судья","судьи","судей")}`,th_umpire:"Судья",th_bb:"Blue Badge с",th_gb:"Gold Badge с",more:n=>`Показать ещё ${n}`,
  countries_sub:(n,a)=>`${n} ассоциаций — членов ITTF. Число рядом — известные нам судьи ассоциации: международные, национальные и официальные лица Игр. Хотя бы один активный международный судья есть в ${a}.`,
- intl_umpires:"международных судей",intl_refs:"международных рефери",cp_aria:"Как считать",cp_abs:"Всего",cp_per:"С поправкой",adj_tip:"Сбалансированный индекс: число судей ÷ (ln(население) × ln(лет в ITTF + 1)). Показывает темп накопления судейского корпуса с поправкой на размер страны и историю федерации; логарифмы смягчают преимущество самых больших стран и самых старых федераций. Страны с населением меньше 100 000 не рассчитываются.",
+ intl_umpires:"международных судей",intl_refs:"международных рефери",cp_aria:"Как считать",cp_abs:"Всего",cp_per:"С поправкой",adj_tip:"Сбалансированный индекс: число судей ÷ (ln(население) × ln(лет в ITTF + 1)). Показывает темп накопления судейского корпуса с поправкой на размер страны и историю федерации; логарифмы смягчают преимущество самых больших стран и самых старых федераций.",
  cp_rank:(r,n)=>`${r}-е место из ${n} стран`,
  cp_tip:(k,what,p,src,a,y)=>`${what[0].toUpperCase()+what.slice(1)}: ${k} ÷ (ln(${p}) × ln(${a} + 1)), где ${p} — население, ${a} — возраст федерации в ITTF (с ${y} года). Население: ${src}.`,cp_src:{UN:"оценка ООН на 2023 год (World Population Prospects 2024)",ONS:"ONS, середина 2023 года",BES:"только Бонайре, CBS, 1 января 2024 года",NFK:"перепись Австралии 2021 года"},
  cp_note:p=>`С поправкой на население (${p}) и возраст федерации в ITTF.`,cp_small:"Здесь живёт меньше 100 000 человек, поэтому значение пересчитано на 100 000 по пропорции.",
@@ -118,7 +118,7 @@ en:{
  filter_aria:"Filter by name",all_cat:"All badges",all_assoc:"All associations",cat:"Badge",assoc:"Association",
  n_umpires:n=>`${fmt(n)} ${n===1?"umpire":"umpires"}`,th_umpire:"Umpire",th_bb:"Blue Badge since",th_gb:"Gold Badge since",more:n=>`Show ${n} more`,
  countries_sub:(n,a)=>`${n} ITTF member associations. The number is the umpires we know of: international, national and Games officials. ${a} of them have at least one active international umpire.`,
- intl_umpires:"international umpires",intl_refs:"international referees",cp_aria:"Count",cp_abs:"Total",cp_per:"Adjusted",adj_tip:"Balanced index: umpires ÷ (ln(population) × ln(years in the ITTF + 1)). It shows the pace at which the umpiring corps has been built, adjusted for country size and federation history; the logarithms soften the advantage of the largest countries and the oldest federations. Associations under 100,000 people are not calculated.",
+ intl_umpires:"international umpires",intl_refs:"international referees",cp_aria:"Count",cp_abs:"Total",cp_per:"Adjusted",adj_tip:"Balanced index: umpires ÷ (ln(population) × ln(years in the ITTF + 1)). It shows the pace at which the umpiring corps has been built, adjusted for country size and federation history; the logarithms soften the advantage of the largest countries and the oldest federations.",
  cp_rank:(r,n)=>`Ranked ${r}${r%100>=11&&r%100<=13?"th":["th","st","nd","rd"][r%10]||"th"} of ${n} countries`,
  cp_tip:(k,what,p,src,a,y)=>`${what[0].toUpperCase()+what.slice(1)}: ${k} ÷ (ln(${p}) × ln(${a} + 1)), where ${p} is the population and ${a} the federation\u2019s years in the ITTF (member since ${y}). Population: ${src}.`,cp_src:{UN:"UN estimate for 2023 (World Population Prospects 2024)",ONS:"ONS mid-2023 estimate",BES:"Bonaire only, CBS, 1 January 2024",NFK:"Australian Census 2021"},
  cp_note:p=>`Adjusted for population (${p}) and the federation\u2019s years in the ITTF.`,cp_small:"The population is under 100,000, so the figure is scaled up to 100,000 in proportion.",
@@ -688,7 +688,7 @@ function mostCard(k){
   const pages=Math.max(1,Math.ceil(rows.length/10));if(st.p>=pages)st.p=pages-1;if(st.p<0)st.p=0;
   const max=rows.length&&!rows[0].sm?rows[0].v:1, pg=rows.slice(st.p*10,st.p*10+10);
   const bar=x=>{const segs=`<span class="s${{iu:0,bb:1,gb:2}[k]}" style="width:100%"></span>`; /* IU — one white bar, no stack (curator 17.11.2026) */
-    if(x.sm)return `<div class="r"><span class="rk num"></span><a href="#${x.c.slug}">${esc(x.c.name)}</a><div></div><span class="n num"><span class="ftip muted" tabindex="0" data-tip="${esc(x.pop<PER?t.mo_na:t.mo_na_age)}">—</span></span></div>`;
+    if(x.sm)return `<div class="r"><span class="rk num"></span><a href="#${x.c.slug}">${esc(x.c.name)}</a><div></div><span class="n num"><span class="ftip muted" tabindex="0" data-tip="${esc(t.mo_na_age)}">—</span></span></div>`;
     const val=per?`<span class="ftip" tabindex="0" data-tip="${esc(t.mo_tip(x.n,fmt(POPS[x.c.code]),fedAge(x.c.code),SINCES[x.c.code]))}">${fmtPer(x.v)}</span>`:x.n;
     return `<div class="r"><span class="rk num">${x.r}</span><a href="#${x.c.slug}">${esc(x.c.name)}</a><div class="t" style="width:${x.v/max*100}%">${segs}</div><span class="n num">${val}</span></div>`;};
   const title={iu:t.mo_iu,bb:"Blue Badge",gb:"Gold Badge"}[k];
@@ -915,7 +915,7 @@ const POPS=(typeof CATALOG!=="undefined"&&CATALOG.POP)||{}, PER=100000;
    association joined the ITTF (key SINCE, from the ITTF Directory). Unknown year or under 100,000 people — not calculated ("—"). */
 const SINCES=(typeof CATALOG!=="undefined"&&CATALOG.SINCE)||{}, CUR_Y=new Date().getFullYear();
 const fedAge=code=>SINCES[code]?CUR_Y-SINCES[code]:null;
-const perVal=(n,code)=>{const p=POPS[code],a=fedAge(code);return p>=PER&&a>0?n/(Math.log(p)*Math.log(a+1)):null; /* balanced index = umpires ÷ (ln(population) × ln(years in the ITTF + 1)) (curator 17.11.2026) */};
+const perVal=(n,code)=>{const p=POPS[code],a=fedAge(code);return p>1&&a>0?n/(Math.log(p)*Math.log(a+1)):null; /* balanced index = umpires ÷ (ln(population) × ln(years in the ITTF + 1)) (curator 17.11.2026) */};
 const fmtPer=v=>v==null?"—":v===0?"0":v>=100?fmt(Math.round(v)):v>=10?v.toFixed(1):v>=1?v.toFixed(2):String(+v.toPrecision(2));
 let IU_RANK=null;
 const iuRank=c=>{if(!IU_RANK){ /* same order as the Countries charts: under 100,000 people at the bottom; equal values — smaller population higher */
@@ -939,7 +939,7 @@ function viewCountry(c){
       ${others.map(o=>`<tr data-go="${oHref(o).slice(1)}"><td class="num">${o.isRef?"IR "+String(o.ir).padStart(5,"0"):o.iuX?String(o.iuX).padStart(5,"0"):"—"}</td><td><a href="${oHref(o)}">${esc(o.sur)}</a> ${esc(o.first)}</td><td>${o.isRef?irBadge(o.st):csvBadge(o.csv)}</td><td class="num">${o.asg.length||""}</td></tr>`).join("")}
     </tbody></table></div>`:"";
   const evs=[...new Set(c.list.concat(EXTRA.filter(x=>x.c===c),c.list.length?[]:others.filter(o=>o.isRef)).flatMap(o=>o.asg.map(a=>a.e)))].sort((a,b)=>b.s.localeCompare(a.s));
-  const pop=POPS[c.code]>=PER?POPS[c.code]:0, per=!!pop&&CPOP_MODE==="per", rk=pop?iuRank(c):null; /* under 100,000 people: no per-capita figures at all (curator 17.11.2026) */
+  const pop=POPS[c.code]||0, per=!!pop&&CPOP_MODE==="per", rk=pop?iuRank(c):null; /* with ln(population) every country is calculated again, small ones included (curator 17.11.2026) */
   const V=(k,what)=>!per?k:fedAge(c.code)>0?`<span class="ftip" tabindex="0" data-tip="${esc(t.cp_tip(k,what,fmt(pop),t.cp_src[{ENG:"ONS",SCO:"ONS",WAL:"ONS",BES:"BES",NFK:"NFK"}[c.code]||"UN"],fedAge(c.code),SINCES[c.code]))}">${fmtPer(perVal(k,c.code))}</span>`:`<span class="ftip muted" tabindex="0" data-tip="${esc(t.mo_na_age)}">—</span>`;
   return `${crumbs([[t.nav_countries,"#countries"],[c.name,null]])}
   <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap"><h1>${flagImg(c.code)}${esc(c.name)}</h1><span class="code" style="font-size:16px">${c.code}</span>${contChip(CONT[c.code])}${pop?`<div class="tabs" role="tablist" aria-label="${t.cp_aria}" style="margin-left:auto;align-self:center">${[["abs",t.cp_abs],["per",t.cp_per]].map(([v,l])=>`<button type="button" role="tab" data-cpm="${v}" aria-selected="${CPOP_MODE===v}"${v==="per"?` class="ftip" data-tip="${esc(t.adj_tip)}"`:""}>${l}</button>`).join("")}</div>`:""}</div>
@@ -951,7 +951,7 @@ function viewCountry(c){
     <div class="fact"><div class="v">${V(REFS.filter(r=>r.c===c).length,t.intl_refs)}</div><div class="k">${t.intl_refs}</div></div> <!-- curator 13.11.2026: referees of the association -->
     <div class="fact"><div class="v"><button class="vadd" type="button" data-add="${c.code}" data-addcat="NU">${t.add}</button></div><div class="k"><span class="ftip dashu" tabindex="0" data-tip="${esc(t.c_addnu_tip)}">${t.c_addnu_nu}</span></div></div> <!-- curator 17.11.2026 -->
   </div>
-  ${per?`<p class="muted cpnote">${t.cp_note(fmt(pop))}${pop<PER?" "+t.cp_small:""}</p>`:""}
+  ${per?`<p class="muted cpnote">${t.cp_note(fmt(pop))}</p>`:""}
   <div class="pgrid">
     <div class="stack">${rows.length?`<div class="tbl"><table><thead><tr><th>IU</th><th>${t.th_umpire}</th><th>${t.level}</th><th>${t.tournaments}</th></tr></thead><tbody>
       ${rows.map(({o,l,ina})=>{const n=o.x?o.iuX:o.iu;return `<tr data-go="${href(o).slice(1)}"${ina?' class="ina"':""}><td class="num">${n?String(n).padStart(5,"0"):"—"}</td><td><a href="${href(o)}">${esc(o.sur)}</a> ${esc(o.first)}</td><td>${lvChip(l)}${bbpMark(o)}${ina?` <span class="inam">${t.inactive}</span>`:""}</td><td class="num">${o.asg.length||""}</td></tr>`;}).join("")}
