@@ -680,11 +680,11 @@ function mostCard(k){
   const t=T(),st=MOST[k],per=st.m==="per";
   const cnt=c=>k==="iu"?c.list.length:c.list.filter(o=>o.lvl===(k==="bb"?1:2)).length;
   /* per capita (curator 17.11.2026): countries under 100,000 people go to the bottom, otherwise they lead artificially;
-     equal values — the smaller population first, so places are not shared there */
+     equal values (in both views) — the smaller population first, so places are not shared */
   const rows=COUNTRIES.map(c=>({c,n:cnt(c)})).filter(x=>x.n>0&&(!per||POPS[x.c.code])).map(x=>({...x,pop:POPS[x.c.code]||0,v:per?x.n/POPS[x.c.code]*PER:x.n}))
     .map(x=>({...x,sm:per&&x.pop<PER?1:0}))
-    .sort((a,b)=>a.sm-b.sm||b.v-a.v||(per?a.pop-b.pop:0)||a.c.name.localeCompare(b.c.name));
-  rows.forEach((x,i)=>{const y=rows[i-1];x.r=i&&x.v===y.v&&x.sm===y.sm&&(!per||x.pop===y.pop)?y.r:i+1;});
+    .sort((a,b)=>a.sm-b.sm||b.v-a.v||(a.pop||Infinity)-(b.pop||Infinity)||a.c.name.localeCompare(b.c.name));
+  rows.forEach((x,i)=>{const y=rows[i-1];x.r=i&&x.v===y.v&&x.sm===y.sm&&x.pop===y.pop?y.r:i+1;});
   const pages=Math.max(1,Math.ceil(rows.length/10));if(st.p>=pages)st.p=pages-1;if(st.p<0)st.p=0;
   const max=rows.length?rows[0].v:1, pg=rows.slice(st.p*10,st.p*10+10);
   const bar=x=>{const lv=[0,0,0];if(k==="iu")x.c.list.forEach(o=>lv[o.lvl]++);
