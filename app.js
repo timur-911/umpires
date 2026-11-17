@@ -58,7 +58,11 @@ ru:{
  filter_aria:"Фильтр по имени",all_cat:"Все категории",all_assoc:"Все ассоциации",cat:"Категория",assoc:"Ассоциация",
  n_umpires:n=>`${fmt(n)} ${plural(n,"судья","судьи","судей")}`,th_umpire:"Судья",th_bb:"Blue Badge с",th_gb:"Gold Badge с",more:n=>`Показать ещё ${n}`,
  countries_sub:(n,a)=>`${n} ассоциаций — членов ITTF. Число рядом — известные нам судьи ассоциации: международные, национальные и официальные лица Игр. Хотя бы один активный международный судья есть в ${a}.`,
- intl_umpires:"международных судей",intl_refs:"международных рефери",country_sys:"Судейство в стране",no_desc:"Описания пока нет",
+ intl_umpires:"международных судей",intl_refs:"международных рефери",cp_aria:"Как считать",cp_abs:"Всего",cp_per:"На 100 000 жителей",
+ cp_rank:(r,n)=>`${r}-е место из ${n} по судьям IU на 100 000 жителей`,
+ cp_tip:(k,what,p,src)=>`${what[0].toUpperCase()+what.slice(1)}: ${k} ÷ ${p} жителей × 100 000. Население: ${src}.`,cp_src:{UN:"оценка ООН на 2023 год (World Population Prospects 2024)",ONS:"ONS, середина 2023 года",IRL:"весь остров: Ирландия (ООН, 2023) и Северная Ирландия (ONS, середина 2023 года)",BES:"только Бонайре, CBS, 1 января 2024 года",NFK:"перепись Австралии 2021 года"},
+ cp_note:p=>`На 100 000 жителей · население ${p}.`,cp_small:"Здесь живёт меньше 100 000 человек, поэтому значение пересчитано на 100 000 по пропорции.",
+ c_addnu_pre:"Добавьте",c_addnu_nu:"национальных судей",c_addnu_tip:"Мы приветствуем и поддерживаем, когда пользователи добавляют сведения о судьях — особенно о судьях национальной категории (NU), о которых у нас почти нет информации.",country_sys:"Судейство в стране",no_desc:"Описания пока нет",
  no_desc_t:"Здесь куратор страны расскажет, как получают национальные категории, какие есть экзамены, как отбирают судей на турниры и есть ли финансирование.",
  nat:"Национальные судьи",nat_empty:"Список не загружен",nat_empty_t:"Куратор сможет загрузить судей национальных категорий файлом CSV или Excel.",
  country_events:"Судьи страны на турнирах",
@@ -114,7 +118,11 @@ en:{
  filter_aria:"Filter by name",all_cat:"All badges",all_assoc:"All associations",cat:"Badge",assoc:"Association",
  n_umpires:n=>`${fmt(n)} ${n===1?"umpire":"umpires"}`,th_umpire:"Umpire",th_bb:"Blue Badge since",th_gb:"Gold Badge since",more:n=>`Show ${n} more`,
  countries_sub:(n,a)=>`${n} ITTF member associations. The number is the umpires we know of: international, national and Games officials. ${a} of them have at least one active international umpire.`,
- intl_umpires:"international umpires",intl_refs:"international referees",country_sys:"Umpiring in this country",no_desc:"No description yet",
+ intl_umpires:"international umpires",intl_refs:"international referees",cp_aria:"Count",cp_abs:"Total",cp_per:"Per 100,000 people",
+ cp_rank:(r,n)=>`${r}${r%100>=11&&r%100<=13?"th":["th","st","nd","rd"][r%10]||"th"} of ${n} by IU per 100,000 people`,
+ cp_tip:(k,what,p,src)=>`${what[0].toUpperCase()+what.slice(1)}: ${k} ÷ ${p} people × 100,000. Population: ${src}.`,cp_src:{UN:"UN estimate for 2023 (World Population Prospects 2024)",ONS:"ONS mid-2023 estimate",IRL:"the whole island — Ireland (UN, 2023) and Northern Ireland (ONS, mid-2023)",BES:"Bonaire only, CBS, 1 January 2024",NFK:"Australian Census 2021"},
+ cp_note:p=>`Per 100,000 people · population ${p}.`,cp_small:"Fewer than 100,000 people live here, so the figure is scaled up to 100,000 in proportion.",
+ c_addnu_pre:"Add",c_addnu_nu:"national umpires",c_addnu_tip:"We welcome and support information about umpires added by users — especially National Umpires (NU), about whom we have almost no information.",country_sys:"Umpiring in this country",no_desc:"No description yet",
  no_desc_t:"The country curator will explain how national badges are earned, which exams exist, how umpires are selected for events and whether travel is funded.",
  nat:"National umpires",nat_empty:"List not uploaded",nat_empty_t:"The curator will be able to upload national umpires as a CSV or Excel file.",
  country_events:"This country's umpires at tournaments",
@@ -876,6 +884,17 @@ function renderListRows(){
 function viewCountries(){
   return `<h1>${T().nav_countries}</h1><p class="muted" style="margin:8px 0 22px">${T().countries_sub(COUNTRIES.length,ACTIVE_C.length)}</p>${mostBlock()}<section class="section"><div class="section-head"><h2>${T().by_country}</h2></div>${azBlock()}</section>`;
 }
+/* Country pages, per-capita switch (curator 17.11.2026): counts on the facts strip can be shown per 100,000 people.
+   Population — key POP of the catalog (core.association_population: UN WPP 2024 for 2023; England, Scotland, Wales — ONS mid-2023;
+   Ireland — all-island). Rank: place among associations with at least one IU by IU per 100,000 people; no rank with 0 IU. */
+let CPOP_MODE="abs";
+const POPS=(typeof CATALOG!=="undefined"&&CATALOG.POP)||{}, PER=100000;
+const fmtPer=v=>v==null?"—":v===0?"0":v>=100?fmt(Math.round(v)):v>=10?v.toFixed(1):v>=1?v.toFixed(2):String(+v.toPrecision(2));
+let IU_RANK=null;
+const iuRank=c=>{if(!IU_RANK){const r=COUNTRIES.filter(x=>x.list.length&&POPS[x.code]).map(x=>[x,x.list.length/POPS[x.code]]);
+    IU_RANK=new Map(r.map(([x,v])=>[x,1+r.filter(y=>y[1]>v).length]));IU_RANK.n=r.length;}
+  return IU_RANK.get(c)?{r:IU_RANK.get(c),n:IU_RANK.n}:null;};
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-cpm]");if(!b||b.dataset.cpm===CPOP_MODE)return;CPOP_MODE=b.dataset.cpm;route(true);});
 function viewCountry(c){
   const t=T(); const n=[0,0,0]; c.list.forEach(o=>n[o.lvl]++);
   /* one table of all umpires of the association: active IU (ITTF lists) + IU seen elsewhere (active / new / inactive) + NU (curator 30.10.2026) */
@@ -891,15 +910,19 @@ function viewCountry(c){
       ${others.map(o=>`<tr data-go="${oHref(o).slice(1)}"><td class="num">${o.isRef?"IR "+String(o.ir).padStart(5,"0"):o.iuX?String(o.iuX).padStart(5,"0"):"—"}</td><td><a href="${oHref(o)}">${esc(o.sur)}</a> ${esc(o.first)}</td><td>${o.isRef?irBadge(o.st):csvBadge(o.csv)}</td><td class="num">${o.asg.length||""}</td></tr>`).join("")}
     </tbody></table></div>`:"";
   const evs=[...new Set(c.list.concat(EXTRA.filter(x=>x.c===c),c.list.length?[]:others.filter(o=>o.isRef)).flatMap(o=>o.asg.map(a=>a.e)))].sort((a,b)=>b.s.localeCompare(a.s));
+  const pop=POPS[c.code]||0, per=!!pop&&CPOP_MODE==="per", rk=pop?iuRank(c):null;
+  const V=(k,what)=>per?`<span class="ftip" tabindex="0" data-tip="${esc(t.cp_tip(k,what,fmt(pop),t.cp_src[{ENG:"ONS",SCO:"ONS",WAL:"ONS",IRL:"IRL",BES:"BES",NFK:"NFK"}[c.code]||"UN"])+(pop<PER?" "+t.cp_small:""))}">${fmtPer(k/pop*PER)}</span>`:k;
   return `${crumbs([[t.nav_countries,"#countries"],[c.name,null]])}
-  <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap"><h1>${flagImg(c.code)}${esc(c.name)}</h1><span class="code" style="font-size:16px">${c.code}</span>${contChip(CONT[c.code])}</div>
-  <div class="facts">
-    <div class="fact"><div class="v">${c.list.length}</div><div class="k">${t.intl_umpires}</div></div>
-    <div class="fact"><div class="v">${n[0]}</div><div class="k">White Badge</div></div>
-    <div class="fact"><div class="v" style="color:var(--bb)">${n[1]}</div><div class="k">Blue Badge</div></div>
-    <div class="fact"><div class="v" style="color:var(--gb-ink)">${n[2]}</div><div class="k">Gold Badge</div></div>
-    <div class="fact"><div class="v">${REFS.filter(r=>r.c===c).length}</div><div class="k">${t.intl_refs}</div></div> <!-- curator 13.11.2026: referees of the association -->
+  <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap"><h1>${flagImg(c.code)}${esc(c.name)}</h1><span class="code" style="font-size:16px">${c.code}</span>${contChip(CONT[c.code])}${pop?`<div class="tabs" role="tablist" aria-label="${t.cp_aria}" style="margin-left:auto;align-self:center">${[["abs",t.cp_abs],["per",t.cp_per]].map(([v,l])=>`<button type="button" role="tab" data-cpm="${v}" aria-selected="${CPOP_MODE===v}">${l}</button>`).join("")}</div>`:""}</div>
+  <div class="facts f6">
+    <div class="fact"><div class="v">${V(c.list.length,t.intl_umpires)}</div><div class="k">${t.intl_umpires}</div>${rk?`<div class="crk">${t.cp_rank(rk.r,rk.n)}</div>`:""}</div>
+    <div class="fact"><div class="v">${V(n[0],"White Badge")}</div><div class="k">White Badge</div></div>
+    <div class="fact"><div class="v" style="color:var(--bb)">${V(n[1],"Blue Badge")}</div><div class="k">Blue Badge</div></div>
+    <div class="fact"><div class="v" style="color:var(--gb-ink)">${V(n[2],"Gold Badge")}</div><div class="k">Gold Badge</div></div>
+    <div class="fact"><div class="v">${V(REFS.filter(r=>r.c===c).length,t.intl_refs)}</div><div class="k">${t.intl_refs}</div></div> <!-- curator 13.11.2026: referees of the association -->
+    <div class="fact fadd"><div class="k">${t.c_addnu_pre} <span class="ftip dashu" tabindex="0" data-tip="${esc(t.c_addnu_tip)}">${t.c_addnu_nu}</span></div><button class="btn solid" type="button" data-add="${c.code}" data-addcat="NU">${t.add}</button></div> <!-- curator 17.11.2026 -->
   </div>
+  ${per?`<p class="muted cpnote">${t.cp_note(fmt(pop))}${pop<PER?" "+t.cp_small:""}</p>`:""}
   <div class="pgrid">
     <div class="stack">${rows.length?`<div class="tbl"><table><thead><tr><th>IU</th><th>${t.th_umpire}</th><th>${t.level}</th><th>${t.tournaments}</th></tr></thead><tbody>
       ${rows.map(({o,l,ina})=>{const n=o.x?o.iuX:o.iu;return `<tr data-go="${href(o).slice(1)}"${ina?' class="ina"':""}><td class="num">${n?String(n).padStart(5,"0"):"—"}</td><td><a href="${href(o)}">${esc(o.sur)}</a> ${esc(o.first)}</td><td>${lvChip(l)}${bbpMark(o)}${ina?` <span class="inam">${t.inactive}</span>`:""}</td><td class="num">${o.asg.length||""}</td></tr>`;}).join("")}
@@ -1764,13 +1787,13 @@ function wireOly(){
 }
 
 /* ---------- modal ---------- */
-function openModal(kind,iu,cc){
+function openModal(kind,iu,cc,cat){
   const t=T(); const o=iu?BYIU.get(+iu):null; const isClaim=kind==="claim";
   $("#modalRoot").innerHTML=`<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
     <h2 id="mt">${isClaim?t.claim:t.add_umpire}</h2>
     <p class="muted" style="margin:8px 0 0;font-size:14px">${isClaim?t.claim_sub:t.add_sub}</p>
     <form id="mf">
-      ${isClaim?`<label for="m_iu">${t.your_profile}</label><input id="m_iu" value="${o?esc(fullName(o))+" · IU "+String(o.iu).padStart(5,"0"):""}" placeholder="${t.ph_profile}" required>`:`<label for="m_name">${t.name_l}</label><input id="m_name" required><label for="m_c">${t.assoc}</label><select id="m_c">${COUNTRIES.slice().sort(byName).map(c=>`<option${cc&&c.code===cc?" selected":""}>${esc(c.name)}</option>`).join("")}</select><label for="m_cat">${t.cat_l}</label><select id="m_cat"><option>${t.nat_cat}</option><option>National Umpire (NU)</option><option>International Umpire</option></select>`}
+      ${isClaim?`<label for="m_iu">${t.your_profile}</label><input id="m_iu" value="${o?esc(fullName(o))+" · IU "+String(o.iu).padStart(5,"0"):""}" placeholder="${t.ph_profile}" required>`:`<label for="m_name">${t.name_l}</label><input id="m_name" required><label for="m_c">${t.assoc}</label><select id="m_c">${COUNTRIES.slice().sort(byName).map(c=>`<option${cc&&c.code===cc?" selected":""}>${esc(c.name)}</option>`).join("")}</select><label for="m_cat">${t.cat_l}</label><select id="m_cat"><option>${t.nat_cat}</option><option${cat==="NU"?" selected":""}>National Umpire (NU)</option><option>International Umpire</option></select>`}
       <label for="m_mail">${t.email}</label><input id="m_mail" type="email" required placeholder="name@example.com">
       <div id="mok"></div>
       <div class="row"><button class="btn" type="button" id="mclose">${t.close}</button><button class="btn primary" type="submit">${t.send}</button></div>
@@ -2243,7 +2266,7 @@ document.addEventListener("click",e=>{
   const tr=e.target.closest("tr[data-go]"); if(tr&&!e.target.closest("a")){location.hash=tr.dataset.go;return;}
   const c=e.target.closest("[data-claim]"); if(c){openModal("claim",c.dataset.claim);return;}
   const lb=e.target.closest("[data-lang]"); if(lb){LANG=lb.dataset.lang;try{localStorage.setItem("umpires_lang",LANG);}catch(_){}route(true);return;}
-  {const ad=e.target.closest("[data-add]");if(ad){openModal("add",null,ad.dataset.add||"");return;}}
+  {const ad=e.target.closest("[data-add]");if(ad){openModal("add",null,ad.dataset.add||"",ad.dataset.addcat||"");return;}}
   {const cu=e.target.closest("[data-cup]");if(cu){openEvModal("loc",null,CBYCODE.get(cu.dataset.cup));return;}}
   if(e.target.closest("[data-find]")){const q=$("#q");if(q){q.scrollIntoView({block:"center",behavior:"smooth"});q.focus({preventScroll:true});}return;}
   const ea=e.target.closest("[data-evact]"); if(ea){openEvModal(ea.dataset.evact,+ea.dataset.ei);return;}

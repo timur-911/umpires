@@ -193,6 +193,12 @@ main{margin-top:24px}
 .fact.fadd{display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:10px}
 .fact.fadd .k{margin-top:0;font-size:14px;color:var(--ink);font-weight:500}
 .facts.top{margin-top:28px}
+/* country page: six tiles (the last one adds national umpires), rank under the IU tile, per-capita note (curator 17.11.2026) */
+.facts.f6{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media (max-width:900px){.facts.f6{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.fact .crk{font-size:12px;color:var(--muted);margin-top:4px}
+.dashu{text-decoration:underline dashed;text-decoration-thickness:1px;text-underline-offset:3px;cursor:help}
+.cpnote{font-size:13px;margin:8px 0 0}
 .section{margin-top:40px}
 .section-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px}
@@ -394,7 +400,7 @@ td a{text-decoration:none;font-weight:500}
 @media (max-width:560px){.selrow{grid-template-columns:1fr 1fr}.selrow .s_name{grid-column:1/-1}.selrow+.selrow{margin-top:14px}}
 .ok{background:var(--bb-soft);border-radius:10px;padding:12px 14px;font-size:14px;margin-top:14px}
 footer{margin-top:48px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-@media (max-width:900px){.hero,.two,.pgrid{grid-template-columns:minmax(0,1fr)}.facts,.facts.f4{grid-template-columns:repeat(2,minmax(0,1fr))}.fact:last-child:nth-child(odd){grid-column:1/-1}}
+@media (max-width:900px){.hero,.two,.pgrid{grid-template-columns:minmax(0,1fr)}.facts,.facts.f4,.facts.f6{grid-template-columns:repeat(2,minmax(0,1fr))}.fact:last-child:nth-child(odd){grid-column:1/-1}}
 @media (max-width:560px){.phead{grid-template-columns:auto 1fr}.phead .act{grid-column:1/-1}.avatar{width:72px;height:72px;font-size:28px}.bars .r{grid-template-columns:100px 1fr 34px}.nav{justify-content:flex-start;order:3;flex-basis:100%}.pyr .row{grid-template-columns:70px 1fr}}
 @media (prefers-reduced-motion:no-preference){main{animation:in .25s ease-out}@keyframes in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}}
 </style>
