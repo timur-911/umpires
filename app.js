@@ -625,10 +625,11 @@ function viewHome(){
     ...listEv.map(x=>{const [y,m]=x.m.split("-");return {k:(+y*100+ +m)*100+15,d:`${(t.months_nom||t.months)[m-1]} ${y}`,cls:x.kind,html:`${lbl(x.kind,x.o)} — ${who(x.o)}`}}),
     ...newBB.map(o=>{const [y,m,d]=o.bb.split("-");return {k:(+y*100+ +m)*100+ +d,d:fmtDate(o.bb),cls:GBH.gbp[o.iu]?"br":"bn",html:`${GBH.gbp[o.iu]?t.ret_bb(o.sex==="F"):t.new_bb} — ${who(o)}`}})
   ].sort((a,b)=>b.k-a.k);
-  /* Latest tournaments (curator 18.11.2026): the events we actually have selections for, newest first —
-     the block used to list what was still to come, which on the home page was mostly empty rows. */
+  /* Latest tournaments (curator 18.11.2026): the events we have already published selections for,
+     newest first — the block used to list what was still to come, which on the home page was mostly
+     empty rows. Ordered by the end of the event, because that is when an event gets its selections. */
   const withSel = EV_BY_DATE.filter(e=>e.ump.length||nRef(e));
-  const latest = withSel.slice().sort((a,b)=>b.s.localeCompare(a.s)||b.e.localeCompare(a.e)).slice(0,8);
+  const latest = withSel.slice().sort((a,b)=>b.e.localeCompare(a.e)||b.s.localeCompare(a.s)).slice(0,8);
   const selY = withSel.reduce((m,e)=>e.s>m?e.s:m,"").slice(0,4)||String(new Date().getFullYear());
   const selN = withSel.filter(e=>e.s.startsWith(selY)).length;
   return `
