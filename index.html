@@ -231,8 +231,8 @@ main{margin-top:24px}
 .mpg{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:16px;font-size:13px}
 /* info icon next to Total / Adjusted; hover or focus shows the method (curator 18.11.2026) */
 .tabgrp{display:inline-flex;align-items:center;gap:8px}
-.infoi{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border:1.5px solid currentColor;border-radius:50%;font:italic 600 11px/1 Georgia,"Times New Roman",serif;color:var(--muted);cursor:help;user-select:none;flex:none}
-.infoi:hover,.infoi:focus-visible{color:var(--ink)}
+.infoi{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border:1.5px solid currentColor;border-radius:50%;font:italic 600 11px/1 Georgia,"Times New Roman",serif;color:var(--muted);transition:color .15s;cursor:help;user-select:none;flex:none}
+.infoi.on,.infoi:hover,.infoi:focus-visible{color:var(--ink)} /* muted like the inactive "Adjusted", bright when Adjusted is on (curator 18.11.2026) */
 .mcard .mrow{display:flex;align-items:center;justify-content:space-between;gap:8px 10px;flex-wrap:wrap;width:100%}
 .mcard .mchk{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--muted);cursor:pointer}
 .mcard .mchk input{accent-color:var(--gb);width:15px;height:15px;margin:0;cursor:pointer}
