@@ -390,6 +390,18 @@ td a{text-decoration:none;font-weight:500}
 .mgwrap canvas{display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 
 .news-up{margin-top:56px}
+/* Лента и «Upcoming tournaments» ровно одной высоты (куратор 18.11.2026): высоту
+   ряда задаёт правая колонка, лента растягивается на остаток и прокручивается
+   внутри — кнопки «показать ещё» и ссылки на методику под ней больше нет.
+   Список вынут из потока (position:absolute), иначе своими 29 записями он сам
+   растягивал бы ряд. На узких экранах колонки идут друг под другом, там лента
+   в потоке и ограничена по высоте. */
+.news-up>div{display:flex;flex-direction:column;min-width:0}
+.feedwrap{position:relative;flex:1 1 auto;min-height:240px}
+/* тень у верхнего и нижнего края ленты — тем же приёмом, что у таблиц:
+   видна, только пока в эту сторону есть ещё записи */
+.feedwrap .feed{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:6px;background-image:linear-gradient(to bottom,var(--bg),transparent),linear-gradient(to top,var(--bg),transparent),linear-gradient(to bottom,var(--edge),transparent),linear-gradient(to top,var(--edge),transparent);background-position:center top,center bottom,center top,center bottom;background-repeat:no-repeat;background-size:100% 18px,100% 18px,100% 14px,100% 14px;background-attachment:local,local,scroll,scroll}
+@media (max-width:900px){.feedwrap{min-height:0}.feedwrap .feed{position:static;max-height:420px}}
 .gwrap{position:relative;margin-top:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
 .gwrap canvas{display:block;width:100%;height:640px;touch-action:none;cursor:grab}
 .gwrap canvas.drag{cursor:grabbing}

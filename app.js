@@ -664,7 +664,7 @@ function viewHome(){
     <div>
       <div class="section-head"><h2>${t.news}</h2></div>
       <div class="newsline"><p class="muted">${t.news_sub}</p>${updStamp()}</div>
-      <ul class="feed" id="feed">${feed.map((f,i)=>`<li${i>=10?' class="xtra" hidden':""}><span class="d">${f.d}</span><span><i class="fdot f-${f.cls}"></i>${f.html}</span></li>`).join("")}</ul>${feed.length>10?`<button class="btn" type="button" id="feedMore" style="margin-top:10px">${t.more(feed.length-10)}</button>`:""}<p class="muted" style="font-size:12px;margin:10px 0 0"><a href="#methodology" class="muted">${t.meth_link}</a></p>
+      <div class="feedwrap"><ul class="feed" id="feed">${feed.map(f=>`<li><span class="d">${f.d}</span><span><i class="fdot f-${f.cls}"></i>${f.html}</span></li>`).join("")}</ul></div>
     </div>
     <div>
       <div class="section-head"><h2>${t.upcoming}</h2><a href="#events" class="muted">${t.all_events}</a></div>
@@ -2276,7 +2276,6 @@ function wire(){
   const cmb=$("#coMore"); if(cmb) cmb.onclick=()=>{document.querySelectorAll("#coList [hidden]").forEach(x=>x.hidden=false);cmb.remove();};
   wireCoPop();
   wireMiniGraph();
-  const fmb=$("#feedMore"); if(fmb) fmb.onclick=()=>{document.querySelectorAll("#feed .xtra").forEach(li=>li.hidden=false);fmb.remove();};
   const ab=$("#addBtn"); if(ab) ab.onclick=()=>openModal("add");
 }
 /* H1 size (curator 01.11.2026): one size on every page, chosen so that the home line "Share your experience." is about as wide as the search field in the left hero card. Measured with the real display font, so it works on any screen. */
