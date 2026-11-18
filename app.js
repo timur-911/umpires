@@ -116,7 +116,7 @@ en:{
  missing:"Umpire not listed?",add:"Add",tile_add_q:"Tournament official not listed?",umps_refs:"umpires and referees",women:"women among BB and GB",assoc_gb:"associations with a Gold Badge",
  news:"New in the official lists",news_sub:"Check the latest umpires’ levels updates.",upd_tip:"When the directory behind this list was last updated: the lists, levels and qualification dates.",new_gb:"New Gold Badge",new_bb:"New Blue Badge",
  upcoming:"Upcoming tournaments",all_events:"All tournaments →",most:"Most umpires",mo_iu:"International umpires",mo_former:"Include former",mo_per:"Adjusted",mo_of:"of",mo_prev:"Previous 10 countries",mo_next:"Next 10 countries",mo_tip:(n,p,a,y)=>`${n} ÷ (ln(${p}) × ln(${a} + 1)). Population ${p}, ITTF member since ${y} (${a} years).`,mo_na_age:"Year of joining the ITTF unknown — not calculated.",mo_na:"Population under 100,000 — not calculated per 100,000, otherwise it would lead artificially.",all_countries:"All countries →",
- by_country:"Umpires by country",assoc_n:n=>`${n} associations`,
+ by_country:"Table Tennis Umpires by Country",assoc_n:n=>`${n} associations`,
  list_all:"All umpires",list_all_sub:"International umpires (active and inactive), national umpires and Games officials we know of.",list_all_src:"Active IU: ITTF list of 1 January 2026, with current Blue and Gold Badges.",
  list_bb_sub:"",list_bb_src:"Blue Badge Umpires list as of 1 October 2026.",list_gb_sub:"The highest ITTF level.",list_gb_src:"Gold Badge Umpires list, October 2026.",
  filter_aria:"Filter by name",all_cat:"All badges",all_assoc:"All associations",cat:"Badge",assoc:"Association",
