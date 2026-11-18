@@ -58,6 +58,15 @@ h3{font-size:20px}
 .nav .navtt::after{transition:opacity .15s}
 .nav .navtt:has(+ .dd .ddb:hover)::after,.nav .navtt:has(+ .dd .ddb[aria-expanded="true"])::after{opacity:0} /* the divider disappears while Umpires is hovered or its menu is open (curator 18.11.2026) */
 @media (max-width:760px){.nav .navtt{display:none}}
+/* mobile: "UMPIR.ES | TABLE TENNIS" — the menu's TABLE TENNIS moves next to the logo, with the same thin divider (curator 18.11.2026) */
+.logott{display:none}
+@media (max-width:760px){
+  .logott{display:inline-flex;align-items:center;margin-left:-20px;font-size:13px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--on-brand);opacity:.62;line-height:1.6;white-space:nowrap}
+  .logott::before{content:"";flex:none;width:1px;height:22px;background:currentColor;opacity:.55;margin:0 9px}
+  .bar{column-gap:12px}.logott{margin-left:-12px} /* logo, TABLE TENNIS and the hamburger fit one row down to 320px */
+  .bar .baract{display:none}.bar .burger{margin-left:auto} /* the header's buttons are empty on mobile: Sign in/out is in the menu panel, "That's me" is never in the header */
+}
+@media (max-width:350px){.logo{font-size:20px}.logott{font-size:11px}.logott::before{height:19px;margin:0 7px}}
 /* mobile: menu items hide under a hamburger; the panel opens below the logo row and closes on navigation, Escape or a tap outside (curator 13.11.2026) */
 .burger{display:none;order:2;align-items:center;justify-content:center;width:40px;height:40px;margin:-4px -6px -4px 0;padding:0;border:0;border-radius:10px;background:none;color:var(--on-brand);cursor:pointer}
 .burger:hover{background:rgba(6,42,49,.1)}
@@ -566,6 +575,7 @@ tr.nolink{cursor:default}
 <div class="wrap">
   <header class="bar">
     <a class="logo" href="#home">UMPIR<span>.</span>ES</a>
+    <span class="logott">Table Tennis</span>
     <nav class="nav" id="nav"><i class="skp" style="width:78px"></i><i class="skp" style="width:62px"></i><i class="skp" style="width:74px"></i><i class="skp" style="width:86px"></i><i class="skp" style="width:54px"></i><i class="skp" style="width:64px"></i></nav>
     <button class="burger" id="burger" type="button" aria-label="Menu" aria-controls="nav" aria-expanded="false"><svg class="hbi" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14"/></svg><svg class="hbx" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15"/></svg></button>
     <div class="baract">
