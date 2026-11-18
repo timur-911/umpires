@@ -619,7 +619,7 @@ function viewHome(){
   return `
   <section class="hero">
     <div class="card herol">
-      <div class="eyebrow">${t.eyebrow}</div>
+      <div class="eyebrow eb-blue">${t.eyebrow}</div>
       <div class="heroh"><h1 style="margin-top:10px">${t.h1}</h1></div>
       <p class="lead">${t.lead}</p>
       ${searchBox()}
