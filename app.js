@@ -1965,11 +1965,13 @@ const AUTH_T={
 };
 const authT=()=>AUTH_T[LANG]||AUTH_T.en;
 function authBtn(){
-  const b=document.getElementById("authBtn");if(!b)return;
-  if(!SB){b.hidden=true;return;}
-  b.hidden=false;
-  b.textContent=CAP.uid?authT().out:authT().in;
-  b.onclick=async()=>{if(CAP.uid){b.disabled=true;try{await SB.auth.signOut();}catch(_){}b.disabled=false;}else openAuthModal();};
+  /* two copies of the button: #authBtn in the header (desktop) and .navauth in the menu panel (mobile, curator 18.11.2026) */
+  document.querySelectorAll("#authBtn,.navauth").forEach(b=>{
+    if(!SB){b.hidden=true;return;}
+    b.hidden=false;
+    b.textContent=CAP.uid?authT().out:authT().in;
+    b.onclick=async()=>{if(CAP.uid){b.disabled=true;try{await SB.auth.signOut();}catch(_){}b.disabled=false;}else openAuthModal();};
+  });
 }
 function openAuthModal(){
   const a=authT(), t=T();
@@ -2164,7 +2166,7 @@ function chrome(r){
   const t=T();
   document.documentElement.lang=LANG;
   const umpR=["umpires","blue","gold","white"].includes(r);
-  $("#nav").innerHTML=`<div class="navc"><span class="navtt">Table Tennis</span><div class="dd"><button type="button" class="ddb" aria-haspopup="true" aria-expanded="false"${umpR?' aria-current="page"':""}>${t.nav_ump_menu}<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="ddm" hidden><a href="#gold" data-r="gold">${t.dd_gold}</a><a href="#blue" data-r="blue">${t.dd_blue}</a><a href="#white" data-r="white">${t.dd_white}</a><a href="#umpires" data-r="umpires" class="ddall">${t.dd_all}</a></div></div><a href="#referees" data-r="referees">${t.nav_refs}</a><a href="#events" data-r="events">${t.nav_events}</a></div><a href="#countries" data-r="countries">${t.nav_countries}</a><a href="#graph" data-r="graph">${t.nav_graph}</a><a href="#olympics" data-r="olympics">${LANG==="ru"?"Олимпиады":"Olympics"}</a>${themeSw()}`;
+  $("#nav").innerHTML=`<div class="navc"><span class="navtt">Table Tennis</span><div class="dd"><button type="button" class="ddb" aria-haspopup="true" aria-expanded="false"${umpR?' aria-current="page"':""}>${t.nav_ump_menu}<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="ddm" hidden><a href="#gold" data-r="gold">${t.dd_gold}</a><a href="#blue" data-r="blue">${t.dd_blue}</a><a href="#white" data-r="white">${t.dd_white}</a><a href="#umpires" data-r="umpires" class="ddall">${t.dd_all}</a></div></div><a href="#referees" data-r="referees">${t.nav_refs}</a><a href="#events" data-r="events">${t.nav_events}</a></div><a href="#countries" data-r="countries">${t.nav_countries}</a><a href="#graph" data-r="graph">${t.nav_graph}</a><a href="#olympics" data-r="olympics">${LANG==="ru"?"Олимпиады":"Olympics"}</a><div class="navft">${themeSw()}<button class="btn navauth" type="button" hidden></button></div>`; /* .navft: on mobile the theme switch and Sign in/out share the bottom row of the open menu (curator 18.11.2026) */
   document.querySelectorAll("#nav a").forEach(a=>{if(a.dataset.r===r)a.setAttribute("aria-current","page");});
   {const dd=$("#nav .dd"),b=dd.querySelector(".ddb"),m=dd.querySelector(".ddm");let tm=0;
    const open=v=>{clearTimeout(tm);m.hidden=!v;b.setAttribute("aria-expanded",v);};
