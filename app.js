@@ -954,7 +954,7 @@ function viewCountry(c){
     <div class="fact"><div class="v" style="color:var(--bb)">${V(n[1],"Blue Badge")}</div><div class="k">Blue Badge</div></div>
     <div class="fact"><div class="v" style="color:var(--gb-ink)">${V(n[2],"Gold Badge")}</div><div class="k">Gold Badge</div></div>
     <div class="fact"><div class="v">${V(REFS.filter(r=>r.c===c).length,t.intl_refs)}</div><div class="k">${t.intl_refs}</div></div> <!-- curator 13.11.2026: referees of the association -->
-    <div class="fact"><div class="v"><button class="vadd" type="button" data-add="${c.code}" data-addcat="NU">${t.add}</button></div><div class="k"><span class="ftip dashu" tabindex="0" data-tip="${esc(t.c_addnu_tip)}">${t.c_addnu_nu}</span></div></div> <!-- curator 17.11.2026 -->
+    <div class="fact"><div class="vb"><button class="btn solid" type="button" data-add="${c.code}" data-addcat="NU">${t.add}</button></div><div class="k"><span class="ftip dashu" tabindex="0" data-tip="${esc(t.c_addnu_tip)}">${t.c_addnu_nu}</span></div></div> <!-- curator 17.11.2026 -->
   </div>
   ${per?`<p class="muted cpnote">${t.cp_note(fmt(pop))}</p>`:""}
   <div class="pgrid">
