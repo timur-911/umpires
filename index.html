@@ -228,6 +228,11 @@ main{margin-top:24px}
 .section{margin-top:40px}
 .section-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px}
+/* подпись и штамп обновления над лентой: текст слева, пиктограмма с датой справа */
+.newsline{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;margin:-6px 0 12px}
+.newsline p{margin:0;font-size:13px}
+.newsupd{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:var(--f-mono);font-size:12px;cursor:default}
+.newsupd svg{width:13px;height:13px;flex:none;transform:translateY(.5px)}
 .feed{list-style:none;margin:0;padding:0}
 .feed li{display:grid;grid-template-columns:98px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
 .feed li:first-child{border-top:0}

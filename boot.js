@@ -10,6 +10,10 @@
    при следующем открытии страницы. */
 (function () {
   var NEED = ["DATA", "EV", "OLY", "OLY_NAMES", "BBQ", "GBH", "GANTT", "PARA", "REF_IU"];
+  /* Ключи, из которых собрана лента «New in the ITTF lists» на главной: по ним
+     берётся отметка времени последней правки справочника (дата рядом с
+     пиктограммой обновления). Остальные ключи на ленту не влияют. */
+  var FEED_KEYS = ["GBH", "BBQ", "DATA"];
   var CACHE = "umpires.catalog.v1";
   var cfg = window.SUPABASE_CONFIG || {};
   var key = cfg.anonKey || cfg.key || "";
@@ -40,6 +44,14 @@
     return (rows || []).map(function (r) { return r.key + ":" + r.updated_at; }).sort().join("|");
   }
 
+  function updatedOf(rows) {                 // самая поздняя правка ключей ленты
+    var t = "";
+    (rows || []).forEach(function (row) {
+      if (FEED_KEYS.indexOf(row.key) >= 0 && row.updated_at && row.updated_at > t) t = row.updated_at;
+    });
+    return t;
+  }
+
   function asCatalog(rows) {
     var c = {};
     (rows || []).forEach(function (row) { c[row.key] = row.data; });
@@ -48,19 +60,20 @@
     return c;
   }
 
-  function start(catalog) {
+  function start(catalog, updated) {
     if (started) return;
     started = true;
     window.CATALOG = catalog;
+    window.CATALOG_UPDATED = updated || "";
     var s = document.createElement("script");
     s.src = "app.js";
     s.onerror = function () { say("Could not load app.js. Reload the page."); };
     document.body.appendChild(s);
   }
 
-  function remember(catalog, sig) {
+  function remember(catalog, sig, updated) {
     try {
-      localStorage.setItem(CACHE, JSON.stringify({ sig: sig, data: catalog }));
+      localStorage.setItem(CACHE, JSON.stringify({ sig: sig, data: catalog, upd: updated || "" }));
     } catch (e) { /* приватный режим или нет места — просто живём без кэша */ }
   }
 
@@ -79,8 +92,8 @@
     return get("/rest/v1/catalog?select=key,data,updated_at")
       .then(function (rows) {
         var catalog = asCatalog(rows);
-        remember(catalog, signature(rows));
-        start(catalog);
+        remember(catalog, signature(rows), updatedOf(rows));
+        start(catalog, updatedOf(rows));
       })
       .catch(onFail);
   }
@@ -92,14 +105,15 @@
 
   var hit = cached();
   if (hit) {
-    start(hit.data);                                   // рисуем немедленно
+    start(hit.data, hit.upd);                          // рисуем немедленно
     get("/rest/v1/catalog?select=key,updated_at")       // и проверяем свежесть фоном
       .then(function (rows) {
         if (signature(rows) !== hit.sig) {
           return get("/rest/v1/catalog?select=key,data,updated_at").then(function (full) {
-            remember(asCatalog(full), signature(full));
+            remember(asCatalog(full), signature(full), updatedOf(full));
           });
         }
+        if (!hit.upd) remember(hit.data, hit.sig, updatedOf(rows));   // кэш от версии без отметки времени
       })
       .catch(function () { /* офлайн — кэша достаточно */ });
     return;
