@@ -54,8 +54,9 @@ h3{font-size:20px}
 .nav .soon{opacity:.6}
 /* "TABLE TENNIS | Umpires Referees Tournaments" — the sport named before the first menu group; hidden in the mobile menu (curator 18.11.2026) */
 .nav .navtt{display:inline-flex;align-items:center;align-self:center;font-size:13px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--on-brand);opacity:.62;margin-right:-6.25px;line-height:1.6;white-space:nowrap;transform:translateY(.5px)}
-/* the divider is drawn like a letter of TABLE TENNIS: same colour, a regular-weight stroke, cap height, on the baseline; 20px of air on each side (curator 18.11.2026) */
 .nav .navtt::after{content:"";flex:none;width:1px;height:22px;background:currentColor;opacity:.55;margin-left:7.5px;transform:translateY(-.5px)} /* divider after TABLE TENNIS, drawn to the curator's mock-up (18.11.2026): a thin line in the colour of TABLE TENNIS (currentColor under the same opacity, then .55 more so that a solid 1px line reads as light as the thin, antialiased strokes of the letters — measured on the mock-up), about twice the capital height, its middle level with the middle of the menu items, ~8.5px of air on each side; TABLE TENNIS itself is nudged .5px down to sit on the same middle */
+.nav .navtt::after{transition:opacity .15s}
+.nav .navtt:has(+ .dd .ddb:hover)::after,.nav .navtt:has(+ .dd .ddb[aria-expanded="true"])::after{opacity:0} /* the divider disappears while Umpires is hovered or its menu is open (curator 18.11.2026) */
 @media (max-width:760px){.nav .navtt{display:none}}
 /* mobile: menu items hide under a hamburger; the panel opens below the logo row and closes on navigation, Escape or a tap outside (curator 13.11.2026) */
 .burger{display:none;order:2;align-items:center;justify-content:center;width:40px;height:40px;margin:-4px -6px -4px 0;padding:0;border:0;border-radius:10px;background:none;color:var(--on-brand);cursor:pointer}
