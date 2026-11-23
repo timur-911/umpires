@@ -1,0 +1,71 @@
+# Сборка и публикация umpir.es на GitHub Pages.
+#
+# ВАЖНО: источник сайта в настройках репозитория должен стоять «GitHub Actions»
+# (Settings → Pages → Build and deployment → Source). Пока там «Deploy from a
+# branch», сборка пройдёт, а шаг публикации — нет.
+#
+# Сгенерированные страницы в репозиторий не коммитятся: они собираются здесь и
+# уезжают артефактом деплоя (решение владельца 23.11.2026).
+#
+# Данные лежат не в репозитории, а в Supabase (ключ публичный, в config.js),
+# поэтому пересобирать сайт нужно и когда код не менялся — правку справочника
+# подхватывает расписание. Руками: Actions → Deploy site → Run workflow.
+#
+# .nojekyll в артефакт не кладём: при публикации из Actions Jekyll не
+# запускается, а upload-pages-artifact скрытые файлы и так не берёт.
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "41 4 * * *"   # 09:41 по Алматы
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Две публикации одновременно не нужны, но начатую не обрываем.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Страницы снимаются с настоящего сайта браузером, поэтому нужен Chromium.
+      - name: Playwright и Chromium
+        run: |
+          npm i --no-save playwright@1.65.1
+          npx playwright install --with-deps chromium
+
+      - name: Собрать страницы
+        run: node tools/build-site.js
+
+      - name: Что собралось
+        run: |
+          echo "страниц: $(find dist -name index.html | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "размер: $(du -sh dist | cut -f1)" >> $GITHUB_STEP_SUMMARY
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

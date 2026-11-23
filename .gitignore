@@ -3,3 +3,8 @@
 catalog_seed.sql
 
 .DS_Store
+
+# Сборка страниц: результат уезжает артефактом деплоя, в репозитории ему не место.
+dist/
+.build-work/
+node_modules/
