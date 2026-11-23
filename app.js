@@ -228,6 +228,43 @@ const contChip = k=>k?`<abbr class="cont" title="${T().conts[k]}">${k}</abbr>`:"
 const XNAME = {URU:"Uruguay"};
 const ASSOC_N = new Set(COUNTRIES.filter(c=>c.list.length).map(c=>c.code).concat(REFS.map(r=>r.code))).size;
 const ACTIVE_C = COUNTRIES.filter(c=>c.list.length);
+/* Адреса профилей (решение владельца 23.11.2026):
+     /umpires/16564-ali-aalmutairi/     — номер IU впереди, слаг для читаемости
+     /referees/9165-abdallah-boudjahem/ — номер IR
+     /umpires/lionel-titicala/          — без номера: по имени;
+     /umpires/arg-lionel-titicala/      — при совпадении имён добавляется код
+     /umpires/arg-lionel-titicala-2/      ассоциации, а если совпало и там — номер
+   Номер впереди делает адрес устойчивым: имя можно поправить, адрес не поедет.
+   У записей без номера устойчивости нет — их различает только имя, поэтому при
+   правке имени адрес такого профиля меняется. Разбор и сборка живут здесь, а не
+   в routes.js: им нужны данные. */
+const slugText = s=>(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+const personSlug = p=>slugText((p.first||"")+" "+(p.sur||""))||"official";
+const PSLUG=new Map();   /* ключ маршрута -> слаг (профили и страны) */
+const PKEY=new Map();    /* "umpires/слаг" -> ключ маршрута */
+function buildRouteSlugs(){
+  PSLUG.clear();PKEY.clear();
+  const put=(key,sec,slug)=>{PSLUG.set(key,slug);PKEY.set(sec+"/"+slug,key);};
+  /* Ассоциации: /countries/saudi-arabia/. В ключе маршрута ("csaudiarabia")
+     дефисов нет и он остаётся прежним — старые хешевые ссылки работают. */
+  COUNTRIES.forEach(c=>put(c.slug,"countries",slugText(c.name)||c.slug.slice(1)));
+  OFF.forEach(o=>put("u"+o.iu,"umpires",o.iu+"-"+personSlug(o)));
+  REFS.forEach(r=>{if(!r.o)put("r"+r.ir,"referees",r.ir+"-"+personSlug(r));});
+  const byName=new Map();
+  EXTRA.forEach(x=>{const n=personSlug(x);if(!byName.has(n))byName.set(n,[]);byName.get(n).push(x);});
+  byName.forEach((list,n)=>{
+    if(list.length===1){put("x"+list[0].k,"umpires",n);return;}
+    const byCode=new Map();
+    list.forEach(x=>{const c=slugText((x.c&&x.c.code)||x.code||"")||"na";const sl=c+"-"+n;
+      if(!byCode.has(sl))byCode.set(sl,[]);byCode.get(sl).push(x);});
+    byCode.forEach((ls,sl)=>ls.forEach((x,i)=>put("x"+x.k,"umpires",i?sl+"-"+(i+1):sl)));
+  });
+}
+buildRouteSlugs(); /* функцией, а не на месте: правило различения тёзок иначе
+                      нечем проверить — в данных совпадений имён пока нет */
+ROUTES.slugOf=k=>PSLUG.get(k)||null;
+ROUTES.keyOf=(sec,slug)=>PKEY.get(sec+"/"+slug)||null;
+
 const refsOf = c=>REFS.filter(r=>r.c===c&&!r.o);
 const person = r=>r>=0?OFF[r]:EXTRA[-1-r];
 /* selections embargo (curator 14.11.2026): officials of a tournament are shown only once three full days have passed since it ended
@@ -328,6 +365,13 @@ function pathifyLinks(root){
 function goTo(key){
   if(ROUTES.live(key)){history.pushState(null,"",ROUTES.path(key));route(false);}
   else location.hash="#"+key;
+}
+/* Тот же профиль под другим адресом (рефери, у которого есть профиль судьи;
+   запись без номера, за которой стоит номер IU). Адрес подменяется на месте:
+   location.replace с путём перезагрузил бы страницу целиком. */
+function goReplace(key){
+  if(ROUTES.live(key)){history.replaceState(null,"",ROUTES.path(key));return route(false);}
+  location.replace("#"+key);
 }
 /* Переход по готовой ссылке из разметки: она может быть и хешем, и путём. */
 function goHref(u){
@@ -2337,8 +2381,10 @@ function setMeta(attr,name,val){
   if(!el){if(!val)return;el=document.createElement("meta");el.setAttribute(attr,name);document.head.appendChild(el);}
   el.setAttribute("content",val);
 }
-function applyHead(h,html,isHome){
-  const d=ROUTES.head({key:isHome?"home":h,h1:isHome?"":h1Text(html),countryTitle:T().meta_country});
+function applyHead(h,html,isHome,subj){
+  const d=ROUTES.head({key:isHome?"home":h,h1:isHome?"":h1Text(html),countryTitle:T().meta_country,
+                       country:subj?((subj.c&&subj.c.name)||subj.cname||""):"",
+                       isReferee:!!(subj&&subj.isRef)});
   document.title=d.title;
   setMeta("name","description",d.description);
   setMeta("property","og:title",d.title);
@@ -2355,7 +2401,7 @@ function route(keepScroll){
      остаётся на хеше: путь отдал бы 404. */
   if(location.hash&&ROUTES.live(h))history.replaceState(null,"",ROUTES.path(h));
   if(!/^[urx]\d+$/.test(h))PREV_PAGE=h;
-  let html,r="home",isHome=false;
+  let html,r="home",isHome=false,subj=null;
   if(h==="umpires"){html=viewList("all");r="umpires";}
   else if(h==="blue"){html=viewList("1");r="blue";}
   else if(h==="gold"){html=viewList("2");r="gold";}
@@ -2364,18 +2410,18 @@ function route(keepScroll){
   else if(h==="updates"){html=viewUpdates();r="updates";}
   else if(h==="countries"){html=viewCountries();r="countries";}
   else if(h==="referees"){html=viewReferees();r="referees";}
-  else if(/^r\d+$/.test(h)&&REFS.find(x=>x.ir==+h.slice(1))){const rf=REFS.find(x=>x.ir==+h.slice(1));if(rf.o){location.replace("#u"+rf.o.iu);return;}html=viewProfile(rf);r="referees";}
+  else if(/^r\d+$/.test(h)&&REFS.find(x=>x.ir==+h.slice(1))){const rf=REFS.find(x=>x.ir==+h.slice(1));if(rf.o)return goReplace("u"+rf.o.iu);subj=rf;html=viewProfile(rf);r="referees";}
   else if(h==="events"){html=viewEvents();r="events";}
   else if(h==="graph"){html=viewGraph();r="graph";}
   else if(h==="olympics"){html=viewOlympics();r="olympics";}
   else if(h==="inbox"){html=viewInbox();r="inbox";if(CAP.admin&&!INBOX.length&&!inboxSub)loadInbox().then(()=>{if(ROUTES.parse(location.pathname,location.hash)==="inbox")route(true);});}
   else if(/^e\d+$/.test(h)&&EVENTS[+h.slice(1)]){html=viewEvent(EVENTS[+h.slice(1)]);r="events";}
-  else if(/^u\d+$/.test(h)&&BYIU.get(+h.slice(1))){html=viewProfile(BYIU.get(+h.slice(1)));r="";}
-  else if(/^x\d+$/.test(h)&&EXTRA[+h.slice(1)]){const x=EXTRA[+h.slice(1)];if(!x.asg.length&&x.iuX&&BYIU.get(x.iuX)){location.replace("#u"+x.iuX);return;}html=viewProfile(x);r="";}
+  else if(/^u\d+$/.test(h)&&BYIU.get(+h.slice(1))){subj=BYIU.get(+h.slice(1));html=viewProfile(subj);r="";}
+  else if(/^x\d+$/.test(h)&&EXTRA[+h.slice(1)]){const x=EXTRA[+h.slice(1)];if(!x.asg.length&&x.iuX&&BYIU.get(x.iuX))return goReplace("u"+x.iuX);subj=x;html=viewProfile(x);r="";}
   else if(h[0]==="c"&&COUNTRIES.find(c=>c.slug===h)){html=viewCountry(COUNTRIES.find(c=>c.slug===h));r="countries";}
   else {html=viewHome();isHome=true;}
   if(r!=="home"&&!/^\s*<(div|nav) class="crumbs"/.test(html)){const m=/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html);if(m)html=crumbs([[m[1].replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").trim(),null]])+html;}
-  applyHead(h,html,isHome);
+  applyHead(h,html,isHome,subj);
   curRoute=r;chrome(r);
   $("#app").innerHTML=html;
   wire();fitH1();startRot();

@@ -125,14 +125,17 @@ function serve(dir) {
    загрузке, и в HTML это десятки килобайт мёртвой разметки. Текст, заголовки,
    ссылки и мета-теги остаются. */
 function snapOne(k) {
-  history.replaceState(null, "", ROUTES.live(k) ? ROUTES.path(k) : "/#" + k);
+  /* Путь считается здесь, в странице: слаг профиля (16564-ali-aalmutairi)
+     собирается из данных, которых в Node нет. */
+  const p = ROUTES.live(k) ? ROUTES.path(k) : null;
+  history.replaceState(null, "", p || "/#" + k);
   route(false);
   document.querySelectorAll("svg").forEach(s => { if (s.outerHTML.length > 8000) s.textContent = ""; });
   document.querySelectorAll("canvas").forEach(c => c.remove());
   const res = document.getElementById("res"); if (res) { res.innerHTML = ""; res.hidden = true; }
   const mr = document.getElementById("modalRoot"); if (mr) mr.innerHTML = "";
   document.querySelectorAll("[aria-busy]").forEach(e => e.removeAttribute("aria-busy"));
-  return "<!doctype html>" + document.documentElement.outerHTML;
+  return {path: p, html: "<!doctype html>" + document.documentElement.outerHTML};
 }
 
 /* Список маршрутов к выпуску спрашивается у самого сайта: второго описания
@@ -144,7 +147,11 @@ function routeKeys() {
   if (live.event) EVENTS.forEach(e => out.push("e" + e.i));
   if (live.person) {
     OFF.forEach(o => out.push("u" + o.iu));
-    EXTRA.forEach(x => out.push("x" + x.k));
+    /* Своей страницы не получают те, кто открывается под другим адресом:
+       рефери с профилем судьи и запись без номера, за которой стоит номер IU
+       (route() уводит их туда же). Иначе один и тот же профиль лежал бы по
+       двум адресам. */
+    EXTRA.forEach(x => { if (x.asg.length || !x.iuX || !BYIU.get(x.iuX)) out.push("x" + x.k); });
     REFS.forEach(r => { if (!r.o) out.push("r" + r.ir); });
   }
   return out;
@@ -195,8 +202,9 @@ async function snapshot(port) {
 
   const pages = [];
   for (const key of keys) {
-    const html = await page.evaluate(snapOne, key);
-    pages.push({ key, path: ROUTES.path(key), html: finishPage(html, key) });
+    const r = await page.evaluate(snapOne, key);
+    if (!r.path) throw new Error("у маршрута " + key + " нет своего адреса, а он помечен как выпускаемый");
+    pages.push({ key, path: r.path, html: finishPage(r.html, key) });
   }
   await browser.close();
   return { pages, problems, warnings };

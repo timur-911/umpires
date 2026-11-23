@@ -1,25 +1,30 @@
 /* UMPIR.ES — маршруты сайта: разбор адреса, сборка адреса, мета-теги по маршруту.
 
-   Один источник правды об адресах: им пользуется браузер (app.js) и, с этапа 1,
-   генератор страниц. В файле нет ни DOM, ни данных — он читается и в Node.
+   Один источник правды об адресах: им пользуется браузер (app.js) и генератор
+   страниц (tools/build-site.js). В файле нет данных — он читается и в Node.
 
    Ключ маршрута — та же строка, что раньше стояла в хеше:
      "home" "gold" "countries" … | "u16367" "x172" "r37" "e42" | "cjapan"
-   Путь:
-     "/"    "/gold/" "/countries/" | "/u/16367/" "/x/172/" "/r/37/" "/e/42/" | "/c/japan/"
+   Адреса (решение владельца 23.11.2026 — раздел-родитель, сущность внутри):
+     /                      главная
+     /gold/ /countries/ …   разделы
+     /umpires/16564-ali-aalmutairi/     судья с номером IU
+     /umpires/arg-lionel-titicala/      судья без номера: по имени, при
+                                        совпадении — с кодом ассоциации, дальше -2
+     /referees/9165-abdallah-boudjahem/ рефери (номер IR)
+     /countries/japan/                  ассоциация
+   Номер впереди делает адрес устойчивым: имя можно поправить, адрес не поедет.
+   Разбор смотрит только на номер, поэтому /umpires/16564-что-угодно/ тоже
+   откроет нужный профиль, а canonical приведёт к правильному написанию.
 
-   LIVE — какие виды страниц уже разложены генератором. Вид, которого нет,
-   живёт только по хешу: ссылка на /u/16367/ увела бы посетителя на 404, а
-   canonical на несуществующий адрес поисковик отбросит. Поэтому вид включается
-   в LIVE тем же коммитом, которым генератор начинает его выпускать, — иначе
-   сайт начнёт ссылаться в пустоту. Проверить вид: ROUTES.live("u16367").
+   LIVE — какие виды страниц уже разложены генератором. Вид, которого нет, живёт
+   только по хешу: ссылка на несуществующую страницу увела бы посетителя на 404,
+   а canonical на несуществующий адрес поисковик отбросит. Вид включается в LIVE
+   тем же коммитом, которым генератор начинает его выпускать.
 
-   Внимание на этап 1: ключи "x172" и "e42" — это НОМЕР ПО ПОРЯДКУ в массивах
-   EV.x и EV.ev, а не устойчивый идентификатор. При следующей публикации
-   справочника порядок может измениться, и такой адрес станет указывать на
-   другого человека или турнир. Разбор и сборка здесь симметричны, поэтому
-   сейчас это ничего не ломает, но индексируемые страницы профилей без номера
-   IU и страницы турниров нельзя выпускать на таких адресах.
+   Слаги и обратный разбор «слаг → ключ» требуют данных, поэтому их подставляет
+   app.js двумя функциями (slugOf и keyOf). Без них остаётся разбор адресов с
+   номером — этого довольно генератору, который пути берёт у самой страницы.
 */
 (function(root){
 "use strict";
@@ -32,14 +37,12 @@ var BASE_DESC="A curated, community-powered database and professional network fo
 
 /* Разделы: ключ маршрута совпадает с сегментом пути. */
 var SECTIONS=["umpires","blue","gold","white","updates","methodology","countries","referees","events","graph","olympics","inbox"];
-/* Записи с номером: /u/16367/, /x/172/, /r/37/, /e/42/. */
-var NUMERIC=["u","x","r","e"];
 /* Разделы, которых в поиске быть не должно: страница админа не выпускается
    генератором и остаётся доступной только по хешу. */
 var NOINDEX=["inbox"];
 
 /* Какие виды страниц генератор уже разложил. Правится вместе с генератором. */
-var LIVE={section:true,country:true,person:false,event:false};
+var LIVE={section:true,country:true,person:true,event:false};
 
 /* Описания разделов. Всегда по-английски: сайт для посетителя англоязычный,
    RU остаётся только в интерфейсе куратора. Без чисел — иначе описание
@@ -59,15 +62,24 @@ var DESC={
   olympics:"Table tennis umpires and referees at the Olympic and Paralympic Games.",
   inbox:""
 };
-var PERSON_DESC="%s: badge, status, tournaments and Olympic appearances in the table tennis match officials database.";
 var COUNTRY_DESC="Table tennis umpires and referees representing %s: their badges, association and the tournaments they officiated.";
 var COUNTRY_TITLE="Table tennis officials in %s";
 var EVENT_DESC="%s: the umpires and referees who officiated at this tournament.";
+/* Профиль — формат владельца (23.11.2026):
+   Ali AALMUTAIRI — Table Tennis Umpire | UMPIR.ES
+   Profile of Ali AALMUTAIRI, table tennis umpire from Saudi Arabia.
+   Qualifications and tournament history. */
+var ROLE={umpire:"Table Tennis Umpire",referee:"Table Tennis Referee"};
+var PERSON_TITLE="%n — %r | "+BRAND;
+var PERSON_DESC="Profile of %n, %l from %c. Qualifications and tournament history.";
+var PERSON_DESC_NOC="Profile of %n, %l. Qualifications and tournament history.";
 
-/* Ключ страницы страны — "c" + название латиницей. Проверка раздела обязательна:
-   иначе под это правило попадает сам раздел "countries". */
+/* Ключ страницы страны — "c" + название латиницей. Проверка раздела
+   обязательна: иначе под это правило попадает сам раздел "countries". */
 var isCountry=function(k){return /^c[a-z]+$/.test(k)&&SECTIONS.indexOf(k)<0;};
-var isPerson=function(k){return /^[uxr]\d+$/.test(k);};
+var isUmpire=function(k){return /^[ux]\d+$/.test(k);};
+var isRef=function(k){return /^r\d+$/.test(k);};
+var isPerson=function(k){return isUmpire(k)||isRef(k);};
 var isEvent=function(k){return /^e\d+$/.test(k);};
 
 /* Существует ли такой маршрут по форме записи. Есть ли за ним данные, решает
@@ -78,30 +90,6 @@ function valid(k){
   if(/^[uxre]\d+$/.test(k))return true;
   return isCountry(k);
 }
-
-/* Текущий маршрут: хеш, если он есть, иначе путь. Хеш главнее, потому что
-   переход по хешевой ссылке со страницы /u/16367/ должен работать. */
-function parse(pathname,hash){
-  var h=String(hash||"").replace(/^#/,"");
-  if(h)return valid(h)?h:"home";
-  var segs=String(pathname||"/").split("/").filter(function(s){return s;});
-  if(!segs.length)return "home";
-  if(segs.length===1&&SECTIONS.indexOf(segs[0])>=0)return segs[0];
-  if(segs.length===2&&NUMERIC.indexOf(segs[0])>=0&&/^\d+$/.test(segs[1]))return segs[0]+String(+segs[1]);
-  if(segs.length===2&&segs[0]==="c"&&/^[a-z]+$/.test(segs[1]))return "c"+segs[1];
-  return "home";
-}
-
-function path(k){
-  if(!k||k==="home")return "/";
-  if(SECTIONS.indexOf(k)>=0)return "/"+k+"/";
-  var m=/^([uxre])(\d+)$/.exec(k);
-  if(m)return "/"+m[1]+"/"+m[2]+"/";
-  if(isCountry(k))return "/c/"+k.slice(1)+"/";
-  return "/";
-}
-
-function hash(k){return "#"+(k||"home");}
 
 /* Вид маршрута: по нему решается, разложена ли такая страница. */
 function kind(k){
@@ -120,6 +108,57 @@ function live(k){
   return t==="home"?true:!!api.LIVE[t];
 }
 
+/* Ключ по сегменту адреса. Номер в начале решает всё; имя без номера
+   разбирает app.js, у которого есть данные. */
+function fromSeg(section,seg){
+  var m=/^(\d+)(?:-|$)/.exec(seg);
+  if(m)return (section==="referees"?"r":"u")+String(+m[1]);
+  if(api.keyOf)return api.keyOf(section,seg)||"home";
+  return "home";
+}
+
+/* Текущий маршрут: хеш, если он есть, иначе путь. Хеш главнее, потому что
+   переход по хешевой ссылке со страницы /countries/japan/ должен работать. */
+function parse(pathname,hash){
+  var h=String(hash||"").replace(/^#/,"");
+  if(h)return valid(h)?h:"home";
+  var segs=String(pathname||"/").split("/").filter(function(s){return s;});
+  if(!segs.length)return "home";
+  if(segs.length===1)return SECTIONS.indexOf(segs[0])>=0?segs[0]:"home";
+  if(segs.length===2){
+    if(segs[0]==="umpires"||segs[0]==="referees")return fromSeg(segs[0],segs[1]);
+    if(segs[0]==="countries"&&/^[a-z-]+$/.test(segs[1])){
+      if(api.keyOf){var ck=api.keyOf("countries",segs[1]);if(ck)return ck;}
+      /* без данных (Node) и для адресов без дефисов ключ собирается напрямую */
+      return "c"+segs[1].replace(/-/g,"");
+    }
+    /* прежние адреса этапа 1 — пусть продолжают открываться */
+    if((segs[0]==="u"||segs[0]==="x"||segs[0]==="r"||segs[0]==="e")&&/^\d+$/.test(segs[1]))return segs[0]+String(+segs[1]);
+    if(segs[0]==="c"&&/^[a-z]+$/.test(segs[1]))return "c"+segs[1];
+  }
+  return "home";
+}
+
+function path(k){
+  if(!k||k==="home")return "/";
+  if(SECTIONS.indexOf(k)>=0)return "/"+k+"/";
+  if(isCountry(k))return "/countries/"+((api.slugOf&&api.slugOf(k))||k.slice(1))+"/";
+  if(isPerson(k)){
+    var slug=api.slugOf?api.slugOf(k):null;
+    if(slug)return "/"+(isRef(k)?"referees":"umpires")+"/"+slug+"/";
+    /* Без данных (Node) остаётся адрес с одним номером: у IU и IR он
+       разбирается обратно в того же человека. У записи без номера ("x172")
+       числится индекс в массиве, а не номер, — такой адрес открыл бы чужой
+       профиль, поэтому его не существует. */
+    return /^x/.test(k)?"/":"/"+(isRef(k)?"referees":"umpires")+"/"+k.replace(/^[ur]/,"")+"/";
+  }
+  var m=/^(e)(\d+)$/.exec(k);
+  if(m)return "/e/"+m[2]+"/";
+  return "/";
+}
+
+function hash(k){return "#"+(k||"home");}
+
 /* Вид ссылки в разметке: путь, когда страница разложена, иначе хеш. */
 function link(k){return live(k)?path(k):hash(k);}
 
@@ -127,7 +166,10 @@ function link(k){return live(k)?path(k):hash(k);}
    адрес — корень сайта. */
 function url(k){return ORIGIN+(live(k)?path(k):"/");}
 
-/* Мета-теги маршрута. h1 — заголовок страницы (для профилей, стран, турниров);
+/* Мета-теги маршрута.
+   h1 — заголовок страницы (имя человека, название страны или турнира);
+   country — название ассоциации для описания профиля;
+   isReferee — роль в заголовке профиля;
    countryTitle — шаблон заголовка страницы страны, нужен только чтобы у
    куратора в RU-интерфейсе заголовок остался русским. */
 function head(o){
@@ -135,17 +177,28 @@ function head(o){
   var k=valid(o.key)?(o.key||"home"):"home";
   var h1=String(o.h1||"").replace(/\s+/g," ").trim();
   var title=BASE_TITLE,desc=BASE_DESC;
+  if(isPerson(k)&&h1){
+    var role=o.isReferee?ROLE.referee:ROLE.umpire;
+    var low=role.toLowerCase();
+    title=PERSON_TITLE.replace("%n",h1).replace("%r",role);
+    var c=String(o.country||"").trim();
+    desc=(c?PERSON_DESC.replace("%c",c):PERSON_DESC_NOC).replace("%n",h1).replace("%l",low);
+    return out(k,title,desc);
+  }
   if(k!=="home"&&h1)title=(isCountry(k)?String(o.countryTitle||COUNTRY_TITLE).replace("%s",h1):h1)+" · "+BRAND;
   if(isCountry(k))desc=h1?COUNTRY_DESC.replace("%s",h1):BASE_DESC;
-  else if(isPerson(k))desc=h1?PERSON_DESC.replace("%s",h1):BASE_DESC;
   else if(isEvent(k))desc=h1?EVENT_DESC.replace("%s",h1):BASE_DESC;
   else if(DESC[k])desc=DESC[k];
+  return out(k,title,desc);
+}
+function out(k,title,desc){
   return {key:k,title:title,description:desc,canonical:url(k),url:url(k),
           robots:NOINDEX.indexOf(k)>=0?"noindex, nofollow":""};
 }
 
 var api={ORIGIN:ORIGIN,BRAND:BRAND,BASE_TITLE:BASE_TITLE,BASE_DESC:BASE_DESC,
-         LIVE:LIVE,SECTIONS:SECTIONS,NUMERIC:NUMERIC,NOINDEX:NOINDEX,DESC:DESC,
+         LIVE:LIVE,SECTIONS:SECTIONS,NOINDEX:NOINDEX,DESC:DESC,ROLE:ROLE,
+         slugOf:null,keyOf:null,
          valid:valid,parse:parse,path:path,hash:hash,kind:kind,live:live,
          link:link,url:url,head:head};
 root.ROUTES=api;
