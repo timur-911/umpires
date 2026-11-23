@@ -1614,7 +1614,7 @@ async function loadInbox(){
   INBOX=all;
 }
 async function wireInbox(){
-  if(!/^#inbox$/.test(location.hash)) return;
+  if(ROUTES.parse(location.pathname,location.hash)!=="inbox") return;
   if(CAP.admin&&CAP.db&&!inboxSub){inboxSub=CAP.db.collection("inbox").onSnapshot(async()=>{await loadInbox();route(true);},()=>{});}
   document.querySelectorAll("[data-ibx]").forEach(b=>b.onclick=()=>{inboxState.show=b.dataset.ibx;route(true);});
   const rf=$("#ibxRefresh");if(rf)rf.onclick=async()=>{await loadInbox();route(true);};
@@ -1985,7 +1985,7 @@ let APPROVED=[], MINE=[];
 let SB=null;
 const SBCFG=window.SUPABASE_CONFIG||{};
 const BUCKET="uploads";
-const liveRoute=()=>{const h=(location.hash||"").slice(1);return /^e\d+$/.test(h)||h==="inbox";};
+const liveRoute=()=>{const h=ROUTES.parse(location.pathname,location.hash);return /^e\d+$/.test(h)||h==="inbox";};
 const refresh=()=>{if(liveRoute())route(true);};
 
 const toDoc=r=>Object.assign({},r.data||{},{id:r.id,status:r.status,at:Number(r.at)||0,by:r.uid,reviewedAt:r.reviewed_at?Number(r.reviewed_at):undefined,reviewer:r.reviewer||undefined});
@@ -2298,19 +2298,35 @@ function chrome(r){
 /* breadcrumbs on every page except home (curator 13.11.2026): Home → section → item, separated by arrows; the last item is plain text */
 const crumbs=items=>`<nav class="crumbs" aria-label="Breadcrumb">${[[T().crumb_home,"#home"],...items].map(([l,h],i,a)=>h&&i<a.length-1?`<a href="${h}">${esc(l)}</a>`:`<span>${esc(l)}</span>`).join(`<span class="sep" aria-hidden="true" style="margin:0 .45em">→</span>`)}</nav>`;
 let PREV_PAGE=""; /* last non-profile page: a profile opened from Referees gets Home → Referees → country → name (curator 13.11.2026) */
-const BRAND="UMPIR.ES";
-const BASE_TITLE="Table tennis umpires and referees | "+BRAND;
-function pageTitle(h,html,isHome){
-  if(isHome) return BASE_TITLE;
-  const m=/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html);
-  if(!m) return BASE_TITLE;
-  const txt=m[1].replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/\s+/g," ").trim();
-  if(!txt) return BASE_TITLE;
-  const c=h[0]==="c"&&COUNTRIES.find(x=>x.slug===h);
-  return (c?T().meta_country.replace("%s",txt):txt)+" · "+BRAND;
+/* <head> считается по маршруту, а не стоит прибитым в index.html: заголовок,
+   описание, canonical и og:* обновляются при каждом переходе. Строки даёт
+   ROUTES.head() — те же, что запишет в статический HTML генератор страниц
+   (этап 1), иначе у одной страницы было бы два разных описания.
+   Мета-тег robots здесь не трогаем: в index.html стоит noindex до запуска,
+   и снять его — отдельное решение владельца. */
+const h1Text=html=>{const m=/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html);return m?m[1].replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/\s+/g," ").trim():"";};
+function setMeta(attr,name,val){
+  let el=document.head.querySelector(`meta[${attr}="${name}"]`);
+  if(!el){if(!val)return;el=document.createElement("meta");el.setAttribute(attr,name);document.head.appendChild(el);}
+  el.setAttribute("content",val);
+}
+function applyHead(h,html,isHome){
+  const d=ROUTES.head({key:isHome?"home":h,h1:isHome?"":h1Text(html),countryTitle:T().meta_country});
+  document.title=d.title;
+  setMeta("name","description",d.description);
+  setMeta("property","og:title",d.title);
+  setMeta("property","og:description",d.description);
+  setMeta("property","og:url",d.url);
+  setMeta("property","og:image:alt",d.title);
+  const c=document.head.querySelector('link[rel="canonical"]');
+  if(c)c.href=d.canonical;
 }
 function route(keepScroll){
-  const h=(location.hash||"#home").slice(1);
+  const h=ROUTES.parse(location.pathname,location.hash);
+  /* Пришли по старой хешевой ссылке, а страницы уже разложены — показываем
+     в адресной строке путь. Пока ROUTES.PATHS=false, подмены нет: путь отдал
+     бы 404. */
+  if(ROUTES.PATHS&&location.hash)history.replaceState(null,"",ROUTES.path(h));
   if(!/^[urx]\d+$/.test(h))PREV_PAGE=h;
   let html,r="home",isHome=false;
   if(h==="umpires"){html=viewList("all");r="umpires";}
@@ -2325,14 +2341,14 @@ function route(keepScroll){
   else if(h==="events"){html=viewEvents();r="events";}
   else if(h==="graph"){html=viewGraph();r="graph";}
   else if(h==="olympics"){html=viewOlympics();r="olympics";}
-  else if(h==="inbox"){html=viewInbox();r="inbox";if(CAP.admin&&!INBOX.length&&!inboxSub)loadInbox().then(()=>{if(location.hash==="#inbox")route(true);});}
+  else if(h==="inbox"){html=viewInbox();r="inbox";if(CAP.admin&&!INBOX.length&&!inboxSub)loadInbox().then(()=>{if(ROUTES.parse(location.pathname,location.hash)==="inbox")route(true);});}
   else if(/^e\d+$/.test(h)&&EVENTS[+h.slice(1)]){html=viewEvent(EVENTS[+h.slice(1)]);r="events";}
   else if(/^u\d+$/.test(h)&&BYIU.get(+h.slice(1))){html=viewProfile(BYIU.get(+h.slice(1)));r="";}
   else if(/^x\d+$/.test(h)&&EXTRA[+h.slice(1)]){const x=EXTRA[+h.slice(1)];if(!x.asg.length&&x.iuX&&BYIU.get(x.iuX)){location.replace("#u"+x.iuX);return;}html=viewProfile(x);r="";}
   else if(h[0]==="c"&&COUNTRIES.find(c=>c.slug===h)){html=viewCountry(COUNTRIES.find(c=>c.slug===h));r="countries";}
   else {html=viewHome();isHome=true;}
   if(r!=="home"&&!/^\s*<(div|nav) class="crumbs"/.test(html)){const m=/<h1[^>]*>([\s\S]*?)<\/h1>/.exec(html);if(m)html=crumbs([[m[1].replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").trim(),null]])+html;}
-  document.title=pageTitle(h,html,isHome);
+  applyHead(h,html,isHome);
   curRoute=r;chrome(r);
   $("#app").innerHTML=html;
   wire();fitH1();startRot();
@@ -2432,6 +2448,7 @@ document.addEventListener("click",e=>{
   const ea=e.target.closest("[data-evact]"); if(ea){openEvModal(ea.dataset.evact,+ea.dataset.ei);return;}
   if(!e.target.closest(".search")){const r=$("#res");if(r)r.hidden=true;}
 });
-$("#claimBtn").onclick=()=>{const m=/^#u(\d+)$/.exec(location.hash);openModal("claim",m?m[1]:null);};
+$("#claimBtn").onclick=()=>{const m=/^u(\d+)$/.exec(ROUTES.parse(location.pathname,location.hash));openModal("claim",m?m[1]:null);};
 window.addEventListener("hashchange",()=>route(false));
+window.addEventListener("popstate",()=>route(false)); /* переходы по настоящим путям (этап 1) */
 route(false);
