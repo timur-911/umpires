@@ -2317,6 +2317,10 @@ function chrome(r){
    if(!window._ddDoc){window._ddDoc=1;document.addEventListener("click",e=>{const d=document.querySelector("#nav .dd");if(d&&!d.contains(e.target)){const mm=d.querySelector(".ddm");if(mm&&!mm.hidden){mm.hidden=true;d.querySelector(".ddb").setAttribute("aria-expanded","false");}}});}}
   $("#claimBtn").textContent=t.claim; $("#claimBtn").hidden=true; /* no "That's me" in the header on any page; the profile keeps its own button (curator 13.11.2026) */
   $("#ft1").innerHTML=esc(t.foot1)+` · <a href="#methodology">${t.meth_h}</a>`; $("#ft2").innerHTML=CAP.admin?esc(t.foot2)+` · <a href="#inbox">${t.st_inbox}</a> · <span class="ftlang" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="${LANG==="en"}">EN</button><button type="button" data-lang="ru" aria-pressed="${LANG==="ru"}">RU</button></span>`:"";
+  /* Меню и подвал рисует эта функция, и её зовут заново после проверки
+     сессии Supabase (onAuthStateChange) — уже после route(). Без этого
+     вызова ссылки меню оставались бы хешевыми на разложенных видах. */
+  pathifyLinks(document.body);
 }
 /* breadcrumbs on every page except home (curator 13.11.2026): Home → section → item, separated by arrows; the last item is plain text */
 const crumbs=items=>`<nav class="crumbs" aria-label="Breadcrumb">${[[T().crumb_home,"#home"],...items].map(([l,h],i,a)=>h&&i<a.length-1?`<a href="${h}">${esc(l)}</a>`:`<span>${esc(l)}</span>`).join(`<span class="sep" aria-hidden="true" style="margin:0 .45em">→</span>`)}</nav>`;
