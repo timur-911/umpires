@@ -39,7 +39,7 @@ var NUMERIC=["u","x","r","e"];
 var NOINDEX=["inbox"];
 
 /* Какие виды страниц генератор уже разложил. Правится вместе с генератором. */
-var LIVE={section:false,country:false,person:false,event:false};
+var LIVE={section:true,country:true,person:false,event:false};
 
 /* Описания разделов. Всегда по-английски: сайт для посетителя англоязычный,
    RU остаётся только в интерфейсе куратора. Без чисел — иначе описание
