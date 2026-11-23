@@ -41,7 +41,7 @@ const OUT = path.join(ROOT, args.out || "dist");
 const WORK = path.join(ROOT, ".build-work");
 
 /* Файлы сайта, которые едут в артефакт как есть. */
-const SITE_FILES = ["index.html", "app.js", "routes.js", "boot.js", "config.js",
+const SITE_FILES = ["index.html", "site.css", "app.js", "routes.js", "boot.js", "config.js",
   "map.json", "og.png", "favicon.ico", "favicon-32.png", "icon-192.png",
   "apple-touch-icon.png", "CNAME"];
 const SITE_DIRS = ["vendor"];
@@ -94,7 +94,7 @@ const SHELL_FROZEN = '<script src="/catalog.js"></script>\n<script src="/app.js"
 function prepareWork(catalog, updated) {
   fs.rmSync(WORK, { recursive: true, force: true });
   fs.mkdirSync(WORK, { recursive: true });
-  ["index.html", "app.js", "routes.js", "map.json"].forEach(f =>
+  ["index.html", "site.css", "app.js", "routes.js", "map.json"].forEach(f =>
     fs.copyFileSync(path.join(ROOT, f), path.join(WORK, f)));
   fs.cpSync(path.join(ROOT, "vendor"), path.join(WORK, "vendor"), { recursive: true });
   fs.writeFileSync(path.join(WORK, "catalog.js"),
