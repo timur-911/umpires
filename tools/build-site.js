@@ -124,35 +124,38 @@ function serve(dir) {
    статический снимок не едут диаграммы и карта: их рисуют d3 и Plot при
    загрузке, и в HTML это десятки килобайт мёртвой разметки. Текст, заголовки,
    ссылки и мета-теги остаются. */
-function snapOne(k) {
-  /* Путь считается здесь, в странице: слаг профиля (16564-ali-aalmutairi)
-     собирается из данных, которых в Node нет. */
-  const p = ROUTES.live(k) ? ROUTES.path(k) : null;
-  history.replaceState(null, "", p || "/#" + k);
+function snapOne(it) {
+  history.replaceState(null, "", it.path);
   route(false);
   document.querySelectorAll("svg").forEach(s => { if (s.outerHTML.length > 8000) s.textContent = ""; });
   document.querySelectorAll("canvas").forEach(c => c.remove());
   const res = document.getElementById("res"); if (res) { res.innerHTML = ""; res.hidden = true; }
   const mr = document.getElementById("modalRoot"); if (mr) mr.innerHTML = "";
   document.querySelectorAll("[aria-busy]").forEach(e => e.removeAttribute("aria-busy"));
-  return {path: p, html: "<!doctype html>" + document.documentElement.outerHTML};
+  return "<!doctype html>" + document.documentElement.outerHTML;
 }
 
-/* Список маршрутов к выпуску спрашивается у самого сайта: второго описания
-   данных, которое разошлось бы с app.js, не существует. */
+/* Список страниц к выпуску спрашивается у самого сайта: второго описания
+   данных, которое разошлось бы с app.js, не существует. Путь тоже считает
+   страница — слаг собирается из данных, которых в Node нет.
+   to — адрес, на который страница только перенаправляет. */
 function routeKeys() {
-  const live = ROUTES.LIVE, out = ["home"];
-  ROUTES.SECTIONS.forEach(k => { if (ROUTES.live(k)) out.push(k); });
-  if (live.country) COUNTRIES.forEach(c => out.push(c.slug));
-  if (live.event) EVENTS.forEach(e => out.push("e" + e.i));
+  const live = ROUTES.LIVE, out = [];
+  const add = (key, to, name) => out.push({ key, path: ROUTES.path(key), to: to || null, name: name || "" });
+  add("home");
+  ROUTES.SECTIONS.forEach(k => { if (ROUTES.live(k)) add(k); });
+  if (live.country) COUNTRIES.forEach(c => add(c.slug));
+  if (live.event) EVENTS.forEach(e => add("e" + e.i));
   if (live.person) {
-    OFF.forEach(o => out.push("u" + o.iu));
-    /* Своей страницы не получают те, кто открывается под другим адресом:
-       рефери с профилем судьи и запись без номера, за которой стоит номер IU
-       (route() уводит их туда же). Иначе один и тот же профиль лежал бы по
-       двум адресам. */
-    EXTRA.forEach(x => { if (x.asg.length || !x.iuX || !BYIU.get(x.iuX)) out.push("x" + x.k); });
-    REFS.forEach(r => { if (!r.o) out.push("r" + r.ir); });
+    OFF.forEach(o => add("u" + o.iu));
+    /* Запись без номера, за которой стоит известный номер IU, своей страницы не
+       получает: route() уводит её на профиль судьи, и один профиль оказался бы
+       по двум адресам. */
+    EXTRA.forEach(x => { if (x.asg.length || !x.iuX || !BYIU.get(x.iuX)) add("x" + x.k); });
+    /* Рефери, который ещё и судья, получает оба адреса, но адрес рефери ведёт
+       на профиль судьи (решение владельца). Нет профиля судьи — значит в списке
+       активных IU человека нет, и адрес рефери у него единственный. */
+    REFS.forEach(r => r.o ? add("r" + r.ir, ROUTES.path("u" + r.o.iu), fullName(r)) : add("r" + r.ir));
   }
   return out;
 }
@@ -163,6 +166,24 @@ function jsonLd(key, title, desc, url) {
   const crumbs = [{ "@type": "ListItem", position: 1, name: "Home", item: ROUTES.ORIGIN + "/" }];
   crumbs.push({ "@type": "ListItem", position: 2, name: title, item: url });
   return { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: crumbs };
+}
+
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/* Адрес, который только ведёт на другой профиль (рефери → судья). Это не
+   снимок: в нём canonical на цель, мгновенный refresh для тех, кто без
+   JavaScript, и тот же мета-тег robots, что в оболочке, — иначе до запуска
+   эти страницы оказались бы единственными открытыми для индексации. */
+function redirectPage(it, robots) {
+  const name = it.name || "the umpire profile";
+  return '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' + (robots || "") +
+    "<title>" + esc(name) + " | " + ROUTES.BRAND + "</title>" +
+    '<link rel="canonical" href="' + ROUTES.ORIGIN + it.to + '">' +
+    '<meta http-equiv="refresh" content="0; url=' + it.to + '">' +
+    "<script>location.replace(" + JSON.stringify(it.to) + ")</script></head>" +
+    "<body><p>This referee is also an international umpire. Continue to " +
+    '<a href="' + it.to + '">' + esc(name) + "</a>.</p></body></html>\n";
 }
 
 function finishPage(html, key) {
@@ -197,14 +218,17 @@ async function snapshot(port) {
   await page.goto("http://127.0.0.1:" + port + "/", { waitUntil: "networkidle" });
   await page.waitForFunction("typeof route === 'function' && typeof COUNTRIES !== 'undefined'", { timeout: 30000 });
 
-  const keys = await page.evaluate(routeKeys);
-  log("маршрутов к выпуску: " + keys.length);
+  const items = await page.evaluate(routeKeys);
+  const robots = (/<meta name="robots"[^>]*>/.exec(fs.readFileSync(path.join(ROOT, "index.html"), "utf8")) || [""])[0];
+  log("страниц к выпуску: " + items.length + ", из них только перенаправления: " + items.filter(i => i.to).length);
 
   const pages = [];
-  for (const key of keys) {
-    const r = await page.evaluate(snapOne, key);
-    if (!r.path) throw new Error("у маршрута " + key + " нет своего адреса, а он помечен как выпускаемый");
-    pages.push({ key, path: r.path, html: finishPage(r.html, key) });
+  for (const it of items) {
+    if (!it.path || it.path === "/" && it.key !== "home")
+      throw new Error("у маршрута " + it.key + " нет своего адреса, а он помечен как выпускаемый");
+    if (it.to) { pages.push({ key: it.key, path: it.path, to: it.to, html: redirectPage(it, robots) }); continue; }
+    const html = await page.evaluate(snapOne, it);
+    pages.push({ key: it.key, path: it.path, to: null, html: finishPage(html, it.key) });
   }
   await browser.close();
   return { pages, problems, warnings };
@@ -227,7 +251,9 @@ function writeSite(pages, updated) {
     fs.writeFileSync(path.join(dir, "index.html"), p.html);
   });
   const day = (updated || new Date().toISOString()).slice(0, 10);
-  const urls = pages.map(p => "  <url><loc>" + ROUTES.ORIGIN + p.path + "</loc><lastmod>" + day + "</lastmod></url>").join("\n");
+  /* Перенаправления в карту сайта не идут: там только адреса, которые сами
+     себе canonical. */
+  const urls = pages.filter(p => !p.to).map(p => "  <url><loc>" + ROUTES.ORIGIN + p.path + "</loc><lastmod>" + day + "</lastmod></url>").join("\n");
   fs.writeFileSync(path.join(OUT, "sitemap.xml"),
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls + "\n</urlset>\n");
   fs.writeFileSync(path.join(OUT, "robots.txt"),

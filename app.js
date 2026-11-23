@@ -238,6 +238,7 @@ const ACTIVE_C = COUNTRIES.filter(c=>c.list.length);
    У записей без номера устойчивости нет — их различает только имя, поэтому при
    правке имени адрес такого профиля меняется. Разбор и сборка живут здесь, а не
    в routes.js: им нужны данные. */
+const iu5=n=>String(n).padStart(5,"0"); /* стоит здесь, а не ниже: нужен слагам адресов */
 const slugText = s=>(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
 const personSlug = p=>slugText((p.first||"")+" "+(p.sur||""))||"official";
 const PSLUG=new Map();   /* ключ маршрута -> слаг (профили и страны) */
@@ -248,8 +249,12 @@ function buildRouteSlugs(){
   /* Ассоциации: /countries/saudi-arabia/. В ключе маршрута ("csaudiarabia")
      дефисов нет и он остаётся прежним — старые хешевые ссылки работают. */
   COUNTRIES.forEach(c=>put(c.slug,"countries",slugText(c.name)||c.slug.slice(1)));
-  OFF.forEach(o=>put("u"+o.iu,"umpires",o.iu+"-"+personSlug(o)));
-  REFS.forEach(r=>{if(!r.o)put("r"+r.ir,"referees",r.ir+"-"+personSlug(r));});
+  OFF.forEach(o=>put("u"+o.iu,"umpires",iu5(o.iu)+"-"+personSlug(o)));
+  /* Адрес есть у каждого рефери, в том числе у того, у кого есть профиль судьи:
+     такой адрес ведёт на профиль судьи, а не исчезает (решение владельца
+     23.11.2026). Если профиля судьи нет — человека нет в списке активных IU, и
+     этот адрес у него единственный. */
+  REFS.forEach(r=>put("r"+r.ir,"referees",iu5(r.ir)+"-"+personSlug(r)));
   const byName=new Map();
   EXTRA.forEach(x=>{const n=personSlug(x);if(!byName.has(n))byName.set(n,[]);byName.get(n).push(x);});
   byName.forEach((list,n)=>{
@@ -1157,7 +1162,6 @@ function viewCountry(c){
 const graphState={min:1,sel:null,year:TODAY.slice(0,4),view:"net",hebEv:null,hebAll:false,hebGroup:false,hebFocus:null,whoSel:"ump",whoAll:false}; /* year: "all" or "YYYY" (2026+) */
 const graphYears=()=>[...new Set(EV_BY_DATE.filter(e=>e.ump.length).map(e=>e.s.slice(0,4)))].filter(y=>y>="2026").sort();
 const iuOf=p=>p.x?(p.iuX||0):(p.isRef?0:p.iu);
-const iu5=n=>String(n).padStart(5,"0");
 /* network-view person line (curator 27.10.2026): «Murat ASKAROV · NU · KAZ», East Asian order «LIN Li · 10753 · CHN»; number = IU, or IR for a referee-only node, else NU */
 const netName=n=>{const p=n.p,g=graphNum(n),cc=hebCode(p)||hebCountry(p),sur=String(p.sur||"").toUpperCase(),f=(p.first||"").trim();
   const nm=!f?sur:["CHN","TPE","HKG","MAC","KOR","PRK"].includes(cc)?`${sur} ${f}`:`${f} ${sur}`;
