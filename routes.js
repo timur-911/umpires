@@ -65,6 +65,9 @@ var DESC={
 };
 var COUNTRY_DESC="Table tennis umpires and referees representing %s: their badges, association and the tournaments they officiated.";
 var COUNTRY_TITLE="Table tennis officials in %s";
+/* Турнир — формат владельца (23.11.2026):
+   20th Asian Games Nagoya 2026 — Umpires and Referees Selected | UMPIR.ES */
+var EVENT_TITLE="%n — Umpires and Referees Selected | "+BRAND;
 var EVENT_DESC="%s: the umpires and referees who officiated at this tournament.";
 /* Профиль — формат владельца (23.11.2026):
    Ali AALMUTAIRI — Table Tennis Umpire | UMPIR.ES
@@ -199,6 +202,7 @@ function head(o){
     desc=(c?PERSON_DESC.replace("%c",c):PERSON_DESC_NOC).replace("%n",h1).replace("%l",low);
     return out(k,title,desc);
   }
+  if(isEvent(k)&&h1)return out(k,EVENT_TITLE.replace("%n",h1),EVENT_DESC.replace("%s",h1));
   if(k!=="home"&&h1)title=(isCountry(k)?String(o.countryTitle||COUNTRY_TITLE).replace("%s",h1):h1)+" · "+BRAND;
   if(isCountry(k))desc=h1?COUNTRY_DESC.replace("%s",h1):BASE_DESC;
   else if(isEvent(k))desc=h1?EVENT_DESC.replace("%s",h1):BASE_DESC;
