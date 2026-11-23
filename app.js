@@ -28,7 +28,7 @@ let MAP=null, mapReq=null;
 const MAP_T={ru:{err:"Не удалось загрузить карту. Обновите страницу."},en:{err:"The map could not be loaded. Reload the page."}};
 function ensureMap(){
   if(MAP) return Promise.resolve(MAP);
-  if(!mapReq) mapReq=fetch("map.json").then(r=>{if(!r.ok)throw new Error("map "+r.status);return r.json();}).then(m=>{
+  if(!mapReq) mapReq=fetch("/map.json").then(r=>{if(!r.ok)throw new Error("map "+r.status);return r.json();}).then(m=>{
     m.shapes.forEach(sh=>{if(!sh.ci.length&&MAP_ASSOC[sh.n]){const c=CBYCODE.get(MAP_ASSOC[sh.n]);if(c)sh.ci=[c.i];}});
     MAP=m;return m;
   }).catch(e=>{mapReq=null;throw e;});
@@ -312,6 +312,29 @@ const numHit=(p,q)=>{const n=String(+q);return numsOf(p).some(x=>String(x).start
 const numExact=(p,q)=>{const n=+q;return numsOf(p).some(x=>x===n);};
 const fullName = o=>(o.first?o.first+" ":"")+o.sur;
 const href = p=>p.isRef?`#r${p.ir}`:p.x?`#x${p.k}`:`#u${p.iu}`;
+/* Разметка везде пишет хеш (`#u16367`), а здесь он один раз превращается в
+   настоящий путь — для тех видов страниц, которые генератор уже разложил.
+   Так ни одно место разметки не знает про ROUTES.LIVE, и ссылку из адресной
+   строки или из «скопировать адрес ссылки» можно переслать коллеге. */
+function pathifyLinks(root){
+  if(!root)return;
+  root.querySelectorAll('a[href^="#"]').forEach(a=>{
+    const k=a.getAttribute("href").slice(1);
+    if(k&&ROUTES.live(k))a.setAttribute("href",ROUTES.path(k));
+  });
+}
+/* Переход на маршрут из кода: клик по карте, по диаграмме, по строке таблицы.
+   Разложенная страница меняет адрес через history, остальное — через хеш. */
+function goTo(key){
+  if(ROUTES.live(key)){history.pushState(null,"",ROUTES.path(key));route(false);}
+  else location.hash="#"+key;
+}
+/* Переход по готовой ссылке из разметки: она может быть и хешем, и путём. */
+function goHref(u){
+  if(!u)return;
+  if(u[0]==="#"){location.hash=u;return;}
+  history.pushState(null,"",u);route(false);
+}
 const fmtDate = d=>{ if(!d) return ""; const [y,m,dd]=d.split("-"); return `${+dd} ${T().months[m-1]} ${y}`; };
 const fmtRange = (s,e)=>{const [y1,m1,d1]=s.split("-"),[y2,m2,d2]=e.split("-");const M=T().months;if(s===e)return `${+d1} ${M[m1-1]} ${y1}`;
   if(y1===y2&&m1===m2) return `${+d1}–${+d2} ${M[m1-1]} ${y1}`; if(y1===y2) return `${+d1} ${M[m1-1]} – ${+d2} ${M[m2-1]} ${y1}`; return `${fmtDate(s)} – ${fmtDate(e)}`;};
@@ -423,8 +446,8 @@ function wireMap(){
     if(!had||moved>6||e.type==="pointercancel")return;
     const el=downTarget; if(!el){hideTip();return;}
     const s=MAP.shapes[+el.dataset.s];
-    if(e.pointerType==="mouse"){if(s.ci.length)location.hash=COUNTRIES[best(s)].slug;return;}
-    if(tip.dataset.s===el.dataset.s&&!tip.hidden&&s.ci.length){location.hash=COUNTRIES[best(s)].slug;return;}
+    if(e.pointerType==="mouse"){if(s.ci.length)goTo(COUNTRIES[best(s)].slug);return;}
+    if(tip.dataset.s===el.dataset.s&&!tip.hidden&&s.ci.length){goTo(COUNTRIES[best(s)].slug);return;}
     showTip(el,e.clientX,e.clientY,true);};
   svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",up);
   svg.addEventListener("pointerleave",e=>{if(e.pointerType==="mouse"&&!pts.size)hideTip();});
@@ -513,7 +536,7 @@ function renderGantt(){
           title:d=>`${d.name} · ${d.c}\n${t.g_total}: ${ym(d.days)} (${d.days} ${t.g_days})\n${d.n>1?t.g_periods(d.n)+"\n":""}${d.active?t.g_active_now:t.g_former}`}))
       ]
     });
-    fig.addEventListener("click",()=>{const d=fig.value;if(d&&BYIU.get(d.iu))location.hash="u"+d.iu;});
+    fig.addEventListener("click",()=>{const d=fig.value;if(d&&BYIU.get(d.iu))goTo("u"+d.iu);});
     fig.style.cursor="pointer";
     const cap=document.createElement("p");cap.className="gcap";cap.innerHTML=`${t.g_years} · <i class="gsw"></i>${t.g_active_now} · <i class="gsw gsw-o"></i>${t.g_former}`;
     box.replaceChildren(cap,fig); box.classList.remove("gfade"); void box.offsetWidth; box.classList.add("gfade");
@@ -539,7 +562,7 @@ function renderGantt(){
         title:d=>{const p=person.get(d.iu);return `${d.name} · ${d.c}\nIU ${String(d.iu).padStart(5,"0")} · ${d.sex==="F"?t.female:t.male}\n\n${t.g_from}: ${fmtM(d.start)}\n${d.ongoing?t.g_now:`${t.g_to}: ${fmtM(d.end)}`}\n${t.g_total}: ${p.days} ${t.g_days}${d.src!=="obs"?`\n\n${t.g_arch}`:""}`;}}))
     ]
   });
-  fig.addEventListener("click",()=>{const d=fig.value;if(d&&BYIU.get(d.iu))location.hash="u"+d.iu;});
+  fig.addEventListener("click",()=>{const d=fig.value;if(d&&BYIU.get(d.iu))goTo("u"+d.iu);});
   fig.style.cursor="pointer";
   const cap=document.createElement("p");cap.className="gcap";cap.innerHTML=`<i class="gsw"></i>${t.g_active_now} · <i class="gsw gsw-o"></i>${t.g_former}`;
   box.replaceChildren(cap,fig); box.classList.remove("gfade"); void box.offsetWidth; box.classList.add("gfade");
@@ -1395,9 +1418,9 @@ function wireHEB(){
   function setFocus(f){S.hebFocus=f;const P=$("#hebp"),C=$("#hebc"),K=$("#hebk");
     if(P)P.value=f&&f.kind==="p"?hebPLabel(f.ref):""; if(C)C.value=f&&f.kind==="c"?f.ref:""; {const cc=$("#hebcCode");if(cc)cc.textContent=f&&f.kind==="c"?hebCodeOf(G,f.ref):"";} if(K)K.value=f&&f.kind==="k"?f.ref:"";render();}
   const setEv=e=>{S.hebEv=e?e.i:null;const I=$("#hebev");if(I)I.value=e?hebEvLabel(e):"";render();};
-  dots.on("mouseenter",(ev,d)=>render({kind:"p",ref:d.data.n.p})).on("mouseleave",()=>render()).on("click",(ev,d)=>{location.hash=href(d.data.n.p);});
+  dots.on("mouseenter",(ev,d)=>render({kind:"p",ref:d.data.n.p})).on("mouseleave",()=>render()).on("click",(ev,d)=>{goHref(href(d.data.n.p));});
   hits.on("mouseenter",(ev,l)=>{render({kind:"l",ref:l});showTip(ev,l);}).on("mousemove",(ev,l)=>showTip(ev,l)).on("mouseleave",()=>{tipEl.style("display","none");render();});
-  if(allT) allT.on("mouseenter",(ev,d)=>render({kind:"p",ref:d.data.n.p})).on("mouseleave",()=>render()).on("click",(ev,d)=>{location.hash=href(d.data.n.p);});
+  if(allT) allT.on("mouseenter",(ev,d)=>render({kind:"p",ref:d.data.n.p})).on("mouseleave",()=>render()).on("click",(ev,d)=>{goHref(href(d.data.n.p));});
   if(!grp){ /* zoom for the large flat circle: starts fitted to the box */
     const zb=d3.zoom().scaleExtent([1,8]).translateExtent([[-W/2,-W/2],[W/2,W/2]])
       .filter(ev=>ev.type==="wheel"?(ev.ctrlKey||ev.metaKey):!ev.button)
@@ -2323,10 +2346,10 @@ function applyHead(h,html,isHome){
 }
 function route(keepScroll){
   const h=ROUTES.parse(location.pathname,location.hash);
-  /* Пришли по старой хешевой ссылке, а страницы уже разложены — показываем
-     в адресной строке путь. Пока ROUTES.PATHS=false, подмены нет: путь отдал
-     бы 404. */
-  if(ROUTES.PATHS&&location.hash)history.replaceState(null,"",ROUTES.path(h));
+  /* Пришли по старой хешевой ссылке, а страница этого вида уже разложена —
+     показываем в адресной строке путь. Вид, которого генератор не выпускает,
+     остаётся на хеше: путь отдал бы 404. */
+  if(location.hash&&ROUTES.live(h))history.replaceState(null,"",ROUTES.path(h));
   if(!/^[urx]\d+$/.test(h))PREV_PAGE=h;
   let html,r="home",isHome=false;
   if(h==="umpires"){html=viewList("all");r="umpires";}
@@ -2352,6 +2375,7 @@ function route(keepScroll){
   curRoute=r;chrome(r);
   $("#app").innerHTML=html;
   wire();fitH1();startRot();
+  pathifyLinks(document.body);
   if(!keepScroll) window.scrollTo(0,0);
 }
 function wire(){
@@ -2369,7 +2393,7 @@ function wire(){
     q.oninput=draw;
     q.onkeydown=e=>{const items=[...res.querySelectorAll("a")];if(!items.length)return;
       if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();sel=(sel+(e.key==="ArrowDown"?1:-1)+items.length)%items.length;items.forEach((a,i)=>a.classList.toggle("on",i===sel));}
-      if(e.key==="Enter"){e.preventDefault();location.hash=items[Math.max(sel,0)].getAttribute("href");}};
+      if(e.key==="Enter"){e.preventDefault();goHref(items[Math.max(sel,0)].getAttribute("href"));}};
     document.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{q.value=b.dataset.q;draw();q.focus();});
   }
   const lq=$("#lq");
@@ -2439,7 +2463,7 @@ addEventListener("resize",fitH1);if(document.fonts&&document.fonts.ready)documen
   document.addEventListener("mouseover",e=>{const el=e.target.closest(".ftip");if(el)show(el);else hide();});
   document.addEventListener("focusin",e=>{const el=e.target.closest(".ftip");if(el)show(el);});document.addEventListener("focusout",hide);addEventListener("scroll",hide,true);})();
 document.addEventListener("click",e=>{
-  const tr=e.target.closest("tr[data-go]"); if(tr&&!e.target.closest("a")){location.hash=tr.dataset.go;return;}
+  const tr=e.target.closest("tr[data-go]"); if(tr&&!e.target.closest("a")){goTo(tr.dataset.go);return;}
   const c=e.target.closest("[data-claim]"); if(c){openModal("claim",c.dataset.claim);return;}
   const lb=e.target.closest("[data-lang]"); if(lb){LANG=lb.dataset.lang;try{localStorage.setItem("umpires_lang",LANG);}catch(_){}route(true);return;}
   {const ad=e.target.closest("[data-add]");if(ad){openModal("add",null,ad.dataset.add||"",ad.dataset.addcat||"");return;}}
@@ -2451,4 +2475,16 @@ document.addEventListener("click",e=>{
 $("#claimBtn").onclick=()=>{const m=/^u(\d+)$/.exec(ROUTES.parse(location.pathname,location.hash));openModal("claim",m?m[1]:null);};
 window.addEventListener("hashchange",()=>route(false));
 window.addEventListener("popstate",()=>route(false)); /* переходы по настоящим путям (этап 1) */
+/* Ссылка-путь внутри сайта обрабатывается без перезагрузки: страница по этому
+   адресу существует, но заново тянуть справочник и перерисовывать всё незачем.
+   Клик с модификатором, средней кнопкой или в новую вкладку не перехватываем. */
+document.addEventListener("click",e=>{
+  if(e.defaultPrevented||e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;
+  const a=e.target.closest('a[href^="/"]');
+  if(!a||a.target==="_blank"||a.hasAttribute("download")||a.origin!==location.origin)return;
+  const k=ROUTES.parse(a.pathname,"");
+  if(k==="home"&&a.pathname!=="/")return; /* ссылка на файл, а не на маршрут */
+  e.preventDefault();
+  if(a.pathname!==location.pathname||location.hash){history.pushState(null,"",a.pathname);route(false);}
+});
 route(false);

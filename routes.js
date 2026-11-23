@@ -8,11 +8,11 @@
    Путь:
      "/"    "/gold/" "/countries/" | "/u/16367/" "/x/172/" "/r/37/" "/e/42/" | "/c/japan/"
 
-   PATHS=false, пока сгенерированных страниц нет: на хостинге настоящие пути
-   отдают 404, поэтому ссылки, canonical и og:url остаются хешевыми. Этап 1
-   (страницы разложены в репозитории) переключает флаг в true — тогда адреса
-   становятся путями, а старые хешевые ссылки (#u16367) подменяются на путь
-   в адресной строке. Флаг можно переключить и из консоли: ROUTES.PATHS=true.
+   LIVE — какие виды страниц уже разложены генератором. Вид, которого нет,
+   живёт только по хешу: ссылка на /u/16367/ увела бы посетителя на 404, а
+   canonical на несуществующий адрес поисковик отбросит. Поэтому вид включается
+   в LIVE тем же коммитом, которым генератор начинает его выпускать, — иначе
+   сайт начнёт ссылаться в пустоту. Проверить вид: ROUTES.live("u16367").
 
    Внимание на этап 1: ключи "x172" и "e42" — это НОМЕР ПО ПОРЯДКУ в массивах
    EV.x и EV.ev, а не устойчивый идентификатор. При следующей публикации
@@ -34,8 +34,12 @@ var BASE_DESC="A curated, community-powered database and professional network fo
 var SECTIONS=["umpires","blue","gold","white","updates","methodology","countries","referees","events","graph","olympics","inbox"];
 /* Записи с номером: /u/16367/, /x/172/, /r/37/, /e/42/. */
 var NUMERIC=["u","x","r","e"];
-/* Разделы, которых в поиске быть не должно. */
+/* Разделы, которых в поиске быть не должно: страница админа не выпускается
+   генератором и остаётся доступной только по хешу. */
 var NOINDEX=["inbox"];
+
+/* Какие виды страниц генератор уже разложил. Правится вместе с генератором. */
+var LIVE={section:false,country:false,person:false,event:false};
 
 /* Описания разделов. Всегда по-английски: сайт для посетителя англоязычный,
    RU остаётся только в интерфейсе куратора. Без чисел — иначе описание
@@ -99,12 +103,29 @@ function path(k){
 
 function hash(k){return "#"+(k||"home");}
 
-/* Вид ссылки в разметке: путь, когда страницы разложены, иначе хеш. */
-function link(k){return api.PATHS?path(k):hash(k);}
+/* Вид маршрута: по нему решается, разложена ли такая страница. */
+function kind(k){
+  if(!k||k==="home")return "home";
+  if(SECTIONS.indexOf(k)>=0)return "section";
+  if(isCountry(k))return "country";
+  if(isPerson(k))return "person";
+  if(isEvent(k))return "event";
+  return "home";
+}
 
-/* Адрес страницы для canonical и og:url. Пока страниц нет, единственный
-   существующий адрес — корень сайта, и указывать canonical на 404 нельзя. */
-function url(k){return ORIGIN+(api.PATHS?path(k):"/");}
+/* Есть ли у маршрута своя страница на хостинге. Главная есть всегда. */
+function live(k){
+  if(NOINDEX.indexOf(k)>=0)return false;
+  var t=kind(k);
+  return t==="home"?true:!!api.LIVE[t];
+}
+
+/* Вид ссылки в разметке: путь, когда страница разложена, иначе хеш. */
+function link(k){return live(k)?path(k):hash(k);}
+
+/* Адрес для canonical и og:url. Если страницы нет, единственный существующий
+   адрес — корень сайта. */
+function url(k){return ORIGIN+(live(k)?path(k):"/");}
 
 /* Мета-теги маршрута. h1 — заголовок страницы (для профилей, стран, турниров);
    countryTitle — шаблон заголовка страницы страны, нужен только чтобы у
@@ -124,8 +145,9 @@ function head(o){
 }
 
 var api={ORIGIN:ORIGIN,BRAND:BRAND,BASE_TITLE:BASE_TITLE,BASE_DESC:BASE_DESC,
-         PATHS:false,SECTIONS:SECTIONS,NUMERIC:NUMERIC,NOINDEX:NOINDEX,
-         valid:valid,parse:parse,path:path,hash:hash,link:link,url:url,head:head};
+         LIVE:LIVE,SECTIONS:SECTIONS,NUMERIC:NUMERIC,NOINDEX:NOINDEX,DESC:DESC,
+         valid:valid,parse:parse,path:path,hash:hash,kind:kind,live:live,
+         link:link,url:url,head:head};
 root.ROUTES=api;
 if(typeof module!=="undefined"&&module.exports)module.exports=api;
 })(typeof globalThis!=="undefined"?globalThis:this);

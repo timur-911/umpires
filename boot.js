@@ -66,7 +66,7 @@
     window.CATALOG = catalog;
     window.CATALOG_UPDATED = updated || "";
     var s = document.createElement("script");
-    s.src = "app.js";
+    s.src = "/app.js";
     s.onerror = function () { say("Could not load app.js. Reload the page."); };
     document.body.appendChild(s);
   }
