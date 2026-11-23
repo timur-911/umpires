@@ -13,6 +13,7 @@
                                         совпадении — с кодом ассоциации, дальше -2
      /referees/9165-abdallah-boudjahem/ рефери (номер IR)
      /countries/japan/                  ассоциация
+     /wtt-youth-star-contender-podgorica-2026/   турнир (в корне, без раздела)
    Номер впереди делает адрес устойчивым: имя можно поправить, адрес не поедет.
    Разбор смотрит только на номер, поэтому /umpires/16564-что-угодно/ тоже
    откроет нужный профиль, а canonical приведёт к правильному написанию.
@@ -42,7 +43,7 @@ var SECTIONS=["umpires","blue","gold","white","updates","methodology","countries
 var NOINDEX=["inbox"];
 
 /* Какие виды страниц генератор уже разложил. Правится вместе с генератором. */
-var LIVE={section:true,country:true,person:true,event:false};
+var LIVE={section:true,country:true,person:true,event:true};
 
 /* Описания разделов. Всегда по-английски: сайт для посетителя англоязычный,
    RU остаётся только в интерфейсе куратора. Без чисел — иначе описание
@@ -124,7 +125,13 @@ function parse(pathname,hash){
   if(h)return valid(h)?h:"home";
   var segs=String(pathname||"/").split("/").filter(function(s){return s;});
   if(!segs.length)return "home";
-  if(segs.length===1)return SECTIONS.indexOf(segs[0])>=0?segs[0]:"home";
+  if(segs.length===1){
+    if(SECTIONS.indexOf(segs[0])>=0)return segs[0];
+    /* Односегментный адрес, который не раздел, — турнир; разбирает его app.js,
+       у которого есть данные. */
+    if(api.keyOf){var ek=api.keyOf("root",segs[0]);if(ek)return ek;}
+    return "home";
+  }
   if(segs.length===2){
     if(segs[0]==="umpires"||segs[0]==="referees")return fromSeg(segs[0],segs[1]);
     if(segs[0]==="countries"&&/^[a-z-]+$/.test(segs[1])){
@@ -152,8 +159,15 @@ function path(k){
        профиль, поэтому его не существует. */
     return /^x/.test(k)?"/":"/"+(isRef(k)?"referees":"umpires")+"/"+k.replace(/^[ur]/,"")+"/";
   }
-  var m=/^(e)(\d+)$/.exec(k);
-  if(m)return "/e/"+m[2]+"/";
+  if(isEvent(k)){
+    var es=api.slugOf?api.slugOf(k):null;
+    /* Турнир живёт в корне: /wtt-youth-star-contender-podgorica-2026/ (решение
+       владельца 23.11.2026). Название турнира в данных уже содержит год, и
+       совпадений среди них нет, поэтому слаг — просто название латиницей.
+       Без данных (Node) остаётся прежний адрес с номером: он разбирается
+       обратно в тот же ключ. */
+    return es?"/"+es+"/":"/e/"+k.slice(1)+"/";
+  }
   return "/";
 }
 

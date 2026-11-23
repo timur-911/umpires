@@ -249,6 +249,16 @@ function buildRouteSlugs(){
   /* Ассоциации: /countries/saudi-arabia/. В ключе маршрута ("csaudiarabia")
      дефисов нет и он остаётся прежним — старые хешевые ссылки работают. */
   COUNTRIES.forEach(c=>put(c.slug,"countries",slugText(c.name)||c.slug.slice(1)));
+  /* Турниры — в корне сайта (решение владельца 23.11.2026):
+     «WTT Youth Star Contender Podgorica 2026» → /wtt-youth-star-contender-podgorica-2026/
+     Название в данных уже с годом. Слаг, совпавший с разделом или с чужим
+     слагом, получает номер — иначе турнир перекрыл бы раздел. */
+  const taken=new Set(ROUTES.SECTIONS);
+  EVENTS.forEach(e=>{
+    let sl=slugText(e.name)||("event-"+e.i), base=sl, n=1;
+    while(taken.has(sl))sl=base+"-"+(++n);
+    taken.add(sl);put("e"+e.i,"root",sl);
+  });
   OFF.forEach(o=>put("u"+o.iu,"umpires",iu5(o.iu)+"-"+personSlug(o)));
   /* Адрес есть у каждого рефери, в том числе у того, у кого есть профиль судьи:
      такой адрес ведёт на профиль судьи, а не исчезает (решение владельца
