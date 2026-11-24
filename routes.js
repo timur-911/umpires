@@ -37,7 +37,7 @@ var BASE_TITLE="Table tennis umpires and referees | "+BRAND;
 var BASE_DESC="A curated, community-powered database and professional network for table tennis match officials. Find any umpire or referee: level, status, tournaments and Olympic appearances.";
 
 /* Разделы: ключ маршрута совпадает с сегментом пути. */
-var SECTIONS=["umpires","blue","gold","white","updates","methodology","countries","referees","events","graph","olympics","inbox"];
+var SECTIONS=["umpires","blue","gold","white","updates","selections","methodology","countries","referees","events","graph","olympics","inbox"];
 /* Разделы, которых в поиске быть не должно: страница админа не выпускается
    генератором и остаётся доступной только по хешу. */
 var NOINDEX=["inbox"];
@@ -55,6 +55,7 @@ var DESC={
   blue:"Blue Badge table tennis umpires: the ITTF list with qualification dates, associations and continents.",
   white:"White Badge table tennis umpires: international umpires who hold the entry-level ITTF badge.",
   updates:"Promotions and returns: every change of level we know of among international table tennis umpires.",
+  selections:"Every table tennis umpire and referee selection we know of: who officiated at which tournament, with the badge they held and the level of the event.",
   methodology:"How this database is put together: where the data comes from, how dates are established and how precise each of them is.",
   countries:"Table tennis umpires and referees by association: how many officials each ITTF member association has, in total and adjusted for its size and age.",
   referees:"International table tennis referees: search by name or IR number, filter by status, continent and association.",
