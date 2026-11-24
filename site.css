@@ -47,8 +47,14 @@ h3{font-size:20px}
 .muted{color:var(--muted)}
 /* top bar */
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--brand);color:var(--on-brand);border-radius:16px;display:flex;align-items:center;gap:20px;padding:10px 14px 10px 20px;flex-wrap:wrap}
-.logo{font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:.04em;text-decoration:none}
-.logo span{opacity:.55}
+/* Логотип в две строки (куратор 24.11.2026): UMPIRES, под ним WORLD ровно по ширине верхнего
+   слова. Ширину даёт верхняя строка, нижняя — flex с space-between, поэтому буквы
+   раздвигаются ровно до её краёв при любом шрифте и масштабе; отрицательный правый отступ
+   у верхней строки убирает хвост межбуквенного интервала после последней буквы. */
+.logo{font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:.04em;text-decoration:none;display:inline-flex;flex-direction:column;line-height:1}
+.logo .lgt{margin-right:-.04em}
+.logo .lgw{display:flex;justify-content:space-between;font-size:.56em;font-weight:600;opacity:.62;margin-top:3px}
+.logo .lgw i{font-style:normal;letter-spacing:0}
 .nav{display:flex;gap:4px;flex-wrap:wrap;flex:1;justify-content:center}
 .nav a{text-decoration:none;padding:6px 10px;border-radius:8px;font-weight:500;font-size:14px}
 .nav a:hover{background:rgba(6,42,49,.1)}
