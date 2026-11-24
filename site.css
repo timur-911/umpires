@@ -51,9 +51,9 @@ h3{font-size:20px}
    слова. Ширину даёт верхняя строка, нижняя — flex с space-between, поэтому буквы
    раздвигаются ровно до её краёв при любом шрифте и масштабе; отрицательный правый отступ
    у верхней строки убирает хвост межбуквенного интервала после последней буквы. */
-.logo{font-family:var(--f-display);font-weight:700;font-size:24px;letter-spacing:.04em;text-decoration:none;display:inline-flex;flex-direction:column;line-height:1}
+.logo{font-family:var(--f-display);font-weight:800;font-size:24px;letter-spacing:.04em;text-decoration:none;display:inline-flex;flex-direction:column;line-height:1}
 .logo .lgt{margin-right:-.04em}
-.logo .lgw{display:flex;justify-content:space-between;font-size:.56em;font-weight:600;opacity:.62;margin-top:3px}
+.logo .lgw{display:flex;justify-content:space-between;font-size:.56em;font-weight:800;opacity:.62;margin-top:3px}
 .logo .lgw i{font-style:normal;letter-spacing:0}
 .nav{display:flex;gap:4px;flex-wrap:wrap;flex:1;justify-content:center}
 .nav a{text-decoration:none;padding:6px 10px;border-radius:8px;font-weight:500;font-size:14px}
