@@ -53,6 +53,9 @@ h3{font-size:20px}
    прозрачность, а не вес: запрос второго веса в Google Fonts уронил бы всю таблицу стилей. */
 .logo{font-family:var(--f-logo);font-weight:400;font-size:26px;letter-spacing:.02em;text-decoration:none;line-height:1}
 .logo span{opacity:.5}
+/* точка между словами — ракетка, лопастью вверх-вправо под 45° (куратор 24.11.2026);
+   рисуется currentColor внутри светлой половины логотипа, поэтому светлее первого слова */
+.logo .bat{width:.8em;height:.8em;margin:0 .06em;position:relative;top:-.04em}
 .nav{display:flex;gap:4px;flex-wrap:wrap;flex:1;justify-content:center}
 .nav a{text-decoration:none;padding:6px 10px;border-radius:8px;font-weight:500;font-size:14px}
 .nav a:hover{background:rgba(6,42,49,.1)}
@@ -72,7 +75,7 @@ h3{font-size:20px}
   .bar{column-gap:12px}.logott{margin-left:-12px} /* logo, TABLE TENNIS and the hamburger fit one row down to 320px */
   .bar .baract{display:none}.bar .burger{margin-left:auto} /* the header's buttons are empty on mobile: Sign in/out is in the menu panel, "That's me" is never in the header */
 }
-@media (max-width:350px){.logo{font-size:20px}.logott{font-size:11px}.logott::before{height:19px;margin:0 7px}}
+@media (max-width:375px){.logo{font-size:20px}.logott{font-size:11px}.logott::before{height:19px;margin:0 7px}} /* порог 375, а не 350: с ракеткой логотип шире, и на 360 px строка с TABLE TENNIS и гамбургером уже не помещалась */
 /* mobile: menu items hide under a hamburger; the panel opens below the logo row and closes on navigation, Escape or a tap outside (curator 13.11.2026) */
 .burger{display:none;order:2;align-items:center;justify-content:center;width:40px;height:40px;margin:-4px -6px -4px 0;padding:0;border:0;border-radius:10px;background:none;color:var(--on-brand);cursor:pointer}
 .burger:hover{background:rgba(6,42,49,.1)}
