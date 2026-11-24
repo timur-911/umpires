@@ -80,7 +80,6 @@ h3{font-size:20px}
   .bar .nav{display:none;order:3;flex-basis:100%;flex-direction:column;align-items:stretch;gap:2px;padding:6px 0 4px;border-top:1px solid rgba(6,42,49,.15)}
   .bar.open .nav{display:flex}
   .bar .nav a,.bar .nav .ddb{padding:10px 10px;font-size:16px}
-  .bar .nav a[data-r="countries"]{margin-left:0}
   .bar .nav .navc{display:contents} /* mobile menu: every item on its own row */
   .bar .nav .dd{display:block}.bar .nav .ddb{width:100%;justify-content:space-between}
   .bar .nav .ddm{position:static;min-width:0;background:none;color:inherit;border:0;box-shadow:none;padding:0 0 4px 14px}
@@ -105,8 +104,6 @@ h3{font-size:20px}
 /* the first four menu items sit midway between the logo and Umpire network, whatever the width: equal auto margins on both sides;
    the extra 16px before Umpire network matches the 20px bar gap after the logo (curator 13.11.2026) */
 .nav .navc{display:flex;gap:4px;flex-wrap:wrap;margin:0 auto}
-.nav a[data-r="countries"]{margin-left:16px} /* Umpire network and Olympics sit at the right end, next to Sign in (curator 13.11.2026) */
-@media (max-width:560px){.nav a[data-r="countries"]{margin-left:0}}
 .nav .dd{position:relative;display:inline-flex}
 .nav .ddb{font:inherit;font-weight:500;font-size:14px;color:inherit;background:none;border:0;padding:6px 10px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .nav .ddb:hover,.nav .ddb[aria-expanded="true"]{background:rgba(6,42,49,.1)}
