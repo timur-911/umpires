@@ -120,6 +120,9 @@ h3{font-size:20px}
 .nav .ddm a:hover{background:var(--sunk)}
 .nav .ddm a[aria-current="page"]{background:var(--sunk);color:var(--ink);font-weight:600}
 .nav .ddm .ddall{border-top:1px solid var(--line);margin-top:4px;padding-top:10px}
+/* «All umpires →» — в фирменном голубом (куратор 24.11.2026); на текущей странице цвет сохраняется.
+   В мобильном меню пункт остаётся цвета надписей бара: голубой на бирюзовом фоне не читался бы. */
+.nav .ddm .ddall,.nav .ddm .ddall[aria-current="page"]{color:var(--ch3)}
 /* Umpires Network в выпадающем меню — на светлой подложке (куратор 24.11.2026) */
 .nav .ddm .ddnet{background:var(--sunk)}
 .nav .ddm .ddnet:hover,.nav .ddm .ddnet[aria-current="page"]{background:var(--line)}
