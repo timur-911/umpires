@@ -56,7 +56,7 @@ var DESC={
   white:"White Badge table tennis umpires: international umpires who hold the entry-level ITTF badge.",
   updates:"Promotions and returns: every change of level we know of among international table tennis umpires.",
   methodology:"How this database is put together: where the data comes from, how dates are established and how precise each of them is.",
-  countries:"Table tennis umpires and referees by country: how many officials each ITTF association has, in total and adjusted for its size and age.",
+  countries:"Table tennis umpires and referees by association: how many officials each ITTF member association has, in total and adjusted for its size and age.",
   referees:"International table tennis referees: search by name or IR number, filter by status, continent and association.",
   events:"Tournaments with known umpire and referee selections: who officiated where.",
   graph:"Umpires Network: who officiated alongside whom, and at which tournaments.",
