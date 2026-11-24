@@ -54,8 +54,11 @@ h3{font-size:20px}
 .logo{font-family:var(--f-logo);font-weight:400;font-size:26px;letter-spacing:.02em;text-decoration:none;line-height:1}
 .logo span{opacity:.5}
 /* точка между словами — ракетка, лопастью вверх-вправо под 45° (куратор 24.11.2026);
-   рисуется currentColor внутри светлой половины логотипа, поэтому светлее первого слова */
-.logo .bat{width:.8em;height:.8em;margin:0 .06em;position:relative;top:-.04em}
+   рисуется currentColor внутри светлой половины логотипа, поэтому светлее первого слова.
+   Размер — с точку, узнаётся силуэтом: овальная лопасть, вогнутая шейка, расширенная ручка.
+   viewBox обрезан по развёрнутой фигуре, чтобы .46em были самой ракеткой, а не пустыми полями;
+   стоит на базовой линии, как точка, которую заменяет. */
+.logo .bat{width:.46em;height:.46em;margin:0 .07em}
 .nav{display:flex;gap:4px;flex-wrap:wrap;flex:1;justify-content:center}
 .nav a{text-decoration:none;padding:6px 10px;border-radius:8px;font-weight:500;font-size:14px}
 .nav a:hover{background:rgba(6,42,49,.1)}
