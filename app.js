@@ -1171,7 +1171,7 @@ function selRoles(){const seen=new Set(selAll().map(r=>r.role));
   return [...seen].sort((a,b)=>(a==="umpire"?-1:b==="umpire"?1:0)||((ROLE_IX.get(a)??99)-(ROLE_IX.get(b)??99))||a.localeCompare(b));}
 /* подсказка «как мы ранжируем турниры»: три уровня одним текстом и оговорка под ними */
 const selRankTip=()=>{const t=T();return [1,2,3].map(v=>v+" "+t["sel_l"+v]).join("\n")+"\n\n"+t.sel_note;};
-const lvChipT=v=>{const t=T();return v?`<span class="tlv ftip t${v}" tabindex="0" data-tip="${esc(t["sel_l"+v])}">${v}</span>`:`<span class="ftip muted" tabindex="0" data-tip="${esc(t.sel_note)}">—</span>`;};
+const lvChipT=v=>{const t=T();return v?`<span class="tlv ftip t${v}" tabindex="0" data-tip="${esc(t.sel_lv+" "+v+"\n"+t["sel_l"+v])}">${v}</span>`:`<span class="ftip muted" tabindex="0" data-tip="${esc(t.sel_note)}">—</span>`;};
 function selYears(){return [...new Set(selAll().map(r=>r.e.s.slice(0,4)))].sort((a,b)=>b.localeCompare(a));}
 function selYear(){const ys=selYears();if(!ys.length)return "all";
   if(selState.y&&(selState.y==="all"||ys.includes(selState.y)))return selState.y;
