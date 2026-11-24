@@ -256,9 +256,6 @@ main{margin-top:24px}
 /* название турнира — единственная колонка, которой разрешено переноситься:
    иначе семь колонок не умещаются по ширине (куратор 24.11.2026) */
 #selOut td.evn{white-space:normal;max-width:300px}
-.lvkey{display:flex;flex-direction:column;gap:8px;margin:16px 0 0;max-width:72ch}
-.lvkey>div{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.45}
-.lvkey .tlv{flex:none;margin-top:1px}
 /* stacked bars */
 .bars{display:flex;flex-direction:column;gap:7px}
 .bars .r{display:grid;grid-template-columns:150px 1fr 40px;gap:10px;align-items:center;font-size:13px}
@@ -449,7 +446,7 @@ td a{text-decoration:none;font-weight:500}
 .iust{position:relative;cursor:help;text-decoration:underline dashed;text-underline-offset:3px;text-decoration-thickness:1px;outline:none}
 .iutip{display:none;position:absolute;left:0;top:calc(100% + 6px);z-index:40;width:min(340px,calc(100vw - 40px));background:var(--ink);color:var(--bg);font:400 12.5px/1.45 var(--f-body);letter-spacing:0;text-transform:none;padding:9px 11px;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.2);white-space:normal}
 .iutip a{color:inherit;text-decoration:underline}
-#ftipBox{position:fixed;z-index:60;width:min(340px,calc(100vw - 32px));background:var(--ink);color:var(--bg);font:400 12.5px/1.45 var(--f-body);padding:9px 11px;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.2);pointer-events:none}
+#ftipBox{white-space:pre-line;position:fixed;z-index:60;width:min(340px,calc(100vw - 32px));background:var(--ink);color:var(--bg);font:400 12.5px/1.45 var(--f-body);padding:9px 11px;border-radius:9px;box-shadow:0 8px 24px rgba(0,0,0,.2);pointer-events:none}
 .iust:hover .iutip,.iust:focus .iutip,.iust:focus-within .iutip{display:block}
 .iutip::before{content:"";position:absolute;left:0;right:0;top:-8px;height:8px}
 .corow{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:14px;position:relative}
