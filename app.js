@@ -738,6 +738,7 @@ function viewHome(){
         <a href="#referees">${t.hero_refs}</a>
         <a href="#graph">${t.nav_graph}</a>
       </div>
+      <a href="#methodology" class="herometh">${t.meth_h}</a>
     </div>
     <div class="card mapcard">
       <div><div class="eyebrow">${t.map_eyebrow}</div>

@@ -169,11 +169,16 @@ main{margin-top:24px}
    Вместо него под поиском — четыре ссылки в разделы, первая выделена цветом
    надзаголовка главной (--ch3), как тот же пункт в выпадающем меню. */
 .hero .herol{display:flex;flex-direction:column}
-.herolinks{display:grid;grid-template-columns:repeat(2,max-content);gap:10px 24px;margin:18px 0 0;font-size:15px} /* две на две, как на макете владельца: по потоку они встали бы 3 + 1 */
+.herolinks{display:grid;grid-template-columns:repeat(2,max-content);gap:10px 24px;margin:28px 0 0;font-size:15px} /* две на две, как на макете владельца: по потоку они встали бы 3 + 1 */
 .herolinks a{color:var(--muted);text-decoration:none}
 .herolinks a:hover{color:var(--ink);text-decoration:underline}
 .herolinks .hl-main{color:var(--ch3);font-weight:600}
 .herolinks .hl-main:hover{color:var(--ch3)}
+/* «Methodology» — в самом низу карточки героя, вровень с подписью под картой
+   (владелец 25.11.2026). Набор как у слова «Try» под поиском, но с подчёркиванием,
+   которое пропадает при наведении — так же, как у самих примеров запросов. */
+.herometh{align-self:flex-start;margin-top:auto;padding-top:20px;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.herometh:hover{text-decoration:none}
 .ysel{flex:none!important;width:auto!important;min-width:84px}
 .topctl .ysel,.section-head .ysel,h3 .ysel{font-family:var(--f-body);font-size:13px;font-weight:500;padding:5px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);min-width:76px}
 .h1l{display:block}
@@ -192,6 +197,7 @@ main{margin-top:24px}
 .results .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hint{font-size:13px;color:var(--muted);margin-top:10px}
 .hint button{font:inherit;color:var(--brand-ink);background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
+.hint button:hover{text-decoration:none}
 /* pyramid */
 .pyr{display:flex;flex-direction:column;gap:10px;margin-top:18px}
 .pyr .row{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:12px}
