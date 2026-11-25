@@ -55,9 +55,12 @@ h3{font-size:20px}
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--brand);color:var(--on-brand);border-radius:16px;display:flex;align-items:center;gap:20px;padding:10px 14px 10px 20px;flex-wrap:wrap}
 /* Логотип — файл владельца logo.svg (umpires-world-logo.svg, 25.11.2026), положен в корень
    как есть: контуры, без текста и без шрифта. Цвета внутри файла — #062a31 и #1e838c,
-   те же, что были у слов раньше. Размер задаётся высотой, ширина по пропорции файла. */
+   те же, что были у слов раньше. Размер задаётся высотой, ширина по пропорции файла.
+   22 px — высота прежнего логотипа: Fjalla One 26 px давал 22,07 px заглавных, а контуры в
+   файле заполняют viewBox вплотную, поэтому высота картинки и есть высота букв. На мобильном
+   17 px — те же 22 px в пропорции прежних 20 px шрифта. */
 .logo{display:inline-flex;align-items:center;text-decoration:none;line-height:0}
-.logoimg{display:block;height:34px;width:auto}
+.logoimg{display:block;height:22px;width:auto}
 .nav{display:flex;gap:4px;flex-wrap:wrap;flex:1;justify-content:center}
 .nav a{text-decoration:none;padding:6px 10px;border-radius:8px;font-weight:500;font-size:14px}
 .nav a:hover{background:rgba(6,42,49,.1)}
@@ -77,7 +80,7 @@ h3{font-size:20px}
   .bar{column-gap:12px}.logott{margin-left:-12px} /* logo, TABLE TENNIS and the hamburger fit one row down to 320px */
   .bar .baract{display:none}.bar .burger{margin-left:auto} /* the header's buttons are empty on mobile: Sign in/out is in the menu panel, "That's me" is never in the header */
 }
-@media (max-width:350px){.logoimg{height:26px}.logott{font-size:11px}.logott::before{height:19px;margin:0 7px}}
+@media (max-width:350px){.logoimg{height:17px}.logott{font-size:11px}.logott::before{height:19px;margin:0 7px}}
 /* mobile: menu items hide under a hamburger; the panel opens below the logo row and closes on navigation, Escape or a tap outside (curator 13.11.2026) */
 .burger{display:none;order:2;align-items:center;justify-content:center;width:40px;height:40px;margin:-4px -6px -4px 0;padding:0;border:0;border-radius:10px;background:none;color:var(--on-brand);cursor:pointer}
 .burger:hover{background:rgba(6,42,49,.1)}
