@@ -4,7 +4,7 @@
    брала их из кэша соседней. Порядок правил сохранён: сначала основной
    блок, затем дополнения. Критические 372 байта остались в <head>
    index.html — они рисуют скелет до загрузки этого файла. */
-/* Layout: cyan rounded top bar (from the owner's wireframe), single 1180px column, cards only where an object is meant (search, pyramid, profile). Badge colours (white / blue / gold) carry meaning everywhere. */
+/* Layout: cyan rounded top bar (from the owner's wireframe), single column up to 1480px wide, cards only where an object is meant (search, pyramid, profile). Badge colours (white / blue / gold) carry meaning everywhere. */
 :root{
   --bg:#f3f6f7; --surface:#ffffff; --sunk:#e9eff1; --ink:#0c1d26; --muted:#566a75; --line:#d5dfe3; --edge:rgba(12,29,38,.20);
   --brand:#38dfea; --on-brand:#062a31; --brand-ink:#0b6b75;
@@ -34,7 +34,13 @@ a{color:inherit}
 .alink{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline dashed;text-decoration-thickness:1px;text-underline-offset:3px}
 .alink:hover{color:var(--ink)}
 :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
-.wrap{max-width:1180px;margin:0 auto}
+/* Ширина рабочей области (владелец 25.11.2026): 1180 было подогнано под 1280 CSS-px
+   (Ретина 2560×1664 в масштабе 2×). На экране 1920 без Ретины оставалось по 370 px
+   пустого поля с каждой стороны. Теперь колонка растёт вместе с окном, сохраняя по
+   90 px поля сверх 16 px отступа body, и упирается в 1480: при 1280 — прежние 1180,
+   при 1440 — 1260, при 1600 — 1420, при 1920 и шире — 1480. Потолок парный с
+   потолком H1 в fitH1() (app.js): без него заголовок рос бы вместе с колонкой. */
+.wrap{max-width:clamp(1180px,calc(100vw - 180px),1480px);margin:0 auto}
 .num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 h1,h2,h3{font-family:var(--f-display);font-weight:600;line-height:1.05;margin:0;text-wrap:balance;letter-spacing:.005em}
 /* one H1 size on every page; sized so the home line "Share your experience." nearly fills the left hero card (curator 01.11.2026) */

@@ -2659,7 +2659,7 @@ function fitH1(){try{const wrap=document.querySelector(".wrap");if(!wrap)return;
   const s=document.createElement("span");const cs=getComputedStyle(document.documentElement);
   s.style.cssText="position:absolute;visibility:hidden;white-space:nowrap;font-weight:600;font-size:100px;letter-spacing:.005em;font-family:"+cs.getPropertyValue("--f-display");
   s.textContent="Share your experience.";document.body.appendChild(s);const w=s.getBoundingClientRect().width;s.remove();
-  if(!w)return;let fs=col/w*100*0.99;if(innerWidth<=900)fs=Math.min(fs,56);
+  if(!w)return;let fs=col/w*100*0.99;if(innerWidth<=900)fs=Math.min(fs,56);else fs=Math.min(fs,48); /* потолок 48 (владелец 25.11.2026): с 25.11 колонка шире 1180 на широких экранах, и без потолка тот же расчёт дал бы 57 px при 1480. Цена — на экранах шире ~1300 px строка главной не доходит до правого края поля поиска. */
   document.documentElement.style.setProperty("--h1fs",fs.toFixed(2)+"px");const r=document.querySelector(".rot");if(r&&r._size)r._size();}catch(_){}}
 addEventListener("resize",fitH1);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitH1);
 /* floating tooltip for .ftip (not clipped by scrolling tables) */
