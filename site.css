@@ -253,6 +253,9 @@ main{margin-top:24px}
 .section-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:20px}
 /* подпись и штамп обновления над лентой: текст слева, пиктограмма с датой справа */
+/* Заголовок карточки с картой на главной: заголовок слева, отметка о дате
+   списков справа, в самом правом положении (владелец 25.11.2026). */
+.maphead{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap}
 .newsline{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;margin:-6px 0 12px}
 .newsline p{margin:0;font-size:13px}
 .newsupd{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:var(--f-mono);font-size:12px;cursor:default}
