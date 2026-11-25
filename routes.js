@@ -31,7 +31,7 @@
 "use strict";
 
 var ORIGIN="https://umpires.world";
-var BRAND="UMPIR.ES";
+var BRAND="UMPIRES.WORLD"; /* имя сайта в мета-тегах: title, og:*, JSON-LD (владелец 25.11.2026, после переезда на umpires.world) */
 
 var BASE_TITLE="Table tennis umpires and referees | "+BRAND;
 var BASE_DESC="A curated, community-powered database and professional network for table tennis match officials. Find any umpire or referee: level, status, tournaments and Olympic appearances.";
@@ -67,11 +67,11 @@ var DESC={
 var COUNTRY_DESC="Table tennis umpires and referees representing %s: their badges, association and the tournaments they officiated.";
 var COUNTRY_TITLE="Table tennis officials in %s";
 /* Турнир — формат владельца (23.11.2026):
-   20th Asian Games Nagoya 2026 — Umpires and Referees Selected | UMPIR.ES */
+   20th Asian Games Nagoya 2026 — Umpires and Referees Selected | UMPIRES.WORLD */
 var EVENT_TITLE="%n — Umpires and Referees Selected | "+BRAND;
 var EVENT_DESC="%s: the umpires and referees who officiated at this tournament.";
 /* Профиль — формат владельца (23.11.2026):
-   Ali AALMUTAIRI — Table Tennis Umpire | UMPIR.ES
+   Ali AALMUTAIRI — Table Tennis Umpire | UMPIRES.WORLD
    Profile of Ali AALMUTAIRI, table tennis umpire from Saudi Arabia.
    Qualifications and tournament history. */
 var ROLE={umpire:"Table Tennis Umpire",referee:"Table Tennis Referee"};
