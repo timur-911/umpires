@@ -54,7 +54,7 @@ var DESC={
   gold:"Gold Badge table tennis umpires: who holds the highest ITTF badge, when each of them qualified and how long they have held it.",
   blue:"Blue Badge table tennis umpires: the ITTF list with qualification dates, associations and continents.",
   white:"White Badge table tennis umpires: international umpires who hold the entry-level ITTF badge.",
-  updates:"Promotions and returns: every change of level we know of among international table tennis umpires.",
+  updates:"Promotions, new badges and returns: every change of level we know of among international table tennis umpires.",
   selections:"Every table tennis umpire and referee selection we know of: who officiated at which tournament, with the badge they held and the level of the event.",
   methodology:"How this database is put together: where the data comes from, how dates are established and how precise each of them is.",
   countries:"Table tennis umpires and referees by association: how many officials each ITTF member association has, in total and adjusted for its size and age.",
