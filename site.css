@@ -132,8 +132,12 @@ h3{font-size:20px}
 /* «All umpires →» — в фирменном голубом (куратор 24.11.2026); на текущей странице цвет сохраняется.
    В мобильном меню пункт остаётся цвета надписей бара: голубой на бирюзовом фоне не читался бы. */
 .nav .ddm .ddall,.nav .ddm .ddall[aria-current="page"]{color:var(--ch3)}
-/* Umpires network в выпадающем меню — на светлой подложке (куратор 24.11.2026) */
-.nav .ddm .ddnet{background:var(--sunk)}
+/* Umpires network в выпадающем меню — на светлой подложке (куратор 24.11.2026),
+   с иконкой-графом: узел и три связи (куратор 25.11.2026). Иконка в currentColor,
+   поэтому идёт за цветом пункта — в тёмной теме, при наведении и когда это текущая
+   страница; от скринридера скрыта (aria-hidden), читается только текст пункта. */
+.nav .ddm .ddnet{background:var(--sunk);display:flex;align-items:center}
+.nav .ddm .netico{width:14px;height:14px;flex:none;margin-right:7px}
 .nav .ddm .ddnet:hover,.nav .ddm .ddnet[aria-current="page"]{background:var(--line)}
 .btn{font:inherit;font-weight:600;font-size:14px;border-radius:10px;padding:8px 14px;border:1.5px solid currentColor;background:transparent;color:inherit;cursor:pointer}
 .btn.solid{background:var(--on-brand);color:var(--brand);border-color:var(--on-brand)}
