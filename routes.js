@@ -30,7 +30,7 @@
 (function(root){
 "use strict";
 
-var ORIGIN="https://umpir.es";
+var ORIGIN="https://umpires.world";
 var BRAND="UMPIR.ES";
 
 var BASE_TITLE="Table tennis umpires and referees | "+BRAND;

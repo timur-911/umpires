@@ -1,4 +1,4 @@
-# Сборка и публикация umpir.es на GitHub Pages.
+# Сборка и публикация umpires.world на GitHub Pages.
 #
 # ВАЖНО: источник сайта в настройках репозитория должен стоять «GitHub Actions»
 # (Settings → Pages → Build and deployment → Source). Пока там «Deploy from a
