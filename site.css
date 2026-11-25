@@ -167,13 +167,14 @@ main{margin-top:24px}
 /* Абзац .howto 25.11.2026 уехал с главной в «Методологию» (владелец), там он стоит
    обычным абзацем; класс остался ради тех же пунктирных кнопок внутри него.
    Вместо него под поиском — четыре ссылки в разделы, первая выделена цветом
-   надзаголовка главной (--ch3), как тот же пункт в выпадающем меню. */
+   --brand-ink (владелец 25.11.2026) — тем же, каким набраны примеры запросов
+   справа от «Try:». */
 .hero .herol{display:flex;flex-direction:column}
 .herolinks{display:grid;grid-template-columns:repeat(2,max-content);gap:10px 24px;margin:28px 0 0;font-size:15px} /* две на две, как на макете владельца: по потоку они встали бы 3 + 1 */
 .herolinks a{color:var(--muted);text-decoration:none}
 .herolinks a:hover{color:var(--ink);text-decoration:underline}
-.herolinks .hl-main{color:var(--ch3);font-weight:600}
-.herolinks .hl-main:hover{color:var(--ch3)}
+.herolinks .hl-main{color:var(--brand-ink);font-weight:600}
+.herolinks .hl-main:hover{color:var(--brand-ink)}
 /* «Methodology» — в самом низу карточки героя, вровень с подписью под картой
    (владелец 25.11.2026). Набор как у слова «Try» под поиском, но с подчёркиванием,
    которое пропадает при наведении — так же, как у самих примеров запросов. */
