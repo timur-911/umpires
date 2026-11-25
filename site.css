@@ -13,10 +13,6 @@
   --g-f:#f19cbb; --g-m:#56b4e9;
   --map-sea:#eaf1f3; --map-border:#ffffff; --ch0:#d9e2e6; --ch1:#b9ecf0; --ch2:#62cfd9; --ch3:#1b95a2; --ch4:#0a5862;
   --f-display:"Fira Sans Extra Condensed","Arial Narrow",system-ui,sans-serif;
-  --f-logo:"Fjalla One","Fira Sans Extra Condensed","Arial Narrow",system-ui,sans-serif;
-  /* второе слово логотипа и ракетка: ровно то, что давало opacity .5 от --on-brand на --brand.
-     Если меняются --brand или --on-brand, этот цвет нужно пересчитать вручную. */
-  --logo-soft:#1e838c;
   --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
 }
@@ -57,18 +53,11 @@ h3{font-size:20px}
 .muted{color:var(--muted)}
 /* top bar */
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--brand);color:var(--on-brand);border-radius:16px;display:flex;align-items:center;gap:20px;padding:10px 14px 10px 20px;flex-wrap:wrap}
-/* Логотип (куратор 24.11.2026): UMPIRES.WORLD одной строкой шрифтом Fjalla One; точка и
-   второе слово светлее первого. У Fjalla One единственное начертание, поэтому "светлее" —
-   цвет, а не вес: запрос второго веса в Google Fonts уронил бы всю таблицу стилей.
-   Первое слово — --on-brand (#062a31), второе и ракетка — --logo-soft (#1e838c). */
-.logo{font-family:var(--f-logo);font-weight:400;font-size:26px;letter-spacing:.02em;text-decoration:none;line-height:1}
-.logo span{color:var(--logo-soft)}
-/* точка между словами — ракетка, лопастью вверх-вправо под 45° (куратор 24.11.2026);
-   рисуется currentColor внутри светлой половины логотипа, поэтому светлее первого слова.
-   Размер — с точку, узнаётся силуэтом: овальная лопасть, вогнутая шейка, расширенная ручка.
-   viewBox обрезан по развёрнутой фигуре, чтобы .46em были самой ракеткой, а не пустыми полями;
-   стоит на базовой линии, как точка, которую заменяет. */
-.logo .bat{width:.46em;height:.46em;margin:0 .07em}
+/* Логотип — файл владельца logo.svg (umpires-world-logo.svg, 25.11.2026), положен в корень
+   как есть: контуры, без текста и без шрифта. Цвета внутри файла — #062a31 и #1e838c,
+   те же, что были у слов раньше. Размер задаётся высотой, ширина по пропорции файла. */
+.logo{display:inline-flex;align-items:center;text-decoration:none;line-height:0}
+.logoimg{display:block;height:34px;width:auto}
 .nav{display:flex;gap:4px;flex-wrap:wrap;flex:1;justify-content:center}
 .nav a{text-decoration:none;padding:6px 10px;border-radius:8px;font-weight:500;font-size:14px}
 .nav a:hover{background:rgba(6,42,49,.1)}
@@ -88,7 +77,7 @@ h3{font-size:20px}
   .bar{column-gap:12px}.logott{margin-left:-12px} /* logo, TABLE TENNIS and the hamburger fit one row down to 320px */
   .bar .baract{display:none}.bar .burger{margin-left:auto} /* the header's buttons are empty on mobile: Sign in/out is in the menu panel, "That's me" is never in the header */
 }
-@media (max-width:375px){.logo{font-size:20px}.logott{font-size:11px}.logott::before{height:19px;margin:0 7px}} /* порог 375, а не 350: с ракеткой логотип шире, и на 360 px строка с TABLE TENNIS и гамбургером уже не помещалась */
+@media (max-width:350px){.logoimg{height:26px}.logott{font-size:11px}.logott::before{height:19px;margin:0 7px}}
 /* mobile: menu items hide under a hamburger; the panel opens below the logo row and closes on navigation, Escape or a tap outside (curator 13.11.2026) */
 .burger{display:none;order:2;align-items:center;justify-content:center;width:40px;height:40px;margin:-4px -6px -4px 0;padding:0;border:0;border-radius:10px;background:none;color:var(--on-brand);cursor:pointer}
 .burger:hover{background:rgba(6,42,49,.1)}

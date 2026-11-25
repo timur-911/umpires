@@ -42,7 +42,7 @@ const WORK = path.join(ROOT, ".build-work");
 
 /* Файлы сайта, которые едут в артефакт как есть. */
 const SITE_FILES = ["index.html", "site.css", "app.js", "routes.js", "boot.js", "config.js",
-  "map.json", "og.png", "favicon.ico", "favicon-32.png", "icon-192.png",
+  "map.json", "logo.svg", "og.png", "favicon.ico", "favicon-32.png", "icon-192.png",
   "apple-touch-icon.png", "CNAME"];
 const SITE_DIRS = ["vendor"];
 /* Ключи справочника, без которых сайт не запускается (как в boot.js). */
