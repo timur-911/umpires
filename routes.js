@@ -60,7 +60,7 @@ var DESC={
   countries:"Table tennis umpires and referees by association: how many officials each ITTF member association has, in total and adjusted for its size and age.",
   referees:"International table tennis referees: search by name or IR number, filter by status, continent and association.",
   events:"Tournaments with known umpire and referee selections: who officiated where.",
-  graph:"Umpires Network: who officiated alongside whom, and at which tournaments.",
+  graph:"Umpires network: who officiated alongside whom, and at which tournaments.",
   olympics:"Table tennis umpires and referees at the Olympic and Paralympic Games.",
   inbox:""
 };
