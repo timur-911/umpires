@@ -24,6 +24,21 @@ const GBH=CATALOG.GBH;
 const GANTT=CATALOG.GANTT;
 const PARA=CATALOG.PARA;
 const REF_IU=CATALOG.REF_IU;
+/* Города турниров (ключ GEO, 26.11.2026): GEO.c — [название, код страны ISO-2, широта, долгота],
+   GEO.ev[i] — индекс города у EVENTS[i], GEO.g — города Игр по годам. Ключа нет (старый кэш,
+   офлайн) — карта турниров просто не рисуется.
+   Координаты переводятся в систему map.json повторением его проекции: d3.geoNaturalEarth1()
+   со scale 176.12 и translate [479.92, 266.52] — она разгадана подгонкой по 16 опорным точкам
+   карты (средняя ошибка 0,29 px), см. claude/tournament-cities.md. Формула — та же, что у d3:
+   полином Natural Earth 1, поэтому сам d3 на страницу грузить не нужно. */
+const GEO=CATALOG.GEO||null;
+const GEO_K=176.12, GEO_TX=479.92, GEO_TY=266.52;
+function geoXY(lat,lon){const p=lat*Math.PI/180,l=lon*Math.PI/180,p2=p*p,p4=p2*p2;
+  return [GEO_TX+GEO_K*l*(0.8707-0.131979*p2+p4*(-0.013791+p4*(0.003971*p2-0.001529*p4))),
+          GEO_TY-GEO_K*p*(1.007226+p2*(0.015085+p4*(-0.044475+0.028874*p2-0.005916*p4)))];}
+const GCITY=(GEO&&GEO.c?GEO.c:[]).map(([n,cc,la,lo],i)=>{const [x,y]=geoXY(la,lo);return {i,n,cc,la,lo,x,y};});
+const evCity=e=>(GEO&&e&&GEO.ev[e.i]!=null)?GCITY[GEO.ev[e.i]]:null;
+const gamesCity=y=>(GEO&&GEO.g&&GEO.g[y]!=null)?GCITY[GEO.g[y]]:null;
 let MAP=null, mapReq=null;
 const MAP_T={ru:{err:"Не удалось загрузить карту. Обновите страницу."},en:{err:"The map could not be loaded. Reload the page."}};
 function ensureMap(){
@@ -42,7 +57,7 @@ const NOTES = {16367:{ru:"Перерыв в списках Gold Badge с июн�
 /* ---------- i18n ---------- */
 const I18N = {
 ru:{
- nav_umpires:"Все судьи",nav_ump_menu:"Судьи",dd_gold:"Судьи Gold Badge",dd_blue:"Судьи Blue Badge",dd_white:"Судьи White Badge",list_w:"Судьи White Badge",list_w_sub:"Все международные судьи: White Badge — базовый уровень IU, поэтому в списке есть и обладатели Blue и Gold Badge. Активные и неактивные.",th_status:"Статус",st_active:"Активен",st_inactive:"Неактивен",dd_all:"Все судьи →",dd_sel:"Все назначения →",hero_refs:"Все рефери →",sel_t:"Все назначения",sel_sub:"Каждый судья и рефери, о чьей работе на турнире мы знаем: одна строка — одно назначение.",sel_rank:"Как мы ранжируем турниры",sel_note:"Это наша шкала, а не официальная методика ITTF.",sel_l1:"Турниры мирового титула (Олимпиада и Паралимпиада, чемпионат мира и юношеский чемпионат мира), WTT Grand Smash, WTT Champions и WTT Finals, Кубки мира.",sel_l2:"WTT Star Contender, паралимпийские чемпионаты мира, континентальные чемпионаты и кубки, в том числе юношеские, континентальные игры, Всемирная универсиада и Top 10 / Top 16 Европы.",sel_l3:"WTT Contender и Feeder, все юношеские турниры WTT, серия ITTF Para, World Masters, субрегиональные игры; сюда же континентальные турниры самых младших возрастов.",sel_lv:"Уровень турнира",sel_all_lv:"Все уровни турниров",sel_ot:"Роль",sel_ot_all:"Все роли",th_name:"Имя",th_role:"Роль",sel_ph:"Номер, имя или турнир",sel_year:"Год",sel_all_time:"За всё время",sel_ulvl:"Категория судьи",sel_rlvl:"Категория рефери",sel_lvl:"Категория",sel_all_lvl:"Все категории судей и рефери",th_tourn:"Турнир",th_num:"Номер",n_sel:n=>`${fmt(n)} ${plural(n,"назначение","назначения","назначений")}`,sel_mod:n=>`${n} ${plural(n,"турнир","турнира","турниров")} без уровня — присвойте вручную:`,nav_updates:"Изменения уровней",dd_updates:"Изменения уровней →",upd_sub:`Изменения уровней с ${UPD_FROM} года: новые международные судьи, новые и вернувшиеся Blue и Gold Badge.`,upd_note:"Дата Blue Badge — день квалификации; периоды Gold Badge — по спискам ITTF, с точностью до месяца; год получения статуса IU взят из номера судьи.",upd_iu:"Новый международный судья",upd_kind:"Изменение",all_upd:"Все изменения",all_years:"Все годы",th_date:"Дата",th_before:"Уровень до",th_after:"Уровень после",n_upd:n=>`${fmt(n)} ${plural(n,"изменение","изменения","изменений")}`,upd_all_link:"Все обновления →",nav_countries:"Страны",nav_events:"Турниры",nav_graph:"Сеть судей →",gr_title:"Граф связей",mg_title:"Сеть судей",top_lead:"Число турниров в выбранной роли или дней, проведённых на всех турнирах",mg_open:"Открыть граф связей",mg_hint:"Наведите на точку — имя; нажмите — связи. Перетаскивайте, чтобы сдвинуть; колёсико, щипок или кнопки +⁠/⁠− — масштаб.",mg_more:"Все связи на графе →",mg_sub:(n,l,y)=>`Судейство — это связи. Связи складываются в сеть. Посмотрите, с кем и где вы встречались${y&&y!=="all"?" в "+y+" году":""}.`,gr_sub:(u,x,e,l)=>`${u} ${graphState.whoAll?plural(u,"официальное лицо","официальных лица","официальных лиц"):graphState.whoSel==="ref"?"рефери":plural(u,"судья","судьи","судей")} (из них ${x} без известного номера ${graphState.whoAll?"IU / IR":graphState.whoSel==="ref"?"IR / IU":"IU"}), ${e} ${plural(e,"турнир","турнира","турниров")}. Линия — двое работали на одном турнире, толщина — на скольких (${l} ${plural(l,"пара","пары","пар")}).`,gr_search:"Имя, номер IU или номер IR",gr_all:"Все связи",gr_multi:"2+ общих турнира",gr_reset:"Сбросить всё",gr_leg_u:"судья",gr_leg_u0:"номер IU неизвестен",gr_noiu:"NU",gr_leg_w:"общих турниров",gr_hint:"Наведите на точку — имя; нажмите — коллеги и общие турниры. Колёсико или щипок — масштаб.",gr_pick:"Выберите судью на графе или найдите судью либо турнир через поиск.",gr_ev_n:n=>`${n} ${plural(n,"судья","судьи","судей")}`,gr_u_n:n=>`${n} ${plural(n,"турнир","турнира","турниров")}`,gr_col_n:n=>`${n} ${plural(n,"коллега","коллеги","коллег")}`,gr_strong:n=>`из них ${n} — 2+ общих турнира`,gr_strong_h:"Коллеги с 2+ общими турнирами",gr_shared:n=>`${n} ${plural(n,"общий турнир","общих турнира","общих турниров")}`,gr_open:"Открыть страницу",gr_none:"Ничего не найдено",claim:"Это я!",
+ nav_umpires:"Все судьи",nav_ump_menu:"Судьи",dd_gold:"Судьи Gold Badge",dd_blue:"Судьи Blue Badge",dd_white:"Судьи White Badge",list_w:"Судьи White Badge",list_w_sub:"Все международные судьи: White Badge — базовый уровень IU, поэтому в списке есть и обладатели Blue и Gold Badge. Активные и неактивные.",th_status:"Статус",st_active:"Активен",st_inactive:"Неактивен",dd_all:"Все судьи →",dd_sel:"Все назначения →",hero_refs:"Все рефери →",sel_t:"Все назначения",sel_sub:"Каждый судья и рефери, о чьей работе на турнире мы знаем: одна строка — одно назначение.",sel_rank:"Как мы ранжируем турниры",sel_note:"Это наша шкала, а не официальная методика ITTF.",sel_l1:"Турниры мирового титула (Олимпиада и Паралимпиада, чемпионат мира и юношеский чемпионат мира), WTT Grand Smash, WTT Champions и WTT Finals, Кубки мира.",sel_l2:"WTT Star Contender, паралимпийские чемпионаты мира, континентальные чемпионаты и кубки, в том числе юношеские, континентальные игры, Всемирная универсиада и Top 10 / Top 16 Европы.",sel_l3:"WTT Contender и Feeder, все юношеские турниры WTT, серия ITTF Para, World Masters, субрегиональные игры; сюда же континентальные турниры самых младших возрастов.",sel_lv:"Уровень турнира",sel_all_lv:"Все уровни турниров",sel_ot:"Роль",sel_ot_all:"Все роли",th_name:"Имя",th_role:"Роль",sel_ph:"Номер, имя или турнир",sel_year:"Год",sel_all_time:"За всё время",sel_ulvl:"Категория судьи",sel_rlvl:"Категория рефери",sel_lvl:"Категория",sel_all_lvl:"Все категории судей и рефери",th_tourn:"Турнир",th_num:"Номер",n_sel:n=>`${fmt(n)} ${plural(n,"назначение","назначения","назначений")}`,sel_mod:n=>`${n} ${plural(n,"турнир","турнира","турниров")} без уровня — присвойте вручную:`,nav_updates:"Изменения уровней",dd_updates:"Изменения уровней →",upd_sub:`Изменения уровней с ${UPD_FROM} года: новые международные судьи, новые и вернувшиеся Blue и Gold Badge.`,upd_note:"Дата Blue Badge — день квалификации; периоды Gold Badge — по спискам ITTF, с точностью до месяца; год получения статуса IU взят из номера судьи.",upd_iu:"Новый международный судья",upd_kind:"Изменение",all_upd:"Все изменения",all_years:"Все годы",th_date:"Дата",th_before:"Уровень до",th_after:"Уровень после",n_upd:n=>`${fmt(n)} ${plural(n,"изменение","изменения","изменений")}`,upd_all_link:"Все обновления →",nav_countries:"Страны",nav_events:"Турниры",tmap_h:"Турниры на карте",tmap_sub:"Где прошли турниры. Увеличьте масштаб — страны распадутся на города, а города на отдельные турниры.",tmap_note:"Один турнир — одна метка, по городу, где он прошёл.",tmap_aria:"Карта турниров",tmap_zoom:"Нажмите, чтобы приблизить",tmap_open:"Нажмите, чтобы открыть турнир",tmap_more:n=>`и ещё ${n}`,tmap_cities:n=>`${n} ${plural(n,"город","города","городов")}`,tmap_none:"Пока ни у одного турнира нет города на карте.",nav_graph:"Сеть судей →",gr_title:"Граф связей",mg_title:"Сеть судей",top_lead:"Число турниров в выбранной роли или дней, проведённых на всех турнирах",mg_open:"Открыть граф связей",mg_hint:"Наведите на точку — имя; нажмите — связи. Перетаскивайте, чтобы сдвинуть; колёсико, щипок или кнопки +⁠/⁠− — масштаб.",mg_more:"Все связи на графе →",mg_sub:(n,l,y)=>`Судейство — это связи. Связи складываются в сеть. Посмотрите, с кем и где вы встречались${y&&y!=="all"?" в "+y+" году":""}.`,gr_sub:(u,x,e,l)=>`${u} ${graphState.whoAll?plural(u,"официальное лицо","официальных лица","официальных лиц"):graphState.whoSel==="ref"?"рефери":plural(u,"судья","судьи","судей")} (из них ${x} без известного номера ${graphState.whoAll?"IU / IR":graphState.whoSel==="ref"?"IR / IU":"IU"}), ${e} ${plural(e,"турнир","турнира","турниров")}. Линия — двое работали на одном турнире, толщина — на скольких (${l} ${plural(l,"пара","пары","пар")}).`,gr_search:"Имя, номер IU или номер IR",gr_all:"Все связи",gr_multi:"2+ общих турнира",gr_reset:"Сбросить всё",gr_leg_u:"судья",gr_leg_u0:"номер IU неизвестен",gr_noiu:"NU",gr_leg_w:"общих турниров",gr_hint:"Наведите на точку — имя; нажмите — коллеги и общие турниры. Колёсико или щипок — масштаб.",gr_pick:"Выберите судью на графе или найдите судью либо турнир через поиск.",gr_ev_n:n=>`${n} ${plural(n,"судья","судьи","судей")}`,gr_u_n:n=>`${n} ${plural(n,"турнир","турнира","турниров")}`,gr_col_n:n=>`${n} ${plural(n,"коллега","коллеги","коллег")}`,gr_strong:n=>`из них ${n} — 2+ общих турнира`,gr_strong_h:"Коллеги с 2+ общими турнирами",gr_shared:n=>`${n} ${plural(n,"общий турнир","общих турнира","общих турниров")}`,gr_open:"Открыть страницу",gr_none:"Ничего не найдено",claim:"Это я!",
  meta_country:"Судьи и рефери · %s",foot1:"This website is not affiliated with the ITTF, WTT or its subsidiaries. The data is taken from open sources.",foot2:"Данные: List of Active International Umpires 01.01.2026 · Blue Badge Umpires 01.10.2026 · Gold Badge Umpires 10.2026 · International Referees 01.01.2026 · назначения WTT/ITTF на 19.10.2026",
  eyebrow:"🏓 Кураторская база судей и рефери",h1:"<span class=\"h1l\">Найдите себя.</span> <span class=\"h1l\"><span class=\"sr\">Познакомьтесь с судьями, рефери и коллегами.</span><span aria-hidden=\"true\">Познакомьтесь с <span class=\"rot\" data-w=\"судьями.|рефери.|коллегами.\">судьями.</span></span></span> <span class=\"h1l\">Делитесь опытом.</span>",
  lead:"Судьи, рефери и другие официальные лица турниров по настольному теннису. <button type=\"button\" class=\"dl\" data-find>Найдите</button> или <button type=\"button\" class=\"dl\" data-add>добавьте</button> себя или своих коллег.",howto:"Мы собираем всё, что удаётся найти в разных источниках, и проверяем каждое дополнение вручную. Помогите заполнить пробелы: <button type=\"button\" class=\"dl\" data-find>найдите свой профиль</button>, <button type=\"button\" class=\"dl\" data-add>добавьте местных официальных лиц</button> — или даже целые национальные турниры.",
@@ -103,7 +118,7 @@ ru:{
  lv:{WB:"White Badge",BB:"Blue Badge",GB:"Gold Badge",BBP:"BB in progress",NU:"National Umpire",EV:"Evaluator",IR:"International Referee",IRA:"IR Advanced",UNK:"Категория не указана",prog:"в процессе"}
 },
 en:{
- nav_umpires:"All umpires",nav_ump_menu:"Umpires",dd_gold:"Gold Badge umpires",dd_blue:"Blue Badge umpires",dd_white:"White Badge umpires",list_w:"White Badge umpires",list_w_sub:"All International Umpires: White Badge is the base IU level, so Blue and Gold Badge holders are on this list too. Active and inactive.",th_status:"Status",st_active:"Active",st_inactive:"Inactive",dd_all:"All umpires →",dd_sel:"All selections →",hero_refs:"All referees →",sel_t:"All selections",sel_sub:"Every umpire and referee we know worked at a tournament — one row per selection.",sel_rank:"How we rank tournaments",sel_note:"Note: this ranking is not an official ITTF tournament methodology.",sel_l1:"World title competitions (Olympic and Paralympic Games, the World and World Youth Championships), WTT Grand Smash, WTT Champions and WTT Finals, and the World Cups.",sel_l2:"WTT Star Contender, the World Para Championships, continental championships and cups, youth ones included, continental games, the World University Games, and the European Top 10 / Top 16.",sel_l3:"WTT Contender and Feeder, every WTT Youth event, the ITTF Para series, World Masters, and sub-regional and multi-sport games; continental events for the youngest age groups belong here too.",sel_lv:"Tier",sel_all_lv:"All tournament tiers",sel_ot:"Role",sel_ot_all:"All officials roles",th_name:"Name",th_role:"Role",sel_ph:"ID, name or tournament",sel_year:"Year",sel_all_time:"All time",sel_ulvl:"Umpire level",sel_rlvl:"Referee level",sel_lvl:"Umpire or referee level",sel_all_lvl:"All officials levels",th_tourn:"Tournament",th_num:"ID",n_sel:n=>`${fmt(n)} ${n===1?"selection":"selections"}`,sel_mod:n=>`${n} ${n===1?"tournament needs":"tournaments need"} a tier — set it by hand:`,nav_updates:"Level updates",dd_updates:"Level updates →",upd_sub:`Level changes since ${UPD_FROM}: new International Umpires, and new, returning or stepped-down Blue and Gold Badges.`,upd_note:"A Blue Badge date is the day of qualification; Gold Badge periods come from the ITTF lists and are accurate to the month; the year an umpire became an IU is taken from the IU number.",upd_iu:"New International Umpire",upd_kind:"Update",all_upd:"All updates",all_years:"All years",th_date:"Date",th_before:"Level before",th_after:"Level after",n_upd:n=>`${fmt(n)} ${n===1?"update":"updates"}`,upd_all_link:"See all updates →",nav_countries:"Associations",nav_events:"Tournaments",nav_graph:"Umpires network →",gr_title:"Connections graph",mg_title:"Umpires network",top_lead:"Number of events in the selected role, or days spent at all the events",mg_open:"Open the connections graph",mg_hint:"Hover a dot for the name; click for the connections. Drag to move; scroll, pinch or the +⁠/⁠− buttons to zoom.",mg_more:"All connections in the graph →",mg_sub:(n,l,y)=>`Officiating is connecting. Connections make up a network. See who you met — and where${y&&y!=="all"?" — in "+y:""}.`,gr_sub:(u,x,e,l)=>`${u} ${graphState.whoAll?"tournament officials":graphState.whoSel==="ref"?"referees":"umpires"} (${x} without a known ${graphState.whoAll?"IU / IR":graphState.whoSel==="ref"?"IR / IU":"IU"} number), ${e} tournaments. A line means two of them worked at the same tournament; its width shows how many (${l} pairs).`,gr_search:"Name, IU number or IR number",gr_all:"All links",gr_multi:"2+ shared tournaments",gr_reset:"Reset all",gr_leg_u:"umpire",gr_leg_u0:"IU number unknown",gr_noiu:"NU",gr_leg_w:"shared tournaments",gr_hint:"Hover a dot for the name; click for colleagues and shared tournaments. Scroll or pinch to zoom.",gr_pick:"Pick an umpire on the graph, or find an umpire or a tournament via search.",gr_ev_n:n=>`${n} ${n===1?"umpire":"umpires"}`,gr_u_n:n=>`${n} ${n===1?"tournament":"tournaments"}`,gr_col_n:n=>`${n} ${n===1?"colleague":"colleagues"}`,gr_strong:n=>`${n} with 2+ shared tournaments`,gr_strong_h:"Colleagues with 2+ shared tournaments",gr_shared:n=>`${n} shared ${n===1?"tournament":"tournaments"}`,gr_open:"Open page",gr_none:"Nothing found",claim:"That's me!",
+ nav_umpires:"All umpires",nav_ump_menu:"Umpires",dd_gold:"Gold Badge umpires",dd_blue:"Blue Badge umpires",dd_white:"White Badge umpires",list_w:"White Badge umpires",list_w_sub:"All International Umpires: White Badge is the base IU level, so Blue and Gold Badge holders are on this list too. Active and inactive.",th_status:"Status",st_active:"Active",st_inactive:"Inactive",dd_all:"All umpires →",dd_sel:"All selections →",hero_refs:"All referees →",sel_t:"All selections",sel_sub:"Every umpire and referee we know worked at a tournament — one row per selection.",sel_rank:"How we rank tournaments",sel_note:"Note: this ranking is not an official ITTF tournament methodology.",sel_l1:"World title competitions (Olympic and Paralympic Games, the World and World Youth Championships), WTT Grand Smash, WTT Champions and WTT Finals, and the World Cups.",sel_l2:"WTT Star Contender, the World Para Championships, continental championships and cups, youth ones included, continental games, the World University Games, and the European Top 10 / Top 16.",sel_l3:"WTT Contender and Feeder, every WTT Youth event, the ITTF Para series, World Masters, and sub-regional and multi-sport games; continental events for the youngest age groups belong here too.",sel_lv:"Tier",sel_all_lv:"All tournament tiers",sel_ot:"Role",sel_ot_all:"All officials roles",th_name:"Name",th_role:"Role",sel_ph:"ID, name or tournament",sel_year:"Year",sel_all_time:"All time",sel_ulvl:"Umpire level",sel_rlvl:"Referee level",sel_lvl:"Umpire or referee level",sel_all_lvl:"All officials levels",th_tourn:"Tournament",th_num:"ID",n_sel:n=>`${fmt(n)} ${n===1?"selection":"selections"}`,sel_mod:n=>`${n} ${n===1?"tournament needs":"tournaments need"} a tier — set it by hand:`,nav_updates:"Level updates",dd_updates:"Level updates →",upd_sub:`Level changes since ${UPD_FROM}: new International Umpires, and new, returning or stepped-down Blue and Gold Badges.`,upd_note:"A Blue Badge date is the day of qualification; Gold Badge periods come from the ITTF lists and are accurate to the month; the year an umpire became an IU is taken from the IU number.",upd_iu:"New International Umpire",upd_kind:"Update",all_upd:"All updates",all_years:"All years",th_date:"Date",th_before:"Level before",th_after:"Level after",n_upd:n=>`${fmt(n)} ${n===1?"update":"updates"}`,upd_all_link:"See all updates →",nav_countries:"Associations",nav_events:"Tournaments",tmap_h:"Tournaments on the map",tmap_sub:"Where the tournaments took place. Zoom in and countries break into cities, cities into single tournaments.",tmap_note:"One tournament, one marker, placed at its host city.",tmap_aria:"Map of tournaments",tmap_zoom:"Click to zoom in",tmap_open:"Click to open the tournament",tmap_more:n=>`+${n} more`,tmap_cities:n=>`${n} ${n===1?"city":"cities"}`,tmap_none:"No tournament has a city on the map yet.",nav_graph:"Umpires network →",gr_title:"Connections graph",mg_title:"Umpires network",top_lead:"Number of events in the selected role, or days spent at all the events",mg_open:"Open the connections graph",mg_hint:"Hover a dot for the name; click for the connections. Drag to move; scroll, pinch or the +⁠/⁠− buttons to zoom.",mg_more:"All connections in the graph →",mg_sub:(n,l,y)=>`Officiating is connecting. Connections make up a network. See who you met — and where${y&&y!=="all"?" — in "+y:""}.`,gr_sub:(u,x,e,l)=>`${u} ${graphState.whoAll?"tournament officials":graphState.whoSel==="ref"?"referees":"umpires"} (${x} without a known ${graphState.whoAll?"IU / IR":graphState.whoSel==="ref"?"IR / IU":"IU"} number), ${e} tournaments. A line means two of them worked at the same tournament; its width shows how many (${l} pairs).`,gr_search:"Name, IU number or IR number",gr_all:"All links",gr_multi:"2+ shared tournaments",gr_reset:"Reset all",gr_leg_u:"umpire",gr_leg_u0:"IU number unknown",gr_noiu:"NU",gr_leg_w:"shared tournaments",gr_hint:"Hover a dot for the name; click for colleagues and shared tournaments. Scroll or pinch to zoom.",gr_pick:"Pick an umpire on the graph, or find an umpire or a tournament via search.",gr_ev_n:n=>`${n} ${n===1?"umpire":"umpires"}`,gr_u_n:n=>`${n} ${n===1?"tournament":"tournaments"}`,gr_col_n:n=>`${n} ${n===1?"colleague":"colleagues"}`,gr_strong:n=>`${n} with 2+ shared tournaments`,gr_strong_h:"Colleagues with 2+ shared tournaments",gr_shared:n=>`${n} shared ${n===1?"tournament":"tournaments"}`,gr_open:"Open page",gr_none:"Nothing found",claim:"That's me!",
  meta_country:"Table tennis officials in %s",foot1:"This website is not affiliated with the ITTF, WTT or its subsidiaries. The data is taken from open sources.",foot2:"Data: List of Active International Umpires 01.01.2026 · Blue Badge Umpires 01.10.2026 · Gold Badge Umpires 10.2026 · International Referees 01.01.2026 · WTT/ITTF selections as of 19.10.2026",
  eyebrow:"🏓 Curated match officials database",h1:"<span class=\"h1l\">Look yourself up.</span> <span class=\"h1l\"><span class=\"sr\">Meet fellow umpires, referees and officials.</span><span aria-hidden=\"true\">Meet fellow <span class=\"rot\" data-w=\"umpires.|referees.|officials.\">umpires.</span></span></span> <span class=\"h1l\">Share your experience.</span>",
  lead:"Table tennis umpires, referees and other tournament officials. <button type=\"button\" class=\"dl\" data-find>Find</button> or <button type=\"button\" class=\"dl\" data-add>add</button> yourself, or your colleagues.",howto:"We bring together everything we can find from different sources and check each addition by hand. Help fill the gaps: <button type=\"button\" class=\"dl\" data-find>claim your profile</button>, <button type=\"button\" class=\"dl\" data-add>add local officials</button> and national events.",
@@ -1860,10 +1875,163 @@ function evYears(){return [...new Set(EVENTS.map(e=>e.s.slice(0,4)))].filter(y=>
 function defYear(){const ys=evYears(),c=TODAY.slice(0,4);return ys.includes(c)?c:(ys.filter(y=>y<=c).pop()||ys[0]);}
 let PROF_YEAR=null;
 const yearSel=(id,v,extra="")=>`<select id="${id}" class="ysel" aria-label="${T().year_lbl}"${extra}>${evYears().map(y=>`<option${y===v?" selected":""}>${y}</option>`).join("")}</select>`;
+/* ---------- Турниры на карте (26.11.2026, заказ владельца) ----------
+   Три слоя на одной карте, переключаются масштабом: пузырьки по странам → по городам →
+   отдельные турниры (один турнир — одна метка; несколько в одном городе расходятся по кружку).
+   Геометрия — та же map.json, что у карты на главной; пузырьки живут в <g id="tg">, который
+   и двигает масштаб, поэтому радиусы и подписи делятся на k, чтобы не раздуваться. */
+const TM_ISO=Object.fromEntries(Object.entries(FLAG).map(([k,v])=>[v,k]));
+const tmCountry=cc=>{const code=TM_ISO[String(cc).toLowerCase()];const c=code&&CBYCODE.get(code);return c?c.name:"";};
+const TM_KC=2.2, TM_KE=5;            /* порог города и порог отдельных турниров */
+let tmView={k:1,tx:0,ty:0};
+const tmState={year:"all"};
+let tmSrc=null, tmG=null;            /* tmSrc: () => список турниров для карты */
+function tmYears(){const ys=[...new Set((tmSrc?tmSrc():[]).filter(evCity).map(e=>e.s.slice(0,4)))].sort();
+  return ys.length>1?["all"].concat(ys):ys;}
+function tmEvents(){let l=(tmSrc?tmSrc():[]).filter(evCity);
+  if(tmState.year&&tmState.year!=="all")l=l.filter(e=>e.s.startsWith(tmState.year));
+  return l.slice().sort((a,b)=>a.s.localeCompare(b.s));}
+function tmGroups(evs){
+  const cities=new Map(), countries=new Map();
+  evs.forEach(e=>{const c=evCity(e);
+    let ci=cities.get(c.i); if(!ci){ci={c,evs:[]};cities.set(c.i,ci);} ci.evs.push(e);
+    let co=countries.get(c.cc); if(!co){co={cc:c.cc,evs:[],cs:[]};countries.set(c.cc,co);} co.evs.push(e);
+    if(!co.cs.includes(ci))co.cs.push(ci);});
+  const cl=[...cities.values()].sort((a,b)=>b.evs.length-a.evs.length);
+  const co=[...countries.values()].sort((a,b)=>b.evs.length-a.evs.length);
+  co.forEach(c=>{let w=0,x=0,y=0;c.cs.forEach(ci=>{const n=ci.evs.length;w+=n;x+=ci.c.x*n;y+=ci.c.y*n;});c.x=x/w;c.y=y/w;
+    c.cs.sort((a,b)=>b.evs.length-a.evs.length);});
+  return {cities:cl,countries:co};
+}
+function tmapHtml(){
+  const t=T();
+  if(!GEO||!GCITY.length||!tmSrc) return "";
+  if(!tmEvents().length) return `<p class="muted" style="font-size:13px">${t.tmap_none}</p>`;
+  if(!MAP){ ensureMap().then(()=>route(true)).catch(()=>{const el=$("#tmaploading");if(el)el.textContent=(MAP_T[LANG]||MAP_T.en).err;});
+    return `<div class="map" style="min-height:220px;display:grid;place-items:center"><span class="muted" id="tmaploading">${t.st_loading}</span></div>`; }
+  const ys=tmYears();
+  if(ys.length&&!ys.includes(tmState.year))tmState.year=ys[0];
+  return `<div class="mapbar">
+      ${ys.length?`<div class="chips">${ys.map(y=>`<button type="button" data-tmy="${y}" aria-pressed="${tmState.year===y}">${y==="all"?t.all_years:y}</button>`).join("")}</div>`:""}
+      <div class="zoom" style="margin-left:auto"><button type="button" data-tz="in" aria-label="${t.zoom_in}">+</button><button type="button" data-tz="out" aria-label="${t.zoom_out}">−</button><button type="button" data-tz="reset" aria-label="${t.zoom_reset}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
+    </div>
+    <div class="map tmap" id="tmap"><svg id="tsvg" viewBox="0 0 ${MAP.w} ${MAP.h}" role="img" aria-label="${t.tmap_aria}">
+      <g id="tg"><g id="tland">${MAP.shapes.map(sh=>`<path d="${sh.d}" class="tct"/>`).join("")}</g><g id="tl1"></g><g id="tl2"></g><g id="tl3"></g></g>
+    </svg><div class="tip" id="ttip" hidden></div></div>
+    <div class="mapfoot"><span class="mapnote">${t.tmap_note}</span><span class="maphint">${t.map_hint}</span></div>`;
+}
+function tmYearLine(evs){const m=new Map();evs.forEach(e=>{const y=e.s.slice(0,4);m.set(y,(m.get(y)||0)+1);});
+  return [...m.entries()].sort().map(([y,n])=>`${y} — ${n}`).join(" · ");}
+function renderTmap(){
+  if(!MAP||!$("#tg"))return;
+  tmG=tmGroups(tmEvents());
+  $("#tl1").innerHTML=tmG.countries.map((c,i)=>`<g class="tb" data-tc="${i}"><circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="6"/><text x="${c.x.toFixed(1)}" y="${c.y.toFixed(1)}">${c.evs.length>1?c.evs.length:""}</text></g>`).join("");
+  $("#tl2").innerHTML=tmG.cities.map((ci,i)=>`<g class="tb" data-ty="${i}"><circle cx="${ci.c.x.toFixed(1)}" cy="${ci.c.y.toFixed(1)}" r="6"/><text x="${ci.c.x.toFixed(1)}" y="${ci.c.y.toFixed(1)}">${ci.evs.length>1?ci.evs.length:""}</text></g>`).join("");
+  $("#tl3").innerHTML=tmG.cities.map((ci,i)=>ci.evs.map((e,j)=>`<circle class="tm" data-te="${e.i}" data-ci="${i}" data-j="${j}" cx="${ci.c.x.toFixed(1)}" cy="${ci.c.y.toFixed(1)}" r="3"/>`).join("")).join("");
+  tmSize();
+}
+function tmSize(){
+  const k=tmView.k, lvl=k<TM_KC?1:(k<TM_KE?2:3);
+  /* Пузырьки живут в системе viewBox 960×470, поэтому на узком экране они ужимаются вместе
+     с картой и подписи становятся нечитаемыми. Поправка приводит их к размеру, который они
+     имеют на десктопе 1280 px, но не больше двойного — иначе на телефоне Европа заплывёт. */
+  const el=$("#tsvg"), sc=Math.min(2,Math.max(1,1280/((el&&el.clientWidth)||1280)));
+  const r=n=>sc*(2.8+3.1*Math.sqrt(n))/k, fs=n=>sc*Math.min(13,7.5+2.2*Math.sqrt(n))/k;
+  ["tl1","tl2","tl3"].forEach((id,i)=>{const g=$("#"+id);if(g)g.style.display=(i+1)===lvl?"":"none";});
+  if(lvl===1&&tmG)tmG.countries.forEach((c,i)=>{const g=$(`#tl1 [data-tc="${i}"]`);if(!g)return;
+    g.querySelector("circle").setAttribute("r",r(c.evs.length).toFixed(2));
+    const tx=g.querySelector("text");tx.setAttribute("font-size",fs(c.evs.length).toFixed(2));tx.setAttribute("dy",(fs(c.evs.length)*0.35).toFixed(2));});
+  if(lvl===2&&tmG)tmG.cities.forEach((ci,i)=>{const g=$(`#tl2 [data-ty="${i}"]`);if(!g)return;
+    g.querySelector("circle").setAttribute("r",r(ci.evs.length).toFixed(2));
+    const tx=g.querySelector("text");tx.setAttribute("font-size",fs(ci.evs.length).toFixed(2));tx.setAttribute("dy",(fs(ci.evs.length)*0.35).toFixed(2));});
+  if(lvl===3&&tmG)document.querySelectorAll("#tl3 .tm").forEach(el=>{
+    const ci=tmG.cities[+el.dataset.ci];if(!ci)return;const n=ci.evs.length,j=+el.dataset.j;
+    const rr=sc*3.4/k, sp=n>1?sc*(5+1.6*n)/k:0, a=-Math.PI/2+j*2*Math.PI/n;
+    el.setAttribute("r",rr.toFixed(2));el.setAttribute("stroke-width",(sc*1.2/k).toFixed(2));
+    el.setAttribute("cx",(ci.c.x+sp*Math.cos(a)).toFixed(2));el.setAttribute("cy",(ci.c.y+sp*Math.sin(a)).toFixed(2));});
+}
+function wireTmap(){
+  const m=$("#tmap"); if(!m||!MAP) return;
+  const svg=$("#tsvg"), g=$("#tg"), tip=$("#ttip"), t=T();
+  const W=MAP.w,H=MAP.h,KMAX=12;
+  const clamp=()=>{tmView.k=Math.min(KMAX,Math.max(1,tmView.k));tmView.tx=Math.min(0,Math.max(W-W*tmView.k,tmView.tx));tmView.ty=Math.min(0,Math.max(H-H*tmView.k,tmView.ty));};
+  const apply=()=>{clamp();g.setAttribute("transform",`translate(${tmView.tx} ${tmView.ty}) scale(${tmView.k})`);
+    svg.style.touchAction=tmView.k>1.01?"none":"pan-y";tmSize();};
+  const toSvg=(cx,cy)=>{const r=svg.getBoundingClientRect();return [(cx-r.left)*W/r.width,(cy-r.top)*H/r.height];};
+  const zoomAt=(px,py,f)=>{const k0=tmView.k,k1=Math.min(KMAX,Math.max(1,k0*f));tmView.tx=px-(px-tmView.tx)*(k1/k0);tmView.ty=py-(py-tmView.ty)*(k1/k0);tmView.k=k1;apply();};
+  let anim=0;
+  const animateTo=to=>{cancelAnimationFrame(anim);const s0={...tmView},t0=performance.now(),dur=matchMedia("(prefers-reduced-motion: reduce)").matches?0:380;
+    const step=now=>{const p=dur?Math.min(1,(now-t0)/dur):1,e=1-Math.pow(1-p,3);
+      const k=s0.k*Math.pow(to.k/s0.k,e);const f=(k-s0.k)/((to.k-s0.k)||1);
+      tmView.k=k;tmView.tx=s0.tx+(to.tx-s0.tx)*(Math.abs(to.k-s0.k)>1e-6?f:e);tmView.ty=s0.ty+(to.ty-s0.ty)*(Math.abs(to.k-s0.k)>1e-6?f:e);apply();if(p<1)anim=requestAnimationFrame(step);};
+    anim=requestAnimationFrame(step);};
+  const center=(x,y,k)=>({k,tx:W/2-x*k,ty:H/2-y*k});
+  const hideTip=()=>{tip.hidden=true;g.querySelectorAll(".on").forEach(el=>el.classList.remove("on"));};
+  document.querySelectorAll("[data-tmy]").forEach(b=>b.onclick=()=>{tmState.year=b.dataset.tmy;
+    document.querySelectorAll("[data-tmy]").forEach(x=>x.setAttribute("aria-pressed",x===b));hideTip();renderTmap();});
+  document.querySelectorAll("[data-tz]").forEach(b=>b.onclick=()=>{const z=b.dataset.tz;hideTip();
+    if(z==="reset"){animateTo({k:1,tx:0,ty:0});return;}
+    const f=z==="in"?1.7:1/1.7,k1=Math.min(KMAX,Math.max(1,tmView.k*f)),cx=W/2,cy=H/2;
+    animateTo({k:k1,tx:cx-(cx-tmView.tx)*(k1/tmView.k),ty:cy-(cy-tmView.ty)*(k1/tmView.k)});});
+  svg.addEventListener("wheel",e=>{if(!e.ctrlKey&&!e.metaKey)return;e.preventDefault();hideTip();const [px,py]=toSvg(e.clientX,e.clientY);zoomAt(px,py,Math.exp(-e.deltaY*0.012));},{passive:false});
+  let gs=1; svg.addEventListener("gesturestart",e=>{e.preventDefault();gs=1;});
+  svg.addEventListener("gesturechange",e=>{e.preventDefault();const [px,py]=toSvg(e.clientX,e.clientY);zoomAt(px,py,e.scale/gs);gs=e.scale;});
+  const pts=new Map(); let moved=0,pinch=null,down=null;
+  svg.addEventListener("pointerdown",e=>{pts.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=0;down=e.target.closest("[data-tc],[data-ty],[data-te]");
+    if(pts.size===2){const [a,b]=[...pts.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y)};}
+    if(e.pointerType!=="mouse"||tmView.k>1) try{svg.setPointerCapture(e.pointerId);}catch(_){}});
+  svg.addEventListener("pointermove",e=>{const p=pts.get(e.pointerId);
+    if(!p){if(e.pointerType==="mouse")hover(e);return;}
+    const dx=e.clientX-p.x,dy=e.clientY-p.y;moved+=Math.abs(dx)+Math.abs(dy);p.x=e.clientX;p.y=e.clientY;
+    if(pts.size===2&&pinch){const [a,b]=[...pts.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);const [px,py]=toSvg((a.x+b.x)/2,(a.y+b.y)/2);zoomAt(px,py,d/pinch.d);pinch.d=d;hideTip();return;}
+    if(pts.size===1&&tmView.k>1.01&&moved>4){const r=svg.getBoundingClientRect();tmView.tx+=dx*W/r.width;tmView.ty+=dy*H/r.height;apply();hideTip();svg.classList.add("drag");}
+    else if(e.pointerType==="mouse")hover(e);});
+  const up=e=>{const had=pts.delete(e.pointerId);if(pts.size<2)pinch=null;svg.classList.remove("drag");
+    if(!had||moved>6||e.type==="pointercancel")return;
+    const el=down; if(!el){hideTip();return;}
+    const touch=e.pointerType!=="mouse", shown=!tip.hidden&&tip.dataset.el===elKey(el);
+    if(el.dataset.te!=null&&(!touch||shown)){goTo("e"+el.dataset.te);return;}
+    if(el.dataset.tc!=null&&(!touch||shown)){const c=tmG.countries[+el.dataset.tc];animateTo(center(c.x,c.y,Math.max(TM_KC+0.6,3.2)));hideTip();return;}
+    if(el.dataset.ty!=null&&(!touch||shown)){const ci=tmG.cities[+el.dataset.ty];animateTo(center(ci.c.x,ci.c.y,Math.max(TM_KE+1,7)));hideTip();return;}
+    showTip(el,e.clientX,e.clientY);};
+  svg.addEventListener("pointerup",up);svg.addEventListener("pointercancel",up);
+  svg.addEventListener("pointerleave",e=>{if(e.pointerType==="mouse"&&!pts.size)hideTip();});
+  function hover(e){const el=e.target.closest("[data-tc],[data-ty],[data-te]");if(!el){hideTip();return;}showTip(el,e.clientX,e.clientY);}
+  function elKey(el){return el.dataset.te!=null?"e"+el.dataset.te+"_"+el.dataset.ci+"_"+el.dataset.j:(el.dataset.tc!=null?"c"+el.dataset.tc:"y"+el.dataset.ty);}
+  function row(e){return `<div class="tr"><span>${esc(evName(e))}</span><span class="muted" style="white-space:nowrap">${fmtRange(e.s,e.e)}</span></div>`;}
+  function showTip(el,cx,cy){
+    if(!tmG)return;
+    g.querySelectorAll(".on").forEach(x=>x.classList.remove("on"));el.classList.add("on");
+    let html="";
+    if(el.dataset.tc!=null){const c=tmG.countries[+el.dataset.tc];
+      const cn=tmCountry(c.cc)||c.cs[0].c.n;
+      html=`<div class="tn">${esc(cn)}${c.cs.length>1?` <span class="muted" style="font-weight:400">· ${t.tmap_cities(c.cs.length)}</span>`:""}</div>
+        <div class="tt">${t.gr_u_n(c.evs.length)} · ${tmYearLine(c.evs)}</div>
+        ${c.cs.slice(0,6).map(ci=>`<div class="tr"><span>${esc(ci.c.n)}</span><span>${ci.evs.length}</span></div>`).join("")}
+        ${c.cs.length>6?`<div class="tgo">${t.tmap_more(c.cs.length-6)}</div>`:""}<div class="tgo">${t.tmap_zoom}</div>`;}
+    else if(el.dataset.ty!=null){const ci=tmG.cities[+el.dataset.ty];
+      const cn2=tmCountry(ci.c.cc);
+      html=`<div class="tn">${esc(ci.c.n)}${cn2?` <span class="muted" style="font-weight:400">· ${esc(cn2)}</span>`:""}</div><div class="tt">${t.gr_u_n(ci.evs.length)} · ${tmYearLine(ci.evs)}</div>
+        ${ci.evs.slice(0,5).map(row).join("")}${ci.evs.length>5?`<div class="tgo">${t.tmap_more(ci.evs.length-5)}</div>`:""}
+        <div class="tgo">${t.tmap_zoom}</div>`;}
+    else {const ci=tmG.cities[+el.dataset.ci],e=ci.evs[+el.dataset.j];
+      html=`<div class="tn">${esc(evName(e))}</div><div class="tt">${esc(ci.c.n)} · ${fmtRange(e.s,e.e)}</div><div class="tgo">${t.tmap_open}</div>`;}
+    tip.innerHTML=html;tip.dataset.el=elKey(el);tip.hidden=false;
+    const mb=m.getBoundingClientRect(),tb=tip.getBoundingClientRect();
+    let x=cx-mb.left+14,y=cy-mb.top+14;
+    if(x+tb.width>mb.width-6)x=cx-mb.left-tb.width-14;
+    if(y+tb.height>mb.height-6)y=Math.max(6,cy-mb.top-tb.height-14);
+    tip.style.left=Math.max(6,x)+"px";tip.style.top=Math.max(6,y)+"px";
+  }
+  apply();renderTmap();
+}
 function viewEvents(){
   const t=T(); if(!evState.year||!evYears().includes(evState.year))evState.year=defYear();
+  tmSrc=()=>EVENTS; tmView={k:1,tx:0,ty:0};
+  const tm=tmapHtml();
   return `<h1>${t.ev_title}</h1><p class="muted" style="margin:8px 0 0">${t.ev_sub(EVENTS.length)}</p>
-  <div class="controls" style="align-items:center">
+  ${tm?`<div style="margin-top:22px"><div class="eyebrow">${t.tmap_h}</div><p class="muted" style="font-size:13px;margin:6px 0 0;max-width:72ch">${t.tmap_sub}</p>${tm}</div>`:""}
+  <div class="controls" style="align-items:center;margin-top:26px">
     ${yearSel("eyear",evState.year)}
     <div class="tabs" role="tablist">${["up","past","all"].map(p=>`<button type="button" role="tab" data-period="${p}" aria-selected="${evState.period===p}">${t["period_"+p]}</button>`).join("")}</div>
     <div class="chips">${["all","wtt","youth","para","ittf","cont","other"].map(k=>`<button type="button" data-etype="${k}" aria-pressed="${evState.type===k}">${t["type_"+k]}</button>`).join("")}</div>
@@ -2590,6 +2758,7 @@ function route(keepScroll){
 function wire(){
   const t=T();
   wireMap();
+  wireTmap();
   wireOly();
   const q=$("#q");
   if(q){ const res=$("#res"); let sel=-1;

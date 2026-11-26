@@ -226,6 +226,16 @@ main{margin-top:24px}
 .ct.on{stroke:var(--ink);stroke-width:1.6}
 .dt{stroke:var(--surface);stroke-width:1.2}
 .dt.on{stroke:var(--ink);stroke-width:2}
+/* Карта турниров (26.11.2026): земля нейтральная, всё внимание — пузырькам.
+   Радиусы и подписи задаёт JS (делит на масштаб), поэтому здесь только цвет и поведение. */
+.tmap svg{cursor:grab}
+.tct{fill:var(--ch0);stroke:var(--map-border);stroke-width:.5;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.tb{cursor:pointer}
+.tb circle{fill:var(--ch3);fill-opacity:.82;stroke:var(--surface);stroke-width:1;vector-effect:non-scaling-stroke}
+.tb text{fill:#fff;text-anchor:middle;font-family:var(--f-display);font-weight:600;pointer-events:none}
+.tb:hover circle,.tb.on circle{fill:var(--ch4);fill-opacity:.95}
+.tm{fill:var(--ch3);stroke:var(--surface);cursor:pointer}
+.tm:hover,.tm.on{fill:var(--ch4);stroke:var(--ink)}
 .mapfoot{display:flex;flex-direction:column;align-items:flex-start;gap:2px;font-size:11px;color:var(--muted);margin-top:8px}
 .maphint{text-align:left}
 .tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.16);padding:10px 12px;min-width:160px;font-size:13px;z-index:5}
