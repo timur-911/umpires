@@ -680,3 +680,5 @@ select{-webkit-appearance:none;appearance:none;background-image:url("data:image/
 tr.nolink{cursor:default}
 .note{background:var(--sunk);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--muted);margin-top:14px}
 @media (max-width:560px){.evrow{grid-template-columns:1fr;gap:4px;padding-right:46px}.evrow .cnt{text-align:left}.evrow .evedit{position:absolute;right:10px;top:9px}.mini a{grid-template-columns:1fr;gap:2px}}
+/* разбор заявок: незнакомый номер в заявке (куратор 27.11.2026) */
+.badge.bx.ibx-chk{color:var(--gb-ink);border-color:currentColor}
