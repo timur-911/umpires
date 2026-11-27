@@ -178,8 +178,13 @@ main{margin-top:24px}
 /* «Methodology» — в самом низу карточки героя, вровень с подписью под картой
    (владелец 25.11.2026). Набор как у слова «Try» под поиском, но с подчёркиванием,
    которое пропадает при наведении — так же, как у самих примеров запросов. */
-.herometh{align-self:flex-start;margin-top:auto;padding-top:20px;font-size:13px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
-.herometh:hover{text-decoration:none}
+/* Ссылка на методологию прижата к низу карточки героя; справа от неё знак ⓘ
+   (куратор 27.11.2026) — тот же, что у «Adjusted», но под текст 13 px. Подчёркнута
+   только ссылка: будь знак внутри неё, подчёркивание прошло бы и через кружок. */
+.herometh{align-self:flex-start;margin-top:auto;padding-top:20px;display:flex;align-items:center;gap:7px;font-size:13px}
+.herometh a{color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.herometh a:hover{text-decoration:none}
+.herometh .infoi{width:15px;height:15px;font-size:10px}
 .ysel{flex:none!important;width:auto!important;min-width:84px}
 .topctl .ysel,.section-head .ysel,h3 .ysel{font-family:var(--f-body);font-size:13px;font-weight:500;padding:5px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);min-width:76px}
 .h1l{display:block}
