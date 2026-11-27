@@ -535,8 +535,12 @@ td a{text-decoration:none;font-weight:500}
 .selrow .selhint{grid-column:1/-1;font-size:12px;margin:2px 0 0;color:var(--muted)}
 .selrow .selhint.found{color:var(--ch3)}
 .selrow .selhint.warn{color:var(--gb-ink)}
-.selrow input.lk{color:var(--muted);background:var(--sunk)}
-@media (max-width:560px){.selrow{grid-template-columns:1fr 1fr}.selrow .s_id,.selrow .s_name{grid-column:1/-1}.selrow+.selrow{margin-top:14px}}
+.selrow input.lk,.selrow select.lk{color:var(--muted);background:var(--sunk)}
+#a_rows.selfonly .selrow:not(:first-child){display:none}  /* «Заполняю за себя» — одна строка */
+.selrow.addrow{grid-template-columns:minmax(0,.8fr) minmax(0,1.45fr) minmax(0,1.25fr) 74px}
+.modal .mchk{display:inline-flex;align-items:center;gap:8px;font-weight:400;cursor:pointer}
+.modal .mchk input{width:16px;height:16px;margin:0;accent-color:var(--ch3);cursor:pointer}
+@media (max-width:560px){.selrow,.selrow.addrow{grid-template-columns:1fr 1fr}.selrow .s_id,.selrow .s_name{grid-column:1/-1}.selrow+.selrow{margin-top:14px}}
 .ok{background:var(--bb-soft);border-radius:10px;padding:12px 14px;font-size:14px;margin-top:14px}
 footer{margin-top:48px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 @media (max-width:900px){.hero,.two,.pgrid{grid-template-columns:minmax(0,1fr)}.facts,.facts.f4,.facts.f6{grid-template-columns:repeat(2,minmax(0,1fr))}.fact:last-child:nth-child(odd){grid-column:1/-1}}

@@ -108,7 +108,7 @@ ru:{
  extra_note:"Этого судьи нет в списках ITTF, которые мы загрузили. Профиль собран по назначениям на турниры; категория указана как в назначении.",
  claim_sub:"Заявку подтвердит куратор вашей страны или коллега из вашей ассоциации. После этого вы сможете заполнить профиль.",
  add_sub:"Предложите судью, которого нет в списках ITTF. Запись появится после проверки куратором страны.",
- your_profile:"Ваш профиль",ph_profile:"Фамилия или IU номер",name_l:"Фамилия и имя",cat_l:"Категория",nat_cat:"Национальная категория",
+ your_profile:"Ваш профиль",ph_profile:"Фамилия или IU номер",name_l:"Фамилия и имя",cat_l:"Категория",add_self:"Заполняю за себя",add_list:"Судьи",add_lvl:"Уровень",add_nu:"NU",add_iu:"IU",add_id_note:"Уровень: NU — национальный судья, IU — международный. Для IU номер обязателен; у национальных судей международного номера нет — оставьте поле пустым.",add_known:n=>`Уже есть на сайте: ${n}. Имя и ассоциация подставлены.`,add_need:"В каждой заполненной строке нужно имя, а у международного судьи — ещё и номер IU.",add_del_who:"Номер IU или IR того, кого убрать",add_del_found:n=>`Нашли: ${n}.`,add_del_unknown:"Такого номера в наших списках нет — напишите в комментарии, о ком речь.",add_del_need:"Укажите номер или напишите в комментарии, кого и почему убрать.",add_del_why:"Почему этого человека нужно убрать? Если номера не знаете, напишите, о ком речь.",add_file_note:"Список судей одним файлом: имена, номера IU (если есть), ассоциации и уровни.",
  email:"Email для связи",close:"Закрыть",send:"Отправить",sent:"Это прототип: заявка никуда не отправляется. На сайте она уйдёт куратору на проверку.",
  sex_aria:"Пол",yr_missing:" (год не указан)",
  months:["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"],
@@ -169,7 +169,7 @@ en:{
  extra_note:"This umpire is not in the ITTF lists we loaded. The profile is built from tournament selections; the badge is as given in the selection.",
  claim_sub:"The curator of your association, or a colleague from it, will confirm the request. Then you can fill in your profile.",
  add_sub:"Suggest an umpire who is not in the ITTF lists. The entry appears after the association curator checks it.",
- your_profile:"Your profile",ph_profile:"Surname or IU number",name_l:"Surname and first name",cat_l:"Badge",nat_cat:"National badge",
+ your_profile:"Your profile",ph_profile:"Surname or IU number",name_l:"Surname and first name",cat_l:"Badge",add_self:"I am filling this in for myself",add_list:"Umpires",add_lvl:"Level",add_nu:"NU",add_iu:"IU",add_id_note:"Level: NU — National Umpire, IU — International Umpire. An IU needs the IU number; national umpires have no international number, so leave the field empty.",add_known:n=>`Already on the site: ${n}. Name and association are filled in.`,add_need:"Every filled line needs a name, and an International Umpire also needs the IU number.",add_del_who:"IU or IR number of the person to remove",add_del_found:n=>`Found: ${n}.`,add_del_unknown:"This number is not in our lists — tell us in the comment who it is.",add_del_need:"Give the number, or write in the comment who should be removed and why.",add_del_why:"Why should this person be removed? If you do not know the number, write who it is.",add_file_note:"A list of umpires in one file: names, IU numbers where they exist, associations and levels.",
  email:"Contact email",close:"Close",send:"Send",sent:"This is a prototype: nothing is sent. On the live site the request goes to the curator.",
  sex_aria:"Sex",yr_missing:" (year not given)",
  months:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
@@ -2360,13 +2360,107 @@ function wireOly(){
 }
 
 /* ---------- modal ---------- */
+/* Форма «Add an umpire» (куратор 27.11.2026): вкладки «по одному» (строками, сколько угодно),
+   «файлом» и «удалить». В строке — номер, имя, ассоциация, уровень NU / IU (выбора «National badge»
+   больше нет: такого понятия не существует). Знакомый номер подставляет имя и ассоциацию и запирает
+   их; номер IU обязателен для международного судьи, у национальных его нет. «Заполняю за себя»
+   оставляет одну строку. Удаление — по одному человеку, по номеру и/или свободным комментарием.
+   Всё уходит на проверку куратору; незнакомые номера помечены needsCheck. */
+function openAddModal(cc,cat){
+  const t=T(); let mode="one";
+  const seg=(val,label)=>`<button type="button" role="tab" data-amode="${val}" aria-selected="${mode===val}">${label}</button>`;
+  const cs=COUNTRIES.slice().sort(byName);
+  const row=()=>`<div class="selrow addrow"><input class="s_id" placeholder="IU" aria-label="${t.sel_id}" autocomplete="off" maxlength="12"><input class="s_name" placeholder="${t.name_l}" aria-label="${t.name_l}"><select class="a_c" aria-label="${t.assoc}">${cs.map(c=>`<option value="${c.code}"${cc&&c.code===cc?" selected":""}>${esc(c.name)}</option>`).join("")}</select><select class="a_lvl" aria-label="${t.add_lvl}"><option value="NU"${cat==="NU"?" selected":""}>${t.add_nu}</option><option value="IU"${cat==="NU"?"":" selected"}>${t.add_iu}</option></select><div class="selhint" role="status" hidden></div></div>`;
+  $("#modalRoot").innerHTML=`<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
+    <h2 id="mt">${t.add_umpire}</h2>
+    <p class="muted" style="margin:8px 0 0;font-size:14px">${t.add_sub}</p>
+    <div class="tabs" role="tablist" style="margin-top:14px">${seg("one",t.sel_one)}${seg("file",t.sel_file)}${seg("del",t.sel_del)}</div>
+    <form id="mf">
+      <div id="a_one">
+        <label class="mchk" style="margin-top:14px"><input type="checkbox" id="a_self"> ${t.add_self}</label>
+        <label>${t.add_list}</label><p class="muted" style="font-size:12px;margin:0 0 2px">${t.add_id_note}</p>
+        <div id="a_rows">${row()}</div>
+        <button type="button" class="btn" id="a_more" style="margin-top:8px">+ ${t.sel_more}</button></div>
+      <div id="a_file" hidden><label for="a_fin">${t.loc_file}</label><input id="a_fin" type="file" multiple accept=".pdf,.csv,.txt,.jpg,.jpeg,.png">
+        <p class="muted" style="font-size:12px;margin:6px 0 0">${t.add_file_note} ${t.loc_types}</p></div>
+      <div id="a_del" hidden><label for="a_did">${t.add_del_who}</label><input id="a_did" placeholder="IU / IR" autocomplete="off" maxlength="12">
+        <div class="selhint" id="a_dhint" role="status" hidden></div>
+        <p class="muted" style="font-size:12px;margin:6px 0 0">${t.sel_del_note}</p></div>
+      <label for="m_note">${t.loc_comment}</label><textarea id="m_note"></textarea>
+      <label for="m_mail">${t.email}</label><input id="m_mail" type="email" required placeholder="name@example.com">
+      <div id="mok"></div>
+      <div class="row"><button class="btn" type="button" id="mclose">${t.close}</button><button class="btn primary" type="submit">${t.send}</button></div>
+    </form></div></div>`;
+  $("#mclose").onclick=closeModal;
+  $("#scrim").onclick=e=>{if(e.target.id==="scrim")closeModal();};
+  const rowsBox=$("#a_rows");
+  const fill=r=>{
+    const id=r.querySelector(".s_id"),nm=r.querySelector(".s_name"),ac=r.querySelector(".a_c"),lv=r.querySelector(".a_lvl"),h=r.querySelector(".selhint");
+    const lock=on=>{nm.readOnly=on;nm.classList.toggle("lk",on);ac.disabled=on;ac.classList.toggle("lk",on);};
+    const drop=()=>{if(r.dataset.auto){nm.value="";delete r.dataset.auto;}lock(false);lv.disabled=false;delete r.dataset.known;};
+    const q=id.value.trim();
+    if(!q){drop();h.hidden=true;h.className="selhint";return;}
+    const f=findOfficial(q);
+    if(f&&f.amb){drop();h.hidden=false;h.className="selhint warn";h.textContent=t.sel_id_amb(f.n);return;}
+    if(f){nm.value=fullName(f.p);if(f.p.c)ac.value=f.p.c.code;r.dataset.auto="1";r.dataset.known="1";lock(true);
+      if(f.kind==="iu"){lv.value="IU";lv.disabled=true;}
+      h.hidden=false;h.className="selhint found";h.innerHTML=t.add_known(`<a href="${href(f.p)}" target="_blank" rel="noopener">${esc(fullName(f.p))}</a>${f.p.c?", "+esc(f.p.c.name):""}`);return;}
+    drop();h.hidden=false;h.className="selhint warn";h.textContent=t.sel_id_new;
+  };
+  rowsBox.addEventListener("input",ev=>{if(ev.target.classList.contains("s_id"))fill(ev.target.closest(".selrow"));});
+  $("#a_more").onclick=()=>{rowsBox.insertAdjacentHTML("beforeend",row());const l=[...rowsBox.querySelectorAll(".s_id")].pop();if(l)l.focus();};
+  $("#a_self").onchange=e=>{rowsBox.classList.toggle("selfonly",e.target.checked);$("#a_more").hidden=e.target.checked;};
+  /* удаление: номер ищется так же, но ничего не запирается — это просто указатель на человека */
+  let delF=null;
+  $("#a_did").oninput=()=>{const q=$("#a_did").value.trim(),h=$("#a_dhint");delF=null;
+    if(!q){h.hidden=true;return;}
+    const f=findOfficial(q);h.hidden=false;
+    if(f&&f.amb){h.className="selhint warn";h.textContent=t.sel_id_amb(f.n);return;}
+    if(f){delF=f;h.className="selhint found";h.innerHTML=t.add_del_found(`<a href="${href(f.p)}" target="_blank" rel="noopener">${esc(fullName(f.p))}</a>${f.p.c?", "+esc(f.p.c.name):""}`);return;}
+    h.className="selhint warn";h.textContent=t.add_del_unknown;};
+  const noteEl=$("#m_note");
+  document.querySelectorAll("[data-amode]").forEach(b=>b.onclick=()=>{mode=b.dataset.amode;
+    document.querySelectorAll("[data-amode]").forEach(x=>x.setAttribute("aria-selected",x===b));
+    $("#a_one").hidden=mode!=="one";$("#a_file").hidden=mode!=="file";$("#a_del").hidden=mode!=="del";
+    noteEl.placeholder=mode==="del"?t.add_del_why:"";$("#mok").innerHTML="";});
+  const warn=m=>{$("#mok").innerHTML=`<div class="ok" style="background:var(--gb-soft)">${m}</div>`;};
+  $("#mf").onsubmit=async e=>{
+    e.preventDefault();
+    const note=noteEl.value.trim(),email=$("#m_mail").value.trim(),self=$("#a_self").checked;
+    let sub,files=[];
+    if(mode==="one"){
+      let rs=[...rowsBox.querySelectorAll(".selrow")];if(self)rs=rs.slice(0,1);
+      const rows=rs.map(r=>{const c=CBYCODE.get(r.querySelector(".a_c").value);return {id:r.querySelector(".s_id").value.trim(),n:r.querySelector(".s_name").value.trim(),
+        cc:c?c.code:"",cname:c?c.name:"",lvl:r.querySelector(".a_lvl").value,known:r.dataset.known==="1"};}).filter(x=>x.id||x.n);
+      if(!rows.length||rows.some(x=>!x.n||(x.lvl==="IU"&&!x.id)))return warn(t.add_need);
+      const f=rows[0];
+      sub={kind:"add",rows,self,needsCheck:rows.some(x=>x.id&&!x.known),who:f.n,cname:f.cname,ccode:f.cc,cat:f.lvl,
+        note:rows.map(x=>`${x.id||"—"}${x.id&&!x.known?" (ID unknown — needs review)":""} — ${x.n} (${x.cname}) — ${x.lvl}`).join("\n")+(note?"\n\n"+note:""),email};
+    }else if(mode==="file"){
+      files=[...$("#a_fin").files];if(!files.length)return warn(t.sel_need_f);
+      sub={kind:"add",docType:"Uploaded list",self,note,email};
+    }else{
+      const q=$("#a_did").value.trim();if(!q&&!note)return warn(t.add_del_need);
+      const who=delF&&!delF.amb?fullName(delF.p):"";
+      sub={kind:"del",scope:"umpire",id:q,who,known:!!who,needsCheck:true,self,note:(q?`Remove: ${q}${who?" — "+who:" (ID unknown)"}\n\n`:"")+note,email};
+    }
+    const btn=$("#mf").querySelector('button[type="submit"]');btn.disabled=true;$("#mok").innerHTML=`<div class="ok">${t.st_saving}</div>`;
+    try{await saveSubmission(sub,files);$("#mok").innerHTML=`<div class="ok">${subT().ok}</div>`;
+      $("#mf").querySelectorAll("input,select,textarea,button:not(#mclose)").forEach(x=>x.disabled=true);document.querySelectorAll("[data-amode]").forEach(x=>x.disabled=true);btn.remove();modalDone();}
+    catch(err){btn.disabled=false;
+      if(err&&err.code==="no_store"&&typeof SB!=="undefined"&&SB){$("#mok").innerHTML=`<div class="ok">${t.st_nostore}<div style="margin-top:10px"><button class="btn" type="button" id="mSignin">${authT().in}</button></div></div>`;$("#mSignin").onclick=()=>openAuthModal();}
+      else $("#mok").innerHTML=`<div class="ok">${subErr(t,err)}</div>`;}
+  };
+  modalOpened();
+}
 function openModal(kind,iu,cc,cat){
+  if(kind==="add")return openAddModal(cc,cat);
   const t=T(); const o=iu?BYIU.get(+iu):null; const isClaim=kind==="claim";
   $("#modalRoot").innerHTML=`<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
     <h2 id="mt">${isClaim?t.claim:t.add_umpire}</h2>
     <p class="muted" style="margin:8px 0 0;font-size:14px">${isClaim?t.claim_sub:t.add_sub}</p>
     <form id="mf">
-      ${isClaim?`<label for="m_iu">${t.your_profile}</label><input id="m_iu" value="${o?esc(fullName(o))+" · IU "+String(o.iu).padStart(5,"0"):""}" placeholder="${t.ph_profile}" required>`:`<label for="m_name">${t.name_l}</label><input id="m_name" required><label for="m_c">${t.assoc}</label><select id="m_c">${COUNTRIES.slice().sort(byName).map(c=>`<option${cc&&c.code===cc?" selected":""}>${esc(c.name)}</option>`).join("")}</select><label for="m_cat">${t.cat_l}</label><select id="m_cat"><option>${t.nat_cat}</option><option${cat==="NU"?" selected":""}>National Umpire (NU)</option><option>International Umpire</option></select>`}
+      ${isClaim?`<label for="m_iu">${t.your_profile}</label><input id="m_iu" value="${o?esc(fullName(o))+" · IU "+String(o.iu).padStart(5,"0"):""}" placeholder="${t.ph_profile}" required>`:""}
       <label for="m_mail">${t.email}</label><input id="m_mail" type="email" required placeholder="name@example.com">
       <div id="mok"></div>
       <div class="row"><button class="btn" type="button" id="mclose">${t.close}</button><button class="btn primary" type="submit">${t.send}</button></div>
@@ -2378,10 +2472,7 @@ function openModal(kind,iu,cc,cat){
     const btn=$("#mf").querySelector('button[type="submit"]');
     btn.disabled=true;
     $("#mok").innerHTML=`<div class="ok">${t.st_saving}</div>`;
-    const sub=isClaim
-      ? {kind:"claim",iu:o?o.iu:null,who:$("#m_iu").value.trim(),email:$("#m_mail").value.trim()}
-      : (()=>{const cn=$("#m_c").value,c=COUNTRIES.find(x=>x.name===cn);
-          return {kind:"add",who:$("#m_name").value.trim(),cname:cn,ccode:c?c.code:"",cat:$("#m_cat").value,email:$("#m_mail").value.trim()};})();
+    const sub={kind:"claim",iu:o?o.iu:null,who:$("#m_iu").value.trim(),email:$("#m_mail").value.trim()};
     try{
       await saveSubmission(sub,[]);
       $("#mok").innerHTML=`<div class="ok">${subT().ok}</div>`;
