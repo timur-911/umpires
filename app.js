@@ -71,7 +71,7 @@ ru:{
  missing:"Судьи нет в базе?",add:"Добавить",tile_add_q:"Официального лица нет в базе?",umps_refs:"судей и рефери",women:"женщин среди BB и GB",assoc_gb:"ассоциаций с Gold Badge",
  lists_tip:"Самый свежий из списков ITTF, по которым посчитаны эти количества: активные международные судьи, Blue Badge и Gold Badge.",
  news:"Новое в официальных списках",news_sub:"Свежие изменения уровней судей.",upd_tip:"Когда справочник, из которого собрана лента, последний раз менялся: списки, уровни и даты квалификации.",new_gb:"Новый Gold Badge",new_bb:"Новый Blue Badge",
- latest_t:"Последние турниры",sel_title_any:"Добавить официальных лиц на турнир",sel_ev:"Турнир",sel_ev_ph:"Выберите турнир",sel_need_ev:"Сначала выберите турнир.",latest_sub:(n,y)=>`Посмотрите назначения судей на ${n} ${plural(n,"турнир","турнира","турниров")} ${y} года. <button type="button" class="alink" data-evact="sel">Помогите дополнить список</button>: добавьте официальных лиц, которых мы могли пропустить.`,all_events:"Все турниры →",most:"Больше всего судей",mo_iu:"Международные судьи",mo_former:"Учитывать бывших",mo_per:"С поправкой",mo_of:"из",mo_prev:"Предыдущие 10 стран",mo_next:"Следующие 10 стран",mo_tip:(n,p,a,y)=>`${n} ÷ (ln(${p}) × ln(${a} + 1)). Население ${p}, в ITTF с ${y} года (${a} лет).`,mo_na_age:"Год вступления в ITTF неизвестен — значение не рассчитываем.",mo_na:"Меньше 100 000 жителей — на 100 000 не пересчитываем, иначе страна лидировала бы искусственно.",all_countries:"Все страны →",
+ latest_t:"Последние турниры",ev_offassoc:(n,m)=>`${n} ${plural(n,"официальное лицо","официальных лица","официальных лиц")} из ${m} ${plural(m,"ассоциации","ассоциаций","ассоциаций")}`,ev_cnt_tip:"Столько официальных лиц и ассоциаций нам удалось выяснить. Будем рады уточнениям: нажмите «карандаш», чтобы предложить правку списка официальных лиц этого турнира.",ev_edit:"Предложить правку списка официальных лиц",sel_del:"Удалить",sel_del_who:"Кого убрать из списка",sel_del_ph:"Выберите официальное лицо",sel_del_note:"За один раз — одно имя. Удаления, как и дополнения, уходят на проверку куратору.",sel_del_why:"Почему: что не так с этой строкой? Если нужного имени нет в списке, напишите, кого и почему убрать.",sel_del_need:"Выберите имя или напишите в комментарии, кого и почему убрать.",sel_title_any:"Добавить официальных лиц на турнир",sel_ev:"Турнир",sel_ev_ph:"Выберите турнир",sel_need_ev:"Сначала выберите турнир.",latest_sub:(n,y)=>`Посмотрите назначения судей на ${n} ${plural(n,"турнир","турнира","турниров")} ${y} года. <button type="button" class="alink" data-evact="sel">Помогите дополнить список</button>: добавьте официальных лиц, которых мы могли пропустить.`,all_events:"Все турниры →",most:"Больше всего судей",mo_iu:"Международные судьи",mo_former:"Учитывать бывших",mo_per:"С поправкой",mo_of:"из",mo_prev:"Предыдущие 10 стран",mo_next:"Следующие 10 стран",mo_tip:(n,p,a,y)=>`${n} ÷ (ln(${p}) × ln(${a} + 1)). Население ${p}, в ITTF с ${y} года (${a} лет).`,mo_na_age:"Год вступления в ITTF неизвестен — значение не рассчитываем.",mo_na:"Меньше 100 000 жителей — на 100 000 не пересчитываем, иначе страна лидировала бы искусственно.",all_countries:"Все страны →",
  by_country:"Судьи по странам",assoc_n:n=>`${n} ассоциаций`,
  list_all:"Все судьи",list_all_sub:"Международные судьи (активные и неактивные), национальные судьи и официальные лица Игр, которых мы знаем.",list_all_src:"Активные IU — по списку ITTF на 1 января 2026, с актуальными Blue и Gold Badge.",
  list_bb_sub:"",list_bb_src:"Список Blue Badge Umpires на 1 октября 2026.",list_gb_sub:"Высшая категория ITTF.",list_gb_src:"Список Gold Badge Umpires, октябрь 2026.",
@@ -132,7 +132,7 @@ en:{
  missing:"Umpire not listed?",add:"Add",tile_add_q:"Tournament official not listed?",umps_refs:"umpires and referees",women:"women among BB and GB",assoc_gb:"associations with a Gold Badge",
  lists_tip:"The most recent of the ITTF lists behind these counts: active International Umpires, Blue Badge and Gold Badge.",
  news:"Recent level updates",news_sub:"Check the latest umpires’ levels updates.",upd_tip:"When the directory behind this list was last updated: the lists, levels and qualification dates.",new_gb:"New Gold Badge",new_bb:"New Blue Badge",
- latest_t:"Latest tournaments",sel_title_any:"Add officials to a tournament",sel_ev:"Tournament",sel_ev_ph:"Choose a tournament",sel_need_ev:"Choose the tournament first.",latest_sub:(n,y)=>`Check the umpire selections for the ${fmt(n)} tournaments of ${y}. <button type="button" class="alink" data-evact="sel">Contribute</button> by adding the officials that we may have missed.`,all_events:"All tournaments →",most:"Most umpires",mo_iu:"International umpires",mo_former:"Include former",mo_per:"Adjusted",mo_of:"of",mo_prev:"Previous 10 associations",mo_next:"Next 10 associations",mo_tip:(n,p,a,y)=>`${n} ÷ (ln(${p}) × ln(${a} + 1)). Population ${p}, ITTF member since ${y} (${a} years).`,mo_na_age:"Year of joining the ITTF unknown — not calculated.",mo_na:"Population under 100,000 — not calculated per 100,000, otherwise it would lead artificially.",all_countries:"All associations →",
+ latest_t:"Latest tournaments",ev_offassoc:(n,m)=>`${n} ${n===1?"official":"officials"} from ${m} ${m===1?"association":"associations"}`,ev_cnt_tip:"These are the officials and associations we have been able to find out about. Corrections are welcome: press the pencil to suggest a change to this tournament’s list of officials.",ev_edit:"Suggest a change to the list of officials",sel_del:"Remove",sel_del_who:"Who should be removed",sel_del_ph:"Choose an official",sel_del_note:"One name at a time. Removals, like additions, go to the curator for review.",sel_del_why:"Why: what is wrong with this line? If the name is not on the list, write who should go and why.",sel_del_need:"Choose a name, or write in the comment who should be removed and why.",sel_title_any:"Add officials to a tournament",sel_ev:"Tournament",sel_ev_ph:"Choose a tournament",sel_need_ev:"Choose the tournament first.",latest_sub:(n,y)=>`Check the umpire selections for the ${fmt(n)} tournaments of ${y}. <button type="button" class="alink" data-evact="sel">Contribute</button> by adding the officials that we may have missed.`,all_events:"All tournaments →",most:"Most umpires",mo_iu:"International umpires",mo_former:"Include former",mo_per:"Adjusted",mo_of:"of",mo_prev:"Previous 10 associations",mo_next:"Next 10 associations",mo_tip:(n,p,a,y)=>`${n} ÷ (ln(${p}) × ln(${a} + 1)). Population ${p}, ITTF member since ${y} (${a} years).`,mo_na_age:"Year of joining the ITTF unknown — not calculated.",mo_na:"Population under 100,000 — not calculated per 100,000, otherwise it would lead artificially.",all_countries:"All associations →",
  by_country:"Table Tennis Umpires by Association",assoc_n:n=>`${n} associations`,
  list_all:"All umpires",list_all_sub:"International umpires (active and inactive), national umpires and Games officials we know of.",list_all_src:"Active IU: ITTF list of 1 January 2026, with current Blue and Gold Badges.",
  list_bb_sub:"",list_bb_src:"Blue Badge Umpires list as of 1 October 2026.",list_gb_sub:"The highest ITTF level.",list_gb_src:"Gold Badge Umpires list, October 2026.",
@@ -842,7 +842,16 @@ function mostBlock(){
   return `<section class="section" style="margin-top:8px"><div class="section-head"><h2>${t.most}</h2></div>
     <div class="most3">${["iu","bb","gb"].map(k=>`<div class="card mcard" id="most-${k}">${mostCard(k)}</div>`).join("")}</div></section>`;
 }
-const evRow = e=>{const t=T();return `<a class="evrow" href="#e${e.i}"><span class="dt">${evStatus(e)==="now"?'<span class="live"></span>':""}${fmtRange(e.s,e.e)}</span><span class="nm">${esc(evName(e))} ${typeChip(e)}<small>${evStatus(e)==="now"?t.now+" · ":""}${t.countries_n(new Set(e.ump.map(u=>u.p.c?u.p.c.i:u.p.cname)).size)}</small></span><span class="cnt">${t.n_ump(e.ump.length)}${nRef(e)?"<br>"+t.n_ref(nRef(e)):""}</span></a>`;};
+/* Строка турнира на главной (макет владельца 27.11.2026): вместо колонки с количеством
+   судей и рефери справа — «карандаш», а сами количества ушли в подпись под названием
+   («5 officials from 4 associations») со знаком ⓘ рядом. Строка больше не <a>: внутри
+   ссылки нельзя держать кнопку, поэтому ссылка растянута псевдоэлементом на всю строку,
+   а знак и кнопка лежат над ней. Ассоциации считаются по всем официальным лицам, у кого
+   она известна, а не только по судьям, — иначе «5 лиц из 4 ассоциаций» могло бы соврать. */
+const evAssocN = e=>new Set([...e.ump.map(u=>u.p.c?u.p.c.i:u.p.cname),
+  ...e.ref.filter(r=>r.p).map(r=>r.p.c?r.p.c.i:(r.p.cname||r.p.code))].filter(x=>x!=null&&x!=="")).size;
+const PENCIL=`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="10.2" stroke-width="1.3"/><path d="M15.1 7.9 8.4 14.6l-.6 2.6 2.6-.6 6.7-6.7z" stroke-width="1.3" stroke-linejoin="round"/><path d="M13.9 9.1l1.9 1.9" stroke-width="1.3"/></svg>`;
+const evRow = e=>{const t=T();return `<div class="evrow"><span class="dt">${evStatus(e)==="now"?'<span class="live"></span>':""}${fmtRange(e.s,e.e)}</span><span class="nm"><a class="evgo" href="#e${e.i}">${esc(evName(e))}</a> ${typeChip(e)}<small>${evStatus(e)==="now"?t.now+" · ":""}${t.ev_offassoc(e.ump.length+e.ref.length,evAssocN(e))} <span class="ftip infoi" tabindex="0" role="img" aria-label="${esc(t.ev_cnt_tip)}" data-tip="${esc(t.ev_cnt_tip)}">i</span></small></span><button type="button" class="evedit ftip" data-seledit="${e.i}" data-tip="${esc(t.ev_edit)}" aria-label="${esc(t.ev_edit)}">${PENCIL}</button></div>`;};
 const topState={sort:"cnt",dir:-1,role:"ump",metric:"cnt",year:null}; /* year: curator 13.11.2026, default = current year */
 const YEAR=TODAY.slice(0,4);
 /* distinct calendar days inside the year covered by a person's events (any role); overlapping events are not double-counted */
@@ -2629,6 +2638,16 @@ function openEvModal(kind,ei,cty){
    Both go to the curator's inbox as a "loc" item (typed rows are written into the note), so the existing review flow handles them (curator 14.11.2026) */
 /* Открыт без турнира (ссылка «Contribute» на главной) — турнир выбирается в самой форме,
    списком всех турниров сайта, от последних к ранним по дате окончания. */
+/* Кого можно предложить к удалению: судьи и остальные официальные лица этого турнира,
+   с номером там, где он известен, — по одному имени за заявку (правило владельца). */
+function delOpts(e){
+  if(!e) return [];
+  const num=p=>p?(p.isRef?(p.ir?"IR "+String(p.ir).padStart(5,"0"):""):(p.iu||p.iuX?String(p.iu||p.iuX).padStart(5,"0"):"")):"";
+  const out=[];
+  e.ump.forEach((u,i)=>out.push(["u"+i,[num(u.p),fullName(u.p),"— Umpire"].filter(Boolean).join(" ")]));
+  e.ref.forEach((r,i)=>out.push(["r"+i,[r.p?num(r.p):"",r.p?fullName(r.p):(r.name||"—"),"— "+r.role].filter(Boolean).join(" ")]));
+  return out;
+}
 function openSelModal(ei){
   const t=T();let e=EVENTS[ei]||null;const pick=!e;let mode="one";const seg=(attr,val,cur,label)=>`<button type="button" role="tab" data-${attr}="${val}" aria-selected="${cur===val}">${label}</button>`;
   const roles=[["umpire",t.as_umpire_cap],...ROLES.map(r=>[r[0],r[0]])];
@@ -2636,11 +2655,14 @@ function openSelModal(ei){
   $("#modalRoot").innerHTML=`<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt">
     <h2 id="mt">${pick?t.sel_title_any:t.sel_title}</h2>
     ${pick?"":`<p class="muted" style="margin:8px 0 0;font-size:14px"><b>${esc(evName(e))}</b> · ${fmtRange(e.s,e.e)}</p>`}
-    <div class="tabs" role="tablist" style="margin-top:14px">${seg("smode","one",mode,t.sel_one)}${seg("smode","file",mode,t.sel_file)}</div>
+    <div class="tabs" role="tablist" style="margin-top:14px">${seg("smode","one",mode,t.sel_one)}${seg("smode","file",mode,t.sel_file)}${pick?"":seg("smode","del",mode,t.sel_del)}</div>
     <form id="mf">
       ${pick?`<label for="s_ev">${t.sel_ev}</label><select id="s_ev" required><option value="">${t.sel_ev_ph}</option>${EVENTS.slice().sort((a,b)=>b.e.localeCompare(a.e)||b.s.localeCompare(a.s)).map(v=>`<option value="${v.i}">${esc(evName(v))} · ${fmtRange(v.s,v.e)}</option>`).join("")}</select>`:""}
       <div id="s_one"><label>${t.sel_list}</label><p class="muted" style="font-size:12px;margin:0 0 2px">${t.sel_mod_note}</p><div id="s_rows">${row()}${row()}${row()}</div>
         <button type="button" class="btn" id="s_more" style="margin-top:8px">+ ${t.sel_more}</button></div>
+      ${pick?"":`<div id="s_del" hidden><label for="d_who">${t.sel_del_who}</label>
+        <select id="d_who"><option value="">${t.sel_del_ph}</option>${delOpts(e).map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join("")}</select>
+        <p class="muted" style="font-size:12px;margin:6px 0 0">${t.sel_del_note}</p></div>`}
       <div id="s_file" hidden><label for="m_file">${t.loc_file}</label><input id="m_file" type="file" multiple accept=".pdf,.csv,.txt,.jpg,.jpeg,.png"><p class="muted" style="font-size:12px;margin:6px 0 0">${t.loc_types}</p>
         <label for="m_kind">${t.loc_kind}</label><select id="m_kind">${t.loc_kinds.map(k=>`<option>${k}</option>`).join("")}</select></div>
       <label for="m_note">${t.loc_comment}</label><textarea id="m_note" placeholder="${t.loc_ph_up}"></textarea>
@@ -2670,7 +2692,10 @@ function openSelModal(ei){
   $("#s_rows").addEventListener("input",ev=>{if(ev.target.classList.contains("s_id"))fillRow(ev.target.closest(".selrow"));});
   $("#s_rows").addEventListener("change",ev=>{if(ev.target.classList.contains("s_role"))ev.target.closest(".selrow").dataset.rtouch="1";});
   $("#s_more").onclick=()=>{$("#s_rows").insertAdjacentHTML("beforeend",row());const l=[...document.querySelectorAll("#s_rows .s_id")].pop();if(l)l.focus();};
-  document.querySelectorAll("[data-smode]").forEach(b=>b.onclick=()=>{mode=b.dataset.smode;document.querySelectorAll("[data-smode]").forEach(x=>x.setAttribute("aria-selected",x===b));$("#s_one").hidden=mode!=="one";$("#s_file").hidden=mode!=="file";$("#mok").innerHTML="";});
+  const noteEl=$("#m_note"), notePh=noteEl?noteEl.placeholder:"";
+  document.querySelectorAll("[data-smode]").forEach(b=>b.onclick=()=>{mode=b.dataset.smode;document.querySelectorAll("[data-smode]").forEach(x=>x.setAttribute("aria-selected",x===b));
+    $("#s_one").hidden=mode!=="one";$("#s_file").hidden=mode!=="file";if($("#s_del"))$("#s_del").hidden=mode!=="del";
+    if(noteEl)noteEl.placeholder=mode==="del"?t.sel_del_why:notePh;$("#mok").innerHTML="";});
   $("#mf").onsubmit=async ev=>{ev.preventDefault();
     const v=id=>{const x=$("#"+id);return x?x.value.trim():"";};
     const all=[...document.querySelectorAll("#s_rows .selrow")].map(r=>({id:r.querySelector(".s_id").value.trim(),n:r.querySelector(".s_name").value.trim(),a:r.querySelector(".s_ass").value.trim(),r:r.querySelector(".s_role").value,known:r.dataset.known==="1"}));
@@ -2680,9 +2705,12 @@ function openSelModal(ei){
     if(mode==="one"&&!rows.length){$("#mok").innerHTML=`<div class="ok" style="background:var(--gb-soft)">${t.sel_need}</div>`;return;}
     if(mode==="one"&&rows.some(x=>!x.id||!x.n)){$("#mok").innerHTML=`<div class="ok" style="background:var(--gb-soft)">${t.sel_need_id}</div>`;return;}
     if(mode==="file"&&!files.length){$("#mok").innerHTML=`<div class="ok" style="background:var(--gb-soft)">${t.sel_need_f}</div>`;return;}
+    if(mode==="del"&&!v("d_who")&&!v("m_note")){$("#mok").innerHTML=`<div class="ok" style="background:var(--gb-soft)">${t.sel_del_need}</div>`;return;}
     const btn=$("#mf button[type=submit]");btn.disabled=true;btn.textContent=t.st_saving;
     const list=rows.map(x=>`${x.id}${x.known?"":" (ID unknown — needs review)"} — ${x.n}${x.a?" ("+x.a+")":""} — ${x.r==="umpire"?"Umpire":x.r}`).join("\n");
+    const who=mode==="del"?($("#d_who").selectedOptions[0]||{}).textContent||"":"";
     const sub=mode==="one"?{kind:"loc",ei:e.i,ev:e.name,docType:"Typed list",rows,needsCheck:rows.some(x=>!x.known),note:list+(v("m_note")?"\n\n"+v("m_note"):""),email:v("m_mail")}
+      :mode==="del"?{kind:"del",ei:e.i,ev:e.name,docType:"Removal request",whoKey:v("d_who"),who:v("d_who")?who:"",needsCheck:true,note:(v("d_who")?"Remove: "+who+"\n\n":"")+v("m_note"),email:v("m_mail")}
       :{kind:"loc",ei:e.i,ev:e.name,docType:v("m_kind"),note:v("m_note"),email:v("m_mail")};
     try{await saveSubmission(sub,files);
       $("#mok").innerHTML=`<div class="ok">${t.st_saved}</div>`;$("#mf").querySelectorAll("input,select,textarea,button:not(#mclose)").forEach(x=>x.disabled=true);document.querySelectorAll("[data-smode]").forEach(x=>x.disabled=true);btn.remove();modalDone();}
@@ -2922,6 +2950,7 @@ document.addEventListener("click",e=>{
   const c=e.target.closest("[data-claim]"); if(c){openModal("claim",c.dataset.claim);return;}
   const lb=e.target.closest("[data-lang]"); if(lb){LANG=lb.dataset.lang;try{localStorage.setItem("umpires_lang",LANG);}catch(_){}route(true);return;}
   {const ad=e.target.closest("[data-add]");if(ad){openModal("add",null,ad.dataset.add||"",ad.dataset.addcat||"");return;}}
+  {const se=e.target.closest("[data-seledit]");if(se){e.preventDefault();openSelModal(+se.dataset.seledit);return;}}
   {const cu=e.target.closest("[data-cup]");if(cu){openEvModal("loc",null,CBYCODE.get(cu.dataset.cup));return;}}
   if(e.target.closest("[data-find]")){const q=$("#q");if(q){q.scrollIntoView({block:"center",behavior:"smooth"});q.focus({preventScroll:true});}return;}
   const ea=e.target.closest("[data-evact]"); if(ea){openEvModal(ea.dataset.evact,+ea.dataset.ei);return;}
