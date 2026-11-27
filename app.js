@@ -299,8 +299,7 @@ ROUTES.keyOf=(sec,slug)=>PKEY.get(sec+"/"+slug)||null;
 
 const refsOf = c=>REFS.filter(r=>r.c===c&&!r.o);
 const person = r=>r>=0?OFF[r]:EXTRA[-1-r];
-/* selections embargo (curator 14.11.2026): officials of a tournament are shown only once three full days have passed since it ended
-   (event ends on the 10th → shown from the 14th), so the site never looks synchronised with ITTF/WTT data. Until then the event has no
+/* Selections of an event appear on the site from e.openOn (owner's rule). Until then e.emb is set and the event has no
    umpires or referees anywhere on the site: event page, profiles, counts, Top 10, graph */
 const SEL_DELAY=3, SEL_TODAY=new Date().toISOString().slice(0,10);
 EVENTS.forEach(e=>{const d=new Date(e.e+"T00:00:00Z");d.setUTCDate(d.getUTCDate()+SEL_DELAY+1);e.openOn=d.toISOString().slice(0,10);e.emb=e.openOn>SEL_TODAY;});
